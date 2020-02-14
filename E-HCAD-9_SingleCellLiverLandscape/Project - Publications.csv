@@ -1,0 +1,6 @@
+AUTHORS (Required);PUBLICATION TITLE (Required);PUBLICATION DOI;PUBLICATION PMID;PUBLICATION URL
+A list of authors associated with the publication.;The title of the publication.;The publication digital object identifier (doi) of the publication.;The PubMed ID of the publication.;A URL for the publication.
+List each author in 'surname initials' format. For example: Doe JD; For example: Study of single cells in the human body.; For example: 10.1016/j.cell.2016.07.054; For example: 27565351; For example: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5667944/
+project.publications.authors;project.publications.title;project.publications.doi;project.publications.pmid;project.publications.url
+FILL OUT INFORMATION BELOW THIS ROW;;;;
+MacParland SA||Liu JC||Ma XZ||Innes BT||Bartczak AM||Gage BK||Manuel J||Khuu N||Echeverri J||Linares I||Gupta R||Cheng ML||Liu LY||Camat D||Chung SW||Seliga RK||Shao Z||Lee E||Ogawa S||Ogawa M||Wilson MD||Fish JE||Selzner M||Ghanekar A||Grant D||Greig P||Sapisochin G||Selzner N||Winegarden N||Adeyi O||Keller G||Bader GD||McGilvray ID;Single cell RNA sequencing of human liver reveals distinct intrahepatic macrophage populations;10.1038/s41467-018-06318-7;30348985;https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6197289/

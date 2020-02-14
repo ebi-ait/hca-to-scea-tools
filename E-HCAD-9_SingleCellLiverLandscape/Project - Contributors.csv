@@ -1,0 +1,39 @@
+CONTACT NAME (Required);EMAIL ADDRESS;PHONE NUMBER;INSTITUTE (Required);LABORATORY/DEPARTMENT;STREET ADDRESS;COUNTRY;CORRESPONDING CONTRIBUTOR?;PROJECT ROLE;Project role ontology;Project role ontology label;ORCID ID
+Name of individual who has contributed to the project.;Email address for the individual.;Phone number of the individual or their lab.;Name of primary institute where the individual works.;Name of lab or department within the institute where the individual works.;Street address where the individual works.;Country where the individual works.;Whether the individual is a primary point of contact for the project.;Primary role of the individual in the project.;;;The individual's ORCID ID linked to previous work.
+"Enter in the format: first name,middle name or initial,last name. For example: John,D,Doe; Jane,,Smith"; For example: dummy@email.com;Include the country code. For example: (+1) 234-555-6789;" For example: EMBL-EBI; University of Washington";" For example: Division of Vaccine Discovery; Department of Biology";Include street name and number, city, country division, and postal code. For example: 0000 Main Street, Nowheretown, MA, 12091; For example: USA; For example: Should be one of: yes, or no.;" For example: principal investigator; computational scientist";;; For example: 0000-1111-2222-3333
+project.contributors.name;project.contributors.email;project.contributors.phone;project.contributors.institution;project.contributors.laboratory;project.contributors.address;project.contributors.country;project.contributors.corresponding_contributor;project.contributors.project_role.text;project.contributors.project_role.ontology;project.contributors.project_role.ontology_label;project.contributors.orcid_id
+FILL OUT INFORMATION BELOW THIS ROW;;;;;;;;;;;
+Sonya,A,MacParland;sonya.macparland@uhnresearch.ca;;University of Toronto;MacParland;;Canada;yes;principal investigator;EFO:0009736;principal investigator;
+Jeff,C,Liu;jeff.liu@utoronto.ca;;University of Toronto;Bader;;Canada;no;computational scientist;EFO:0009742;clinician;
+Gary,D,Bader;gary.bader@utoronto.ca ;;University of Toronto;Bader;;Canada;yes;principal investigator;EFO:0009736;principal investigator;0000-0003-0185-8861
+Ian,D,McGilvray;ian.mcgilvray@uhn.ca;;University Health Network;McGilvray;;Canada;yes;principal investigator;EFO:0009736;principal investigator;
+Xue-Zhong,,Ma;maxuezhong@hotmail.com ;;University Health Network;McGilvray;;Canada;no;microsurgeon;EFO:0009740;clinician;
+Brendan,T,Innes;brendan.innes@mail.utoronto.ca;;University of Toronto;Bader;;Canada;no;computational scientist;EFO:0009742;clinician;
+Agata,M,Bartczak;a.bartczak@gmail.com;;University Health Network;McGilvray;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Blair,K,Gage;Blair.Gage@uhnresearch.ca;;University Health Network;Keller;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Justin,,Manuel;Justin.Manuel@uhnresearch.ca ;;University Health Network;McGilvray;;Canada;no;microsurgeon;EFO:0009740;clinician;
+Nicholas,,Khuu;Nicholas.Khuu@uhnresearch.ca;;University Health Network;Winegarden;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Juan,,Echeverri;Juanan27@me.com;;University Health Network;Selzner;;Canada;no;surgeon;EFO:0009740;clinician;
+Ivan,,Linares;lin85ij@outlook.com;;University Health Network;Selzner;;Canada;no;surgeon;EFO:0009740;clinician;
+Rahul,,Gupta;ra.gupta@mail.utoronto.ca;;University Health Network;MacParland;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Michael,L,Cheng;mly.cheng@mail.utoronto.ca;;University Health Network;MacParland;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Lewis,Y,Liu;lewy.liu@mail.utoronto.ca;;University Health Network;MacParland;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Damra,,Camat;damra.camat@mail.utoronto.ca;;University Health Network;MacParland;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Sai,W,Chung;sai.chung@mail.utoronto.ca;;University Health Network;MacParland;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Rebecca,K,Seliga;rkseliga@gmail.com;;University Health Network;MacParland;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Zigong,,Shao;zigong.shao@uhnresearch.ca;;University Health Network;McGilvray;;Canada;no;microsurgeon;EFO:0009740;clinician;
+Elizabeth,,Lee;Elizabeth.Lee@uhn.ca;;University Health Network;McGilvray;;Canada;no;Transplant Research Coordinator;EFO:0009743;administrator;
+Shinichiro,,Ogawa;Shinichiro.Ogawa@uhnresearch.ca;;University Health Network;Keller;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Mina,,Ogawa;Mina.Ogawa@uhnresearch.ca;;University Health Network;Keller;;Canada;no;experimental scientist;EFO:0009741;experimental scientist;
+Michael,D,Wilson;michael.wilson@sickkids.ca;;Hospital for Sick Children;Wilson;;Canada;no;co-investigator;EFO:0009735;co-investigator;
+Jason,E,Fish;jason.fish@utoronto.ca;;University Health Network;Fish;;Canada;no;co-investigator;EFO:0009735;co-investigator;
+Markus,,Selzner;markus.selzner@uhn.ca ;;University Health Network;Selzner;;Canada;no;surgeon;EFO:0009740;clinician;
+Anand,,Ghanekar;anand.ghanekar@uhn.ca;;University Health Network;Ghanekar;;Canada;no;surgeon;EFO:0009740;clinician;
+David,,Grant;David.Grant@uhn.ca;;University Health Network;Grant;;Canada;no;surgeon;EFO:0009740;clinician;
+Paul,,Greig;Paul.Greig@uhn.ca;;University Health Network;Greig;;Canada;no;surgeon;EFO:0009740;clinician;
+Gonzalo,,Sapisochin;gonzalo.sapisochin@uhn.ca;;University Health Network;Sapisochin;;Canada;no;surgeon;EFO:0009740;clinician;
+Nazia,,Selzner;Nazia.Selzner@uhn.ca;;University Health Network;Selzner;;Canada;no;hepatologist;EFO:0009740;clinician;
+Neil,,Winegarden;neil.winegarden@uhnresearch.ca;;University Health Network;Winegarden;;Canada;no;co-investigator;EFO:0009735;co-investigator;
+Oyedele,,Adeyi;oyedele.adeyi@uhn.ca;;University Health Network;Adeyi;;Canada;no;pathologist ;EFO:0009738;pathologist ;
+Gordon,,Keller;gordon.keller@uhnresearch.ca;;University Health Network;Keller;;Canada;no;co-investigator;EFO:0009735;co-investigator;
+William,G,Sullivan;wisulliv@ucsc.edu;;University of California Santa Cruz;Human Cell Atlas Data Coordination Platform;1156 High St, Santa Cruz, CA 95064;USA;no;Human Cell Atlas wrangler;EFO:0009737;data curator;

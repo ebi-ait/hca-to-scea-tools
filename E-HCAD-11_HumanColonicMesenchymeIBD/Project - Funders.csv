@@ -1,0 +1,17 @@
+GRANT TITLE;GRANT ID (Required);FUNDING ORGANIZATION (Required)
+The name of the grant funding the project.;The unique grant identifier or reference.;The name of the funding organization.
+Enter a title of approximately 30 words. For example: Study of single cells in the human body.; For example: BB/P0000001/1;" For example: Biotechnology and Biological Sciences Research Council (BBSRC); California Institute of Regenerative Medicine (CIRM)"
+project.funders.grant_title;project.funders.grant_id;project.funders.organization
+FILL OUT INFORMATION BELOW THIS ROW;;
+Re-define Crohn s at a molecular level to identify new biomarkers and therapies;NIHR-RP-R3-12-026;National Institutes for Health Research (NIHR) Research Professorship
+The function of NOD2 in health and in Crohn's disease.;102974/Z/13/Z;Wellcome Investigator Award
+;not provided;Crohn's and Colitis UK
+;not provided;Lee Placito Medical Fund
+;not provided;Medical Research Council (MRC)
+;not provided;Abbvie
+;not provided;Celgene
+;not provided;Joint Royal College of Surgeons of England and British Association of Paediatric Surgeons Research Fellowship
+;not provided;Wellcome Trust
+;not provided;NIHR Oxford Biomedical Research Centre
+;not provided;Thames Valley Local Clinical Research Network (LCRN)
+;not provided;Oxford Single Cell Consortium

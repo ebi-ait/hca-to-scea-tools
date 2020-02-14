@@ -1,0 +1,15 @@
+;FILE NAME (Required);FILE FORMAT (Required);CHECKSUM;FILE DESCRIPTION;;;
+;The name of the file.;The format of the file.;MD5 checksum of the file.;A short description of the file contents.;;;
+;"Include the file extension in the file name. For example: R1.fastq.gz; codebook.json";"Indicate the full file extension including compression extensions. For example: fastq.gz; tif"; For example: e09a986c2e630130b1849d4bf9a94c06;"File description could include information about how the file was generated. For example: Protocol for FACS enrichment; Image of spleen sample collection location";;;
+supplementary_file.uuid;supplementary_file.file_core.file_name;supplementary_file.file_core.format;supplementary_file.file_core.checksum;supplementary_file.file_description;supplementary_file.file_core.content_description.text;supplementary_file.file_core.content_description.ontology;supplementary_file.file_core.content_description.ontology_label
+;FILL OUT INFORMATION BELOW THIS ROW;;;;;;
+f1aecf03-b60d-483c-a09f-69223cc1ad0e;mature_kidney_dissociation.pdf;pdf;;Description of the protocol for mature kidney dissociation;Protocol;data:2531;Protocol
+1c531e83-02f4-4c00-b161-f186a1b5e1fb;fetal_kidney_dissociation.pdf;pdf;;Description of the protocol for fetal  kidney dissociation;Protocol;data:2531;Protocol
+63a1acfd-ca01-451d-a41d-d3a7ffd1655b;mature_kidney_enrichment_2.pdf;pdf;;Description of the protocol for mature kidney live cell enrichment - experiment set 2;Protocol;data:2531;Protocol
+c72eb744-4971-4525-802c-d898349b392a;fetal_flow_enrichment_1.pdf;pdf;;Description of the protocol for fetal kidney flow cytometry enrichment - set 1;Protocol;data:2531;Protocol
+53089129-f71b-412c-ae2d-f7e8e50044c3;fetal_flow_enrichment_2.pdf;pdf;;Description of the protocol for fetal kidney flow cytometry enrichment - set 2;Protocol;data:2531;Protocol
+5b84bbca-dfde-462c-9c79-c914f32e03c4;mature_kidney_tumour_nephrectomy_collection.pdf;pdf;;Desription of the protocol for tumour nephrectomy specimen collection;Protocol;data:2531;Protocol
+06e90b33-4403-41e8-b783-e65bf7de982a;mature_kidney_declined_transplant_collection.pdf;pdf;;Description of the protocol for declined transplant specimen collection;Protocol;data:2531;Protocol
+944589e7-48a4-4333-b773-8e632ccb8865;fetal_kidney_collection.pdf;pdf;;Description of the protocol for fetal kidney collection;Protocol;data:2531;Protocol
+182c7357-0ac0-483d-8189-b321cb3e8d74;sequencing_protocol.pdf;pdf;;Description of the protocol for sequencing;Protocol;data:2531;Protocol
+77700dee-f8b3-40d1-b527-e0e53562eb49;library_preparation_protocol.pdf;pdf;;Description of the protocol for library preparation;Protocol;data:2531;Protocol
