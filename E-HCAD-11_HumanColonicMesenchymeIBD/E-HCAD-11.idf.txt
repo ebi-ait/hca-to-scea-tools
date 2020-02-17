@@ -2,7 +2,7 @@ MAGE-TAB Version	1.1
 Investigation Title	Structural Remodeling of the Human Colonic Mesenchyme in Inflammatory Bowel Disease
 Comment[Submitted Name]	HumanColonicMesenchymeIBD
 Experiment Description	Intestinal mesenchymal cells play essential roles in epithelial homeostasis, matrix remodeling, immunity, and inflammation. But the extent of heterogeneity within the colonic mesenchyme in these processes remains unknown. Using unbiased single-cell profiling of over 16,500 colonic mesenchymal cells, we reveal four subsets of fibroblasts expressing divergent transcriptional regulators and functional pathways, in addition to pericytes and myofibroblasts. We identified a niche population located in proximity to epithelial crypts expressing SOX6, F3 (CD142), and WNT genes essential for colonic epithelial stem cell function. In colitis, we observed dysregulation of this niche and emergence of an activated mesenchymal population. This subset expressed TNF superfamily member 14 (TNFSF14), fibroblastic reticular cell-associated genes, IL-33, and Lysyl oxidases. Further, it induced factors that impaired epithelial proliferation and maturation and contributed to oxidative stress and disease severity in vivo. Our work defines how the colonic mesenchyme remodels to fuel inflammation and barrier dysfunction in IBD. 
-Public Release Date	2019-10-04
+Public Release Date	<FILL THIS>
 Person First Name	James	Hannah	Kaushal	Agne	Marta	David	Neil	Laura	Esther	Moustafa	Eshita	Quin	Rory	Felix	David	Kamal	Jill	Francois	Hashem	Alison	Mallory
 Person Last Name	Kinchen	Chen	Parikh	Antanaviciute	Jagielowicz	Fawkner-Corbett	Ashley	Cubitt	Mellado-Gomez	Attar	Sharma	Wills	Bowden	Richter	Ahern	Puri	Henault	Gervais	Koohy	Simmons	Freeberg
 Person Mid Initials		H												C		D					Ann
@@ -22,8 +22,8 @@ Experimental Factor Type	<FILL THIS>
 Comment[EAAdditionalAttributes]	<FILL THIS>
 Comment[EACurator]	AD	JFG
 Comment[EAExpectedClusters]	
-Comment[ExpressionAtlasAccession]	HCAD-11
-Comment[HCALastUpdateDate]	2019-10-04
-Comment[SecondaryAccession]	f8aa201c-4ff1-45a4-890e-840d63459ca2	GSE95435	GSE95446	GSE95450	GSE114374
+Comment[ExpressionAtlasAccession]	E-HCAD-11
+Comment[HCALastUpdateDate]	<FILL THIS>
+Comment[SecondaryAccession]	None	
 Comment[EAExperimentType]	<FILL THIS>
-SDRF File	HCAD-11.sdrf.txt
+SDRF File	E-HCAD-11.sdrf.txt

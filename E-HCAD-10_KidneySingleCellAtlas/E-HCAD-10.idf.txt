@@ -2,7 +2,7 @@ MAGE-TAB Version	1.1
 Investigation Title	Spatio-temporal immune zonation of the human kidney
 Comment[Submitted Name]	KidneySingleCellAtlas
 Experiment Description	Tissue-resident immune cells are important for organ homeostasis and defense. The epithelium may contribute to these functions directly, or via crosstalk with immune cells. We resolved the spatio-temporal immune topology of the human kidney with a scRNAseq dataset from 40,268 mature and 27,203 fetal kidney cells. Within the epithelial compartment there were zonated patterns of immune gene expression, with pelvic epithelial anti-microbial peptide expression in mature but not fetal kidneys. Tissue-resident immune cells were evident in both fetal and mature kidney, with post-natal acquisition of infection-defense capabilities. Epithelial-immune signalling orchestrated localization of macrophages and neutrophils to regions of the kidney susceptible to infection. 
-Public Release Date	2019-10-22
+Public Release Date	<FILL THIS>
 Person First Name	Benjamin	John	Tom	Matthew	Menna	Sam	Muzlifah	Sarah	Enrique
 Person Last Name	Stewart	Ferdinand	Mitchell	Young	Clatworthy	Behjati	Haniffa	Teichmann	Sapena Ventura
 Person Mid Initials									
@@ -22,8 +22,8 @@ Experimental Factor Type	<FILL THIS>
 Comment[EAAdditionalAttributes]	<FILL THIS>
 Comment[EACurator]	AD	JFG
 Comment[EAExpectedClusters]	
-Comment[ExpressionAtlasAccession]	HCAD-10
-Comment[HCALastUpdateDate]	2019-10-22
-Comment[SecondaryAccession]	abe1a013-af7a-45ed-8c26-f3793c24a1f4	
+Comment[ExpressionAtlasAccession]	E-HCAD-10
+Comment[HCALastUpdateDate]	<FILL THIS>
+Comment[SecondaryAccession]	None	
 Comment[EAExperimentType]	<FILL THIS>
-SDRF File	HCAD-10.sdrf.txt
+SDRF File	E-HCAD-10.sdrf.txt

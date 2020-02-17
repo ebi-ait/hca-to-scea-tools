@@ -1,6 +1,0 @@
-AUTHORS (Required);PUBLICATION TITLE (Required);PUBLICATION DOI;PUBLICATION PMID;PUBLICATION URL
-A list of authors associated with the publication.;The title of the publication.;The publication digital object identifier (doi) of the publication.;The PubMed ID of the publication.;A URL for the publication.
-List each author in 'surname initials' format. For example: Doe JD; For example: Study of single cells in the human body.; For example: 10.1016/j.cell.2016.07.054; For example: 27565351; For example: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5667944/
-project.publications.authors;project.publications.title;project.publications.doi;project.publications.pmid;project.publications.url
-FILL OUT INFORMATION BELOW THIS ROW;;;;
-Kinchen J||Chen HH||Parikh K||Antanaviciute A||Jagielowicz M||Fawkner-Corbett D||Ashley N||Cubitt L||Mellado-Gomez E||Attar M||Sharma E||Wills Q||Bowden R||Richter FC||Ahern D||Puri KD||Henault J||Gervais F||Koohy H||Simmons A;Structural Remodeling of the Human Colonic Mesenchyme in Inflammatory Bowel Disease;10.1016/j.cell.2018.08.067;30270042;https://www.ncbi.nlm.nih.gov/pubmed/30270042
