@@ -1,0 +1,26 @@
+CONTACT NAME (Required);EMAIL ADDRESS;INSTITUTE (Required);LABORATORY/DEPARTMENT;STREET ADDRESS;COUNTRY;CORRESPONDING CONTRIBUTOR;PROJECT ROLE;PROJECT ROLE ONTOLOGY;PROJECT ROLE ONTOLOGY LABEL;ORCID ID;PHONE NUMBER
+Name of individual who has contributed to the project.;Email address for the individual.;Name of primary institute where the individual works.;Name of lab or department within the institute where the individual works.;Street address where the individual works.;Country where the individual works.;Whether the individual is a primary point of contact for the project.;Primary role of the individual in the project.;Primary role of the individual in the project.;Primary role of the individual in the project.;The individual's ORCID ID linked to previous work.;Phone number of the individual or their lab.
+"Enter in the format: first name,middle name or initial,last name. For example: John,D,Doe; Jane,,Smith"; For example: dummy@email.com;" For example: EMBL-EBI; University of Washington";" For example: Division of Vaccine Discovery; Department of Biology";Include street name and number, city, country division, and postal code. For example: 0000 Main Street, Nowheretown, MA, 12091; For example: USA; For example: Should be one of: yes, or no.;" For example: principal investigator; computational scientist";" For example: principal investigator; computational scientist";" For example: principal investigator; computational scientist"; For example: 0000-1111-2222-3333;Include the country code. For example: (+1) 234-555-6789
+project.contributors.name;project.contributors.email;project.contributors.institution;project.contributors.laboratory;project.contributors.address;project.contributors.country;project.contributors.corresponding_contributor;project.contributors.project_role.text;project.contributors.project_role.ontology;project.contributors.project_role.ontology_label;project.contributors.orcid_id;project.contributors.phone
+FILL OUT INFORMATION BELOW THIS ROW;;;;;;;;;;;
+James,,Kinchen;james.kinchen@stx.ox.ac.uk;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;yes;;;;;
+Hannah,H,Chen;;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+Kaushal,,Parikh;;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+Agne,,Antanaviciute;;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+Marta,,Jagielowicz;;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+David,,Fawkner-Corbett;;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+Neil,,Ashley;;University of Oxford;Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+Laura,,Cubitt;;University of Oxford;Wellcome Trust Centre for Human Genetics;Headington, Oxford OX3 7BN;UK;no;;;;;
+Esther,,Mellado-Gomez;;University of Oxford;Wellcome Trust Centre for Human Genetics;Headington, Oxford OX3 7BN;UK;no;;;;;
+Moustafa,,Attar;;University of Oxford;Wellcome Trust Centre for Human Genetics;Headington, Oxford OX3 7BN;UK;no;;;;;
+Eshita,,Sharma;;University of Oxford;Wellcome Trust Centre for Human Genetics;Headington, Oxford OX3 7BN;UK;no;;;;;
+Quin,,Wills;;Novo Nordisk Research Centre Oxford;;Oxford;UK;no;;;;;
+Rory,,Bowden;;University of Oxford;Wellcome Trust Centre for Human Genetics;Headington, Oxford OX3 7BN;UK;no;;;;;
+Felix,C,Richter;;University of Oxford;Kennedy Institute of Rheumatology;Oxford;UK;no;;;;;
+David,,Ahern;;University of Oxford;Kennedy Institute of Rheumatology;Oxford;UK;no;;;;;
+Kamal,D,Puri;;OncoResponse, Inc;;Seattle, WA 98104;USA;no;;;;;
+Jill,,Henault;;Celgene Corporation;Translational Development;Cambridge, MA;USA;no;;;;;
+Francois,,Gervais;;Celgene Corporation;Translational Development;Cambridge, MA;USA;no;;;;;
+Hashem,,Koohy;;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;no;;;;;
+Alison,,Simmons;alison.simmons@imm.ox.ac.uk;University of Oxford;MRC Human Immunology Unit, MRC Weatherall Institute of Molecular Medicine;Oxford OX3 9DS;UK;yes;;;;;
+Mallory,Ann,Freeberg;mfreeberg@ebi.ac.uk;EMBL-EBI;Human Cell Atlas Data Coordination Platform;Wellcome Trust Genome Campus, Cambridge UK;UK;no;Human Cell Atlas wrangler;EFO:0009737;data curator;0000-0003-2949-3921;
