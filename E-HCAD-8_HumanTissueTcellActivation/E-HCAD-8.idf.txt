@@ -22,8 +22,8 @@ Experimental Factor Type	individual	organism part	disease
 Comment[EAAdditionalAttributes]	individual	sex	age	organism part	cell type	sample_description	disease
 Comment[EACurator]	AD	JFG
 Comment[EAExpectedClusters]	
-Comment[ExpressionAtlasAccession]	HCAD-8
+Comment[ExpressionAtlasAccession]	E-HCAD-8
 Comment[HCALastUpdateDate]	2019-09-13
 Comment[SecondaryAccession]	4a95101c-9ffc-4f30-a809-f04518a23803	
 Comment[EAExperimentType]	differential
-SDRF File	HCAD-8.sdrf.txt
+SDRF File	E-HCAD-8.sdrf.txt

@@ -2,7 +2,7 @@ MAGE-TAB Version	1.1
 Investigation Title	Dissecting the human liver cellular landscape by single cell RNA-seq reveals novel intrahepatic monocyte/ macrophage populations
 Comment[Submitted Name]	SingleCellLiverLandscape
 Experiment Description	The liver is the largest solid organ in the body and is critical for metabolic and immune functions. However, little is known about the cells that make up the human liver and its immune microenvironment. Here we report a map of the cellular landscape of the human liver using single-cell RNA sequencing. We provide the transcriptional profiles of 8444 parenchymal and non-parenchymal cells obtained from the fractionation of fresh hepatic tissue from five human livers. Using gene expression patterns, flow cytometry, and immunohistochemical examinations, we identify 20 discrete cell populations of hepatocytes, endothelial cells, cholangiocytes, hepatic stellate cells, B cells, conventional and non-conventional T cells, NK-like cells, and distinct intrahepatic monocyte/macrophage populations. Together, our study presents a comprehensive view of the human liver at single-cell resolution that outlines the characteristics of resident cells in the liver, and in particular provides a map of the human hepatic immune microenvironment.
-Public Release Date	<FILL THIS>
+Public Release Date	2019-09-20
 Person First Name	Sonya	Jeff	Gary	Ian	Xue-Zhong	Brendan	Agata	Blair	Justin	Nicholas	Juan	Ivan	Rahul	Michael	Lewis	Damra	Sai	Rebecca	Zigong	Elizabeth	Shinichiro	Mina	Michael	Jason	Markus	Anand	David	Paul	Gonzalo	Nazia	Neil	Oyedele	Gordon	William
 Person Last Name	MacParland	Liu	Bader	McGilvray	Ma	Innes	Bartczak	Gage	Manuel	Khuu	Echeverri	Linares	Gupta	Cheng	Liu	Camat	Chung	Seliga	Shao	Lee	Ogawa	Ogawa	Wilson	Fish	Selzner	Ghanekar	Grant	Greig	Sapisochin	Selzner	Winegarden	Adeyi	Keller	Sullivan
 Person Mid Initials	A	C	D	D		T	M	K						L	Y		W	K					D	E										G
@@ -17,13 +17,13 @@ Protocol Hardware					Illumina HiSeq 2500
 Term Source Name	EFO	ArrayExpress
 Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
-Experimental Factor Name	<FILL THIS>
-Experimental Factor Type	<FILL THIS>
-Comment[EAAdditionalAttributes]	<FILL THIS>
+Experimental Factor Name	individual
+Experimental Factor Type	individual
+Comment[EAAdditionalAttributes]	individual	sex	age	organism part	disease
 Comment[EACurator]	AD	JFG
 Comment[EAExpectedClusters]	
-Comment[ExpressionAtlasAccession]	HCAD-9
-Comment[HCALastUpdateDate]	<FILL THIS>
-Comment[SecondaryAccession]	None	
-Comment[EAExperimentType]	<FILL THIS>
-SDRF File	HCAD-9.sdrf.txt
+Comment[ExpressionAtlasAccession]	E-HCAD-9
+Comment[HCALastUpdateDate]	2019-09-20
+Comment[SecondaryAccession]	4d6f6c96-2a83-43d8-8fe1-0f53bffd4674	GSE115469
+Comment[EAExperimentType]	baseline
+SDRF File	E-HCAD-9.sdrf.txt

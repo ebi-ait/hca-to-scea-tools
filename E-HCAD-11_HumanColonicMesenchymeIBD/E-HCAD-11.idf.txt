@@ -17,13 +17,13 @@ Protocol Hardware							Illumina HiSeq 4000
 Term Source Name	EFO	ArrayExpress
 Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
-Experimental Factor Name	<FILL THIS>
-Experimental Factor Type	<FILL THIS>
-Comment[EAAdditionalAttributes]	<FILL THIS>
+Experimental Factor Name	individual	organism part	disease
+Experimental Factor Type	individual	organism part	disease
+Comment[EAAdditionalAttributes]	individual	sex	age	organism part	cell type	cell type marker	disease
 Comment[EACurator]	AD	JFG
 Comment[EAExpectedClusters]	
 Comment[ExpressionAtlasAccession]	E-HCAD-11
 Comment[HCALastUpdateDate]	2019-10-04
 Comment[SecondaryAccession]	f8aa201c-4ff1-45a4-890e-840d63459ca2	GSE95435	GSE95446	GSE95450	GSE114374
-Comment[EAExperimentType]	<FILL THIS>
+Comment[EAExperimentType]	differential
 SDRF File	E-HCAD-11.sdrf.txt
