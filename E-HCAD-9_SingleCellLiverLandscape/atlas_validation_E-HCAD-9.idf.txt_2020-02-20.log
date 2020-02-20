@@ -1,0 +1,4 @@
+2020-02-20 11:14:37,594 ATLAS INFO: Validating ./E-HCAD-9_SingleCellLiverLandscape/E-HCAD-9.idf.txt and associated SDRF file
+2020-02-20 11:14:37,595 ATLAS INFO: Setting submission type to "singlecell"
+2020-02-20 11:14:38,270 ATLAS INFO: Checking FASTQ URIs. This may take a while... (Skip this check with -x option)
+2020-02-20 11:14:38,275 ATLAS INFO: Validation was successful! 🍰

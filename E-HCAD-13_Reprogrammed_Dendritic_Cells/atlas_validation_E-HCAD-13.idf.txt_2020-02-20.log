@@ -1,0 +1,4 @@
+2020-02-20 11:18:30,732 ATLAS INFO: Validating ./E-HCAD-13_Reprogrammed_Dendritic_Cells/E-HCAD-13.idf.txt and associated SDRF file
+2020-02-20 11:18:30,733 ATLAS INFO: Setting submission type to "singlecell"
+2020-02-20 11:18:31,260 ATLAS INFO: Checking FASTQ URIs. This may take a while... (Skip this check with -x option)
+2020-02-20 11:18:31,265 ATLAS INFO: Validation was successful! 🍰
