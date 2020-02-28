@@ -1,0 +1,60 @@
+* {
+    font-family: Noto Sans;
+}
+
+body {
+    margin: 0px;
+}
+
+h1 {
+    color: $primary;
+}
+
+
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.inline {
+    display: inline;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.drag__over {
+    box-shadow: 0 0 4px 2px $primary;
+}
+
+.text-linethrough {
+    text-decoration: line-through;
+}
+
+.text-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rounded {
+    border-radius: 5px;
+}
+
+.fix-textarea {
+    resize: none;
+    overflow: auto;
+}
+
+.border-none {
+    border: none;
+}
+
+.items-center {
+    align-items: center;
+}

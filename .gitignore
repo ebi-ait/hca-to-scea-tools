@@ -12,3 +12,12 @@ venv
 # ides
 .vscode
 
+# converted spreadsheets
+hca2scea-backend/spreadsheets/
+
+# frontend cache
+**/.cache
+
+# dists
+**/dist
+**/public

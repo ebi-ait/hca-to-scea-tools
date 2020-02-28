@@ -1,0 +1,61 @@
+@mixin gen-modifiers($values, $attributelist, $valuepre: '', $valueafter: '') {
+    @each $name, $value in $values {
+        &-#{$name} {
+            @each $attribute in $attributelist {
+                #{$attribute}: #{$valuepre}$value#{$valueafter};
+            }
+        }
+    }
+}
+
+.fg {
+    @include gen-modifiers($colors, 'color');
+  }
+
+.bg {
+    @include gen-modifiers($colors, 'background-color');
+}
+
+.border {
+    @include gen-modifiers($colors, 'border', '1px solid');
+}
+
+.m {
+    @include gen-modifiers($sizes, 'margin',);
+}
+
+.mx {
+    @include gen-modifiers($sizes, ('margin-left', 'margin-right'));
+}
+
+.my {
+    @include gen-modifiers($sizes, ('margin-top', 'margin-bottom'));
+}
+
+.mb {
+    @include gen-modifiers($sizes, 'margin-bottom');
+}
+
+.p {
+    @include gen-modifiers($sizes, 'padding',);
+}
+
+.px {
+    @include gen-modifiers($sizes, ('padding-left', 'padding-right'));
+}
+
+.py {
+    @include gen-modifiers($sizes, ('padding-top', 'padding-bottom'));
+}
+
+.text {
+    @include gen-modifiers($aligns, 'text-align');
+}
+
+.w {
+    @include gen-modifiers($percents, 'width');
+}
+
+.h {
+    @include gen-modifiers($percents, 'height');
+}

@@ -1,0 +1,26 @@
+.list-container {
+    width: 100%;
+    max-width: 1024px;
+    display: flex;
+    flex-direction: column;
+
+    .list-container__title {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .list-container__grid {
+        grid-template-columns: repeat(3, minmax(100px, 1fr)); //repeat(3, 1fr);
+        display: grid;
+        grid-gap: 0.6rem;
+    }
+
+    .container > :nth-child(2) {
+        max-width: 30%;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+    }
+}

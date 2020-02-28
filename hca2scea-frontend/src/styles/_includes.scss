@@ -1,0 +1,46 @@
+$success: #0c8b2a;
+$danger: #b31e2d;
+$warning: #e4911c;
+$info: #17a2b8;
+$dark: #414141;
+$mid: #ececec;
+$light:#f5f7f8;
+$white: #fff;
+
+
+$primary: #1c7cc7;
+$secondary: #01579b;
+
+
+$colors: (
+    success: $success,
+    danger: $danger,
+    warning: $warning,
+    info: $info,
+    dark: $dark,
+    mid: $mid,
+    light: $light,
+);
+
+$sizes: (
+    none: 0rem,
+    xs: .33rem,
+    sm: .5rem,
+    md: 1rem,
+    lg: 2rem,
+    xl: 2.5rem,
+);
+
+$aligns: (
+    left: left,
+    center: center,
+    right: right,
+);
+
+$percents: (
+    25: 25%,
+    50: 50%,
+    75: 75%,
+    90: 90%,
+    100: 100%,
+);
