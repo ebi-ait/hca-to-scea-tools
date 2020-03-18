@@ -2,7 +2,7 @@
 
 npm install
 
-virtualenv venv --python=/usr/bin/python3.7
+virtualenv venv
 source ./venv/bin/activate
 
 pip install -r requirements.txt
