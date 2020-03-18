@@ -9,9 +9,14 @@ convertToSnakecase = (label) => label.replace(/(\s-\s)|\s/g, '_').toLowerCase();
 function convertSpreadsheet(csvPath, info) {
   console.log('converting HCA spreadsheet from', csvPath);
 
-  return execFile('./hca-to-scea.sh', [csvPath], (err, stdout, stderr) => { console.log(stdout, stderr);});
+  return execFile('./hca-to-scea.sh', [csvPath, 'protocolmap'], (err, stdout, stderr) => { console.log(stdout, stderr);});
 }
 
+function createMagetab(csvPath, info) {
+  console.log('creating magetab');
+
+  return execFile('./hca-to-scea.sh', [csvPath, 'magetab'], (err, stdout, stderr) => { console.log(stdout, stderr);});
+}
 
 function extractCSV(spreadsheetFile) {
   console.log('extracting CSV sheets from', spreadsheetFile.originalname);
@@ -31,12 +36,30 @@ function extractCSV(spreadsheetFile) {
 
 
 function saveInfo(infoPath, info) {
-  fs.writeFileSync(`${infoPath}/info.json`, JSON.stringify(info, null, 2));
+  let projectDetails = {};
+
+  try {
+    projectDetails = JSON.parse(fs.readFileSync(`${infoPath}/project_details.json`));
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err;
+    }
+  }
+
+  console.log('projectDetails', projectDetails);
+  const newProjectDetails = {
+    ...projectDetails,
+    ...info,
+  };
+  console.log('newProjectDetails', newProjectDetails);
+
+  fs.writeFileSync(`${infoPath}/project_details.json`, JSON.stringify(newProjectDetails, null, 2));
 }
 
 
 module.exports = {
   convertSpreadsheet,
+  createMagetab,
   extractCSV,
   saveInfo,
 };

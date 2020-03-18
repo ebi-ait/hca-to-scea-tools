@@ -13,11 +13,13 @@ class ProtocolMatcher extends React.Component {
     };
   }
 
+  changeProtocolHandler = (protocolPool, hcaId, newDescription) => {
+    const { protocolPools } = this.state;
 
-  changeProtocolDescriptionHandler = (protocolPool, hcaId, newDescription) => {
-    const newProtocolPools = { ...this.state.protocolPools };
-    const protocolToChange = newProtocolPools[this.props.protocolType][protocolPool].findIndex(protocol => protocol.hcaId === hcaId);
-    newProtocolPools[protocolToChange].description = newDescription;
+    const newProtocolPools = { ...protocolPools };
+    const protocolToChange = newProtocolPools[protocolPool].findIndex(protocol => protocol.hcaId === hcaId);
+
+    newProtocolPools[protocolPool][protocolToChange].description = newDescription;
 
     this.setState({ protocolPools: newProtocolPools });
   };
@@ -28,6 +30,12 @@ class ProtocolMatcher extends React.Component {
       props: { poolIdUpdater },
       state: { protocolPools },
     } = this;
+
+    console.log('protocolPools', protocolPools);
+    if (!protocolPools[originatingPoolId]) {
+      console.log('Cannot move protocols between types!');
+      return;
+    }
 
     // Move protocol from origin poolId to destination poolId, updating its poolId field.
     const protocolToMove = protocolPools[originatingPoolId].find(protocol => protocol.hcaId === hcaId);
@@ -44,7 +52,7 @@ class ProtocolMatcher extends React.Component {
 
   render() {
     const {
-      changeProtocolDescriptionHandler,
+      changeProtocolHandler,
       moveProtocolHandler,
       state: { protocolPoolList, protocolPools },
       props: { protocolType, newPoolIdMap }
@@ -61,7 +69,7 @@ class ProtocolMatcher extends React.Component {
               newPoolId={newPoolIdMap[poolId]}
               protocols={protocolPools[poolId]}
               moveProtocolHandler={moveProtocolHandler}
-              changeProtocolDescriptionHandler={changeProtocolDescriptionHandler}
+              changeProtocolHandler={changeProtocolHandler}
             />
           )}
         </div>

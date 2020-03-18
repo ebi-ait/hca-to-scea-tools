@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
@@ -10,6 +11,10 @@ const spreadsheetTools = require('./spreadsheetTools');
 const app = express();
 const spreadsheetRootPath = 'spreadsheets';
 app.use(cors());
+app.use(bodyParser.json());
+
+let workingDir = undefined;
+let info = {};
 
 
 // Multer instance.
@@ -39,19 +44,42 @@ app.post('/convertxlsx', async (req, res) => {
       return res.status(500).json(err);
     }
 
-    const info = JSON.parse(req.body.info);
+    info = JSON.parse(req.body.info);
+    workingDir = req.file.destination;
 
     spreadsheetTools.extractCSV(req.file);
     console.log('CSV Extracted');
-    spreadsheetTools.saveInfo(req.file.destination, info);
+    spreadsheetTools.saveInfo(workingDir, info);
     console.log('Info JSON saved');
-    converterChildProcess = spreadsheetTools.convertSpreadsheet(req.file.destination, info);
+    converterChildProcess = spreadsheetTools.convertSpreadsheet(workingDir, info);
 
     converterChildProcess.on('close', () => {
       console.log('Sheets converted');
 
-      const protocolMap = fs.readFileSync(`${req.file.destination}/protocol_map.json`);
-      return res.status(200).send(protocolMap);
+      const projectDetails = fs.readFileSync(`${workingDir}/project_details.json`);
+      return res.status(200).send(projectDetails);
+    });
+  });
+});
+
+// create magetab.
+app.post('/createmagetab', async (req, res) => {
+  upload(req, res, function (err) {
+    if (err) {
+      console.log('err', err);
+      return res.status(500).json(err);
+    }
+
+    info = {...info, ...req.body};
+
+    spreadsheetTools.saveInfo(workingDir, info);
+    console.log('Info JSON saved');
+    converterChildProcess = spreadsheetTools.createMagetab(workingDir, info);
+
+    converterChildProcess.on('close', () => {
+      console.log('Magetab created');
+
+      return res.status(200);
     });
   });
 });

@@ -52,7 +52,7 @@ class InputList extends React.Component {
       handleChangeInput,
       handleClickAddInput,
       handleRemoveInput,
-      props: { type },
+      props: { type, processed },
       state: { listItems },
     } = this;
 
@@ -61,6 +61,7 @@ class InputList extends React.Component {
         <input
           type={type}
           value={listItems[0]}
+          disabled={processed}
           onChange={(val) => handleChangeInput(0, val)}
         />
 
@@ -70,10 +71,12 @@ class InputList extends React.Component {
               key={`input-${index}`}
               type={type}
               value={listItems[index + 1]}
+              disabled={processed}
               onChange={(e) => handleChangeInput(index + 1, e)}
             />
             <button
               onClick={() => handleRemoveInput(index + 1)}
+              disabled={processed}
               key={`remove-${index}`}
             >
               -
@@ -84,6 +87,7 @@ class InputList extends React.Component {
         <div>
           <button
             onClick={handleClickAddInput}
+            disabled={processed}
           >
             +
           </button>

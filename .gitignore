@@ -21,3 +21,6 @@ hca2scea-backend/spreadsheets/
 # dists
 **/dist
 **/public
+
+# python
+**/__pycache__

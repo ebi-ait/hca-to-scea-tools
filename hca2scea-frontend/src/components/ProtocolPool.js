@@ -45,10 +45,10 @@ class ProtocolPool extends React.Component {
     this.setState({ dragOver: false });
   };
 
-  handleChangeProtocolDescription = (e) => {
+  handleChangeProtocolDescription = e => {
     const { poolId, protocols } = this.props;
 
-    this.props.changeProtocolDescriptionHandler(poolId, protocols[0].hcaId, e.target.value);
+    this.props.changeProtocolHandler(poolId, protocols[0].hcaId, e.target.value);
   };
 
 
@@ -66,7 +66,7 @@ class ProtocolPool extends React.Component {
         onDragLeave={this.handleDragExit}
         onDrop={this.handleDrop}
         onDragEnd={this.handleDragExit}
-        className={`${dragOver ? 'drag__over bg-mid' : 'bg-light'} text-center rounded border-dark m-md p-md`}
+        className={`${dragOver ? 'drag__over bg-mid' : 'bg-light'} text-center height-min-content rounded border-dark m-md p-md`}
       >
         <h4 className="text-center my-none py-none mb-xs rounded bg-mid">
           {
@@ -95,14 +95,17 @@ class ProtocolPool extends React.Component {
         </div>
         {
           protocols.length ?
-            <textarea
-              className="fix-textarea border-dark w-90"
-              key={`protocol-description-${protocols[0].hcaId}`}
-              value={protocols[0].description}
-              rows="5"
-              onChange={handleChangeProtocolDescription}
-            />
-            :
+            <>
+              <h4 className="my-xs">Description</h4>
+              <textarea
+                className="fix-textarea border-dark w-90"
+                key={`protocol-description-${protocols[0].hcaId}`}
+                value={protocols[0].description}
+                rows="5"
+                onChange={handleChangeProtocolDescription}
+              />
+            </>
+          :
             <p>Empty</p>
         }
       </ul>

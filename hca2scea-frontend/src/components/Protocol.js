@@ -10,7 +10,7 @@ class Protocol extends React.Component {
   }
 
 
-  handleDragStart = (e) => {
+  handleDragStart = e => {
     e.dataTransfer.setData('hcaId', this.props.hcaId);
     e.dataTransfer.setData('originatingPoolId', this.props.poolId);
     console.log('dragstart', e.dataTransfer.getData('hcaId'));
