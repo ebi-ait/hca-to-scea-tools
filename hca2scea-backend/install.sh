@@ -9,5 +9,5 @@ pip install -r requirements.txt
 
 deactivate
 
-echo Ready. To start the tool, run \`npm start\ and point a browser to `
-https://www.udemy.com/course/react-2nd-edition/
+echo Ready. To start the tool, run \`npm start\` and point a browser to `127.0.0.1:5000`
+
