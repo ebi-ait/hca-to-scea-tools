@@ -24,3 +24,6 @@ hca2scea-backend/spreadsheets/
 
 # python
 **/__pycache__
+
+# Logs
+*.log
