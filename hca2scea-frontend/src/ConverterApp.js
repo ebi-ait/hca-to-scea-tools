@@ -253,7 +253,6 @@ class ConverterApp extends React.Component {
               </button>
               <p>or</p>
               <button
-                disabled={processed}
                 onClick={handleClickSkipFetchProjectDetails}
               >
                 Fill in project details manually

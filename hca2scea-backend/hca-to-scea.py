@@ -66,6 +66,7 @@ def prepare_protocol_map():
     def get_specimen(cell_line_id):
         return spreadsheets['cell_line'].loc[spreadsheets['cell_line']['cell_line.biomaterial_core.biomaterial_id'] == cell_line_id]['specimen_from_organism.biomaterial_core.biomaterial_id'].values[0]
 
+
     if 'cell_line' in spreadsheets.keys():
         big_table['specimen_from_organism.biomaterial_core.biomaterial_id'] = big_table['specimen_from_organism.biomaterial_core.biomaterial_id'].fillna(big_table.loc[big_table['specimen_from_organism.biomaterial_core.biomaterial_id'].isna()]['cell_line.biomaterial_core.biomaterial_id'].apply(get_specimen))
 
