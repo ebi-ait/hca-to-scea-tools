@@ -63,7 +63,7 @@ export const revertProtocolMap = function (protocolMap, protocolTypes, newPoolId
 };
 
 
-const createPoolId = (poolId, poolIdCounter) => `${poolId.match(/P-HCAD\d{2}/)[0]}-${poolIdCounter}`;
+const createPoolId = (poolId, poolIdCounter) => `${poolId.match(/P-HCAD\d*/)[0]}-${poolIdCounter}`;
 
 
 export const calculateNewPoolIds = function (protocolMap, protocolTypes) {
