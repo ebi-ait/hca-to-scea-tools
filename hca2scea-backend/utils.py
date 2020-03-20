@@ -59,7 +59,6 @@ def get_all_spreadsheets(work_dir):
 
     for name, file_name in spreadsheets.items():
         newSheet = pd.read_csv(file_name, header=0, sep=";", skiprows=[0,1,2,4])
-        newSheet.fillna(value='', inplace=True)
         newSheet = newSheet.applymap(str)
         newSheet = newSheet.applymap(lambda x: x.strip())
         spreadsheets[name] = newSheet.loc[:, ~newSheet.columns.str.contains('^Unnamed')]
@@ -72,8 +71,10 @@ def get_all_spreadsheets(work_dir):
 # pipes `||`) to python lists.
 def splitlist(list_):
     split_data = []
+
     try:
-        split_data = list_.split('||')
+        if list_ != "nan":
+            split_data = list_.split('||')
     except:
         pass
 

@@ -93,6 +93,8 @@ class ConverterApp extends React.Component {
     this.setState({ errors });
 
     if (!errors.length) {
+      this.setState({ processed: true });
+
       const spreadsheetData = new FormData();
       spreadsheetData.append('file', spreadsheetFile);
       spreadsheetData.append('info', JSON.stringify({ accession, curators }));
@@ -120,7 +122,7 @@ class ConverterApp extends React.Component {
           .reduce((acc, protocolType) => [...acc, ...Object.keys(protocolMap[protocolType])], [])
           .reduce((acc, poolId) => ({...acc, [poolId]: poolId}), {});
 
-        this.setState({ configurableFields, protocolMap, protocolTypes, newPoolIdMap, processed: true });
+        this.setState({ configurableFields, protocolMap, protocolTypes, newPoolIdMap });
       });
     }
   };
@@ -243,7 +245,6 @@ class ConverterApp extends React.Component {
               <input
                 type="text"
                 source={projectUuid}
-                disabled={processed}
                 onChange={handleChangeProjectUuid}
               />
               <button

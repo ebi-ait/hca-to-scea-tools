@@ -9,6 +9,8 @@ import json
 import sys
 
 import pandas as pd
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 
 from utils import (
     protocol_type_map,
@@ -54,6 +56,7 @@ print(f"{len(spreadsheets)} spreadsheets loaded")
 #
 def prepare_protocol_map():
     big_table = None
+
 
     # Merge sequence files with cell suspensions.
     big_table = spreadsheets['cell_suspension'].merge(
@@ -166,6 +169,8 @@ def prepare_protocol_map():
 
     # Save protocol columns for later use when creating sdrf.
         project_details['protocol_columns'] = protocol_columns
+
+    # print(big_table[[x for x in big_table.columns if 'protocol_id' in x]])
 
     # Saving the Big Table.
     big_table.to_csv(f"{work_dir}/big_table.csv", index=False, sep=";")
@@ -437,7 +442,7 @@ SDRF File\t{sdrf_file_name}
     # In column Comment[input molecule], apply input_molecule_map.
     # In column Comment[LIBRARY_STRAND] add " strand" to the contents.
     library_constuction_map = {'': "", '10X 3\' v2 sequencing': "10xV2"}
-    input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA"}
+    input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
 
     sdrf_3['Comment[library construction]'] = sdrf_3['Comment[library construction]'].apply(lambda x: library_constuction_map[x])
     sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
