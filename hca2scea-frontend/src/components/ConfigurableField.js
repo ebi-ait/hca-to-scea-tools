@@ -6,7 +6,7 @@ const ConfigurableField = (props) => {
 
   return (
     <div>
-      {props.type && props.type === 'dropdown' || props.type === 'column' &&
+      {props.type && (props.type === 'dropdown' || props.type === 'column') &&
         <>
           <label htmlFor={fieldName}>{props.name}</label>
           <select

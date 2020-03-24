@@ -115,7 +115,6 @@ class ConverterApp extends React.Component {
       this.setState({ projectUuid }, () => {
         // Gets project details from ingest API.
         fetchProjectData();
-        console.log('this.state', this.state);
 
         // Creates a mapping of all poolIds to their newPoolId, which originally is the same poolId.
         const newPoolIdMap = protocolTypes

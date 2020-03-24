@@ -298,10 +298,10 @@ def create_magetab():
 
     idf_file_contents = f"""\
 MAGE-TAB Version\t1.1
-Investigation Title\t{g("project", "project.project_core.project_title")}
-Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")}
-Experiment Description\t{g("project", "project.project_core.project_description")}
-    Public Release Date\t{project_details['last_update_date']}
+Investigation Title\t{g("project", "project.project_core.project_title")[0]}
+Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
+Experiment Description\t{g("project", "project.project_core.project_description")[0]}
+Public Release Date\t{project_details['last_update_date'] or fill_this_label}
 Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
@@ -319,11 +319,11 @@ Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
 Experimental Factor Name\t{fill_this_label}
 Experimental Factor Type\t{fill_this_label}
 Comment[EAAdditionalAttributes]\t{fill_this_label}
-    Comment[EACurator]\t{tab.join(project_details['curators'])}
+Comment[EACurator]\t{tab.join(project_details['curators'])}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-    Comment[HCALastUpdateDate]\t{project_details['last_update_date']}
-    Comment[SecondaryAccession]\t{project_details['project_uuid']}\t{tab.join(project_details['geo_accessions'])}
+Comment[HCALastUpdateDate]\t{project_details['last_update_date'] or fill_this_label}
+Comment[SecondaryAccession]\t{project_details['project_uuid'] or fill_this_label}\t{tab.join(project_details['geo_accessions'])}
 Comment[EAExperimentType]\t{fill_this_label}
 SDRF File\t{sdrf_file_name}
 """
