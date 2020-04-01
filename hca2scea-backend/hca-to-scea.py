@@ -226,11 +226,11 @@ def prepare_protocol_map():
         {'name': "Material Type_2", 'source': "RNA"},
         {'name': "Comment[primer]", 'source': "oligo-DT"},
         {'name': "Comment[umi barcode read]", 'source': read_map[get_or_default('library_preparation_protocol.umi_barcode.barcode_read', "Read 1")]},
-        {'name': "Comment[umi barcode offset]", 'source': get_or_default('librbrary_preparation_protocol.umi_barcode.barcode_offset', "16")},
+        {'name': "Comment[umi barcode offset]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_offset', "16")},
         {'name': "Comment[umi barcode size]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_length', "10")},
-        {'name': "Comment[cell barcode read]", 'source': get_or_default('librrary_preparation_protocol.cell_barcode.barcode_read', "read1")},
-        {'name': "Comment[cell barcode offset]", 'source': get_or_default('libribrary_preparation_protocol.cell_barcode.barcode_offset', "0")},
-        {'name': "Comment[cell barcode size]", 'source': get_or_default('librrary_preparation_protocol.cell_barcode.barcode_length', "16")},
+        {'name': "Comment[cell barcode read]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_read', "read1")},
+        {'name': "Comment[cell barcode offset]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_offset', "0")},
+        {'name': "Comment[cell barcode size]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_length', "16")},
         {'name': "Comment[sample barcode read]", 'source': ""},
         {'name': "Comment[sample barcode offset]", 'source': "0"},
         {'name': "Comment[sample barcode size]", 'source': "8"},
@@ -407,7 +407,7 @@ SDRF File\t{sdrf_file_name}
     sdrf_1['Characteristics[organism status]'] = sdrf_1['Characteristics[organism status]'].apply(lambda x: 'alive' if x.lower() in ['yes', 'y'] else 'dead')
 
 
-    # Chunk 2: collection/dissociation/enrichment protocols
+    # Chunk 2: collection/dissociation/enrichment/library prep protocols
     def convert_term(term, name):
         return map_proto_to_id(term, protocol_map)
 
@@ -448,7 +448,7 @@ SDRF File\t{sdrf_file_name}
     sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
     sdrf_3['Comment[LIBRARY_STRAND]'] = sdrf_3['Comment[LIBRARY_STRAND]'] + " strand"
 
-    # Chunk 4: Library preparation / sequencing protocol ids.
+    # Chunk 4: sequencing protocol ids.
     protocols_for_sdrf_4 = ['sequencing_protocol']
 
     sdrf_4 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in cols]]
