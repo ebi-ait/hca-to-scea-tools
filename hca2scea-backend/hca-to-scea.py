@@ -141,6 +141,10 @@ def prepare_protocol_map():
 
         big_table_joined = big_table_joined2
 
+    print(big_table_joined.columns[big_table_joined.columns.duplicated()])
+
+    big_table_joined = big_table_joined[[x for x in big_table_joined.columns if x not in big_table_joined.columns[big_table_joined.columns.duplicated()]]]
+
     # Fix up and sort big table.
     big_table_joined.reset_index(inplace=True)
     big_table_joined = big_table_joined.rename(columns={'sequence_file.file_core.file_name': 'sequence_file.file_core.file_name_read1'})
