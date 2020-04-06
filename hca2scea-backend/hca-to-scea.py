@@ -445,7 +445,11 @@ SDRF File\t{sdrf_file_name}
     # In column Comment[library construction], apply library_constuction_map.
     # In column Comment[input molecule], apply input_molecule_map.
     # In column Comment[LIBRARY_STRAND] add " strand" to the contents.
-    library_constuction_map = {'': "", '10X 3\' v2 sequencing': "10xV2"}
+    library_constuction_map = {
+        '': "",
+        '10X 3\' v2 sequencing':"10xV2",
+        '10X v2 sequencing': '10xV2'
+    }
     input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
 
     sdrf_3['Comment[library construction]'] = sdrf_3['Comment[library construction]'].apply(lambda x: library_constuction_map[x])
