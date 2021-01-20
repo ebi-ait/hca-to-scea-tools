@@ -224,11 +224,12 @@ def prepare_protocol_map():
 
     project_details['configurable_fields'] = [
         {'name': "Source Name", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Comment[biomaterial name]", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Material Type_1", 'type': "dropdown", 'source': ["whole organism", "organism part", "cell"]},
+        {'name': "BioSD_SAMPLE", 'type': "column", 'source': biomaterial_id_columns},
+        {'name': "Material Type_1", 'type': "dropdown", 'source': "cell"},
         {'name': "Extract Name", 'type': "column", 'source': biomaterial_id_columns},
         {'name': "Material Type_2", 'source': "RNA"},
-        {'name': "Comment[primer]", 'source': "oligo-DT"},
+        {'name': "Comment[primer]", 'source': "oligo-dT"},
+        {'name': "Comment[end bias]", 'source': "3 prime tag"},
         {'name': "Comment[umi barcode read]", 'source': read_map[get_or_default('library_preparation_protocol.umi_barcode.barcode_read', "Read 1")]},
         {'name': "Comment[umi barcode offset]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_offset', "16")},
         {'name': "Comment[umi barcode size]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_length', "10")},
@@ -238,7 +239,7 @@ def prepare_protocol_map():
         {'name': "Comment[sample barcode read]", 'source': ""},
         {'name': "Comment[sample barcode offset]", 'source': "0"},
         {'name': "Comment[sample barcode size]", 'source': "8"},
-        {'name': "Comment[single cell isolation]", 'source': "magnetic affinity cell sorting"},
+        {'name': "Comment[single cell isolation]", 'source': ["fluorescence-activated cell sorting",""]},
         {'name': "Comment[cDNA read]", 'source': "read2"},
         {'name': "Comment[cDNA read offset]", 'source': "0"},
         {'name': "Comment[cDNA read size]", 'source': "98"},
@@ -247,8 +248,11 @@ def prepare_protocol_map():
         {'name': "Comment[LIBRARY_STRATEGY]", 'source': "RNA-Seq"},
         {'name': "Comment[LIBRARY_SELECTION]", 'source': "cDNA"},
         {'name': "Technology Type", 'source': "sequencing assay"},
+        {'name': "Assay Name", 'type': "column", 'source': biomaterial_id_columns},
         {'name': "Scan Name", 'type': "column", 'source': biomaterial_id_columns},
         {'name': "Comment[RUN]", 'type': "column", 'source': biomaterial_id_columns},
+        {'name': "Comment[ENA_EXPERIMENT]", 'type': "column", 'source': biomaterial_id_columns}
+        {'name': "Comment[ENA_RUN]", 'type': "column", 'source': biomaterial_id_columns}
     ]
 
     # Save file
@@ -297,7 +301,7 @@ def create_magetab():
     for (i, elem) in enumerate(person_roles_submitter):
         person_roles[i] = person_roles[i].lower()
         if elem == "yes":
-            person_roles[i] += ";submitter"
+            person_roles[i] == "submitter"
 
 
     idf_file_contents = f"""\
@@ -322,7 +326,7 @@ Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayex
 Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
 Experimental Factor Name\t{fill_this_label}
 Experimental Factor Type\t{fill_this_label}
-Comment[EAAdditionalAttributes]\t{fill_this_label}
+Comment[EAAdditionalAttributes]\t{''}
 Comment[EACurator]\t{tab.join(project_details['curators'])}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
