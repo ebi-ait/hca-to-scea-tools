@@ -14,8 +14,6 @@ def get_tracker_google_sheet() -> pd.DataFrame:
     tracking_sheet = pd.DataFrame(tracking_sheet[1:], columns=tracking_sheet[0])
     return tracking_sheet
 
-get_tracker_google_sheet()
-
 def get_unique_accessions(accessions: []) -> []:
     '''
     Get the list of unique project accessions from the google tracker sheet. This includes multiple accession types,
