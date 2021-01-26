@@ -450,22 +450,17 @@ SDRF File\t{sdrf_file_name}
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
     xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
-    print("Extracting CSV...")
+    print("Converting sheets in excel file to dataframes...")
 
     d = {}
     for sheet in xlsx.sheet_names:
         path = Path(work_dir)
         path.mkdir(parents=True, exist_ok=True)
         filename = f"{convert_to_snakecase(sheet)}"
-        # df = pd.read_excel(excel_file, sheet_name=sheet).replace('', np.nan).dropna(how="all")
-        # todo: we could just populate a dictionary here, instead of using utils.get_all_spreadsheets()
-        #  by using something like
         df = pd.read_excel(excel_file, sheet_name=sheet, header=0, skiprows=[0,1,2,4]).replace('', np.nan).dropna(how="all")
         d[filename] = df
-        # and in that case, would we even need to save these csvs to disk? we could just use the dataframes in memory to create the big table
-        df.to_csv(f"{path}/{filename}.csv", encoding='utf-8', index=False, sep=";")
 
-    print(f"{len(xlsx.sheet_names)} CSVs extracted to directory {path}")
+    print(f"{len(xlsx.sheet_names)} sheets converted to dataframes")
 
     return d
 
@@ -498,7 +493,6 @@ def main():
 
     project_info = {"accession": args.accessionnumber, "curators": args.curators}
     spreadsheets = extract_csv_from_spreadsheet(work_dir, args.data)
-    # spreadsheets = get_all_spreadsheets(work_dir)
     project_details = prepare_protocol_map(work_dir, spreadsheets, project_info)
     # Save file
     with open(f"{work_dir}/project_details.json", "w") as project_details_file:
