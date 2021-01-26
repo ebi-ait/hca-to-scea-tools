@@ -257,7 +257,7 @@ def create_magetab(work_dir, spreadsheets, project_details):
         for (i, elem) in enumerate(person_roles_submitter):
             person_roles[i] = person_roles[i].lower()
             if elem == "yes":
-                person_roles[i] += ";submitter"
+                person_roles[i] == "submitter"
 
 
         idf_file_contents = f"""\
@@ -432,10 +432,9 @@ SDRF File\t{sdrf_file_name}
         # Put in configurable fields.
         for field in configurable_fields:
             if field.get('type', None) == "column":
-                sdrf[field['name']] = get_from_bigtable(field['value'])
+                sdrf[field['name']] = get_from_bigtable(field['name'])
             else:
-                # print(field['value'])
-                sdrf[field['name']] = field['value']
+                sdrf[field['name']] = field['name']
 
         # Fix column names.
         sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
@@ -498,9 +497,9 @@ def main():
     # Save file
     with open(f"{work_dir}/project_details.json", "w") as project_details_file:
         json.dump(project_details, project_details_file, indent=2)
-    # print(project_details)
 
-    fpath = input("Enter file path for updated project details file: ")
+    #fpath = input("Enter file path for updated project details file: ")
+    fpath = '/Users/ami/HCA/hca-to-scea-tools/hca2scea-backend/spreadsheets/DevelopingCardiacSystem_test/project_details.json'
 
     with open(fpath) as info_file:
         updated_project_details = json.load(info_file)

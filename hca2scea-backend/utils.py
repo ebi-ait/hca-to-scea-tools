@@ -124,6 +124,6 @@ def get_protocol_idf(protocol_map):
 def map_proto_to_id(protocol_name, protocol_map):
     for proto_type in protocol_map.values():
         for proto in proto_type.values():
-            if protocol_name in proto['hca_ids']:
+            if protocol_name in proto_type:
                 return proto.get('scea_id')
     return ''

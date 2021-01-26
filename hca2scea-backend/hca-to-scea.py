@@ -186,7 +186,9 @@ def prepare_protocol_map():
     # Then, protocol map is created: a dict containing types of protocols, and inside each, a map from HCA ids to SCEA ids.
     protocol_map = {x: {} for x in protocol_order}
 
+    print(protocol_order)
     for proto_type in protocol_order:
+        print(proto_type)
         for (ptype, proto_columns) in protocol_columns.items():
             if ptype == proto_type:
                 # print(f"mapping {ptype}: {proto_columns}")
@@ -197,6 +199,7 @@ def prepare_protocol_map():
 
                 # print(f"newprotocols: {new_protos}")
 
+                print(new_protos)
                 for proto in new_protos:
                     if proto is not None:
                         protocol_id_counter += 1
