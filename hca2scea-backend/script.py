@@ -458,6 +458,7 @@ def extract_csv_from_spreadsheet(work_dir, excel_file):
         path.mkdir(parents=True, exist_ok=True)
         filename = f"{convert_to_snakecase(sheet)}"
         df = pd.read_excel(excel_file, sheet_name=sheet, header=0, skiprows=[0,1,2,4]).replace('', np.nan).dropna(how="all")
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
         d[filename] = df
 
     print(f"{len(xlsx.sheet_names)} sheets converted to dataframes")
