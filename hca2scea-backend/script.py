@@ -5,9 +5,9 @@ import os
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
-# can probably use openpyxl directly
+import pandas as pd # can probably use openpyxl directly
 
+# todo: sort out and clean up these imports form utils
 from utils import  (
     protocol_type_map,
     protocol_order,
@@ -22,13 +22,7 @@ from utils import  (
 )
 
 
-def prepare_protocol_map(work_dir, spreadsheets, project_details):
-
-    project_details = copy.deepcopy(project_details)
-    accession_number = project_details["accession"]
-    protocol_accession = f"HCAD{accession_number}"
-    big_table = None
-
+def create_big_table(work_dir, spreadsheets):
     # Merge sequence files with cell suspensions.
     big_table = spreadsheets['cell_suspension'].merge(
         spreadsheets['sequence_file'],
@@ -38,11 +32,15 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details):
 
     # Take specimen ids from cell suspensions if there are any.
     def get_specimen(cell_line_id):
-        return spreadsheets['cell_line'].loc[spreadsheets['cell_line']['cell_line.biomaterial_core.biomaterial_id'] == cell_line_id]['specimen_from_organism.biomaterial_core.biomaterial_id'].values[0]
-
+        return spreadsheets['cell_line'].loc[
+            spreadsheets['cell_line']['cell_line.biomaterial_core.biomaterial_id'] == cell_line_id][
+            'specimen_from_organism.biomaterial_core.biomaterial_id'].values[0]
 
     if 'cell_line' in spreadsheets.keys():
-        big_table['specimen_from_organism.biomaterial_core.biomaterial_id'] = big_table['specimen_from_organism.biomaterial_core.biomaterial_id'].fillna(big_table.loc[big_table['specimen_from_organism.biomaterial_core.biomaterial_id'].isna()]['cell_line.biomaterial_core.biomaterial_id'].apply(get_specimen))
+        big_table['specimen_from_organism.biomaterial_core.biomaterial_id'] = big_table[
+            'specimen_from_organism.biomaterial_core.biomaterial_id'].fillna(
+            big_table.loc[big_table['specimen_from_organism.biomaterial_core.biomaterial_id'].isna()][
+                'cell_line.biomaterial_core.biomaterial_id'].apply(get_specimen))
 
     # Merge specimens into big table.
     big_table = spreadsheets['specimen_from_organism'].merge(
@@ -112,11 +110,13 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details):
 
         big_table_joined = big_table_joined2
 
-    big_table_joined = big_table_joined[[x for x in big_table_joined.columns if x not in big_table_joined.columns[big_table_joined.columns.duplicated()]]]
+    big_table_joined = big_table_joined[[x for x in big_table_joined.columns if
+                                         x not in big_table_joined.columns[big_table_joined.columns.duplicated()]]]
 
     # Fix up and sort big table.
     big_table_joined.reset_index(inplace=True)
-    big_table_joined = big_table_joined.rename(columns={'sequence_file.file_core.file_name': 'sequence_file.file_core.file_name_read1'})
+    big_table_joined = big_table_joined.rename(
+        columns={'sequence_file.file_core.file_name': 'sequence_file.file_core.file_name_read1'})
     big_table_joined_sorted = big_table_joined.reindex(sorted(big_table_joined.columns), axis=1)
     big_table_joined_sorted = big_table_joined_sorted.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
     big_table = big_table_joined_sorted
@@ -138,8 +138,20 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details):
 
             big_table = big_table.merge(proto_df, left_index=True, right_index=True)
 
+    # todo: do we even need to save this to file? can we not just work with it in memory?
     # Saving the Big Table.
     big_table.to_csv(f"{work_dir}/big_table.csv", index=False, sep=";")
+
+    return big_table
+
+
+def prepare_protocol_map(work_dir, spreadsheets, project_details):
+
+    project_details = copy.deepcopy(project_details)
+    accession_number = project_details["accession"]
+    protocol_accession = f"HCAD{accession_number}"
+
+    big_table = create_big_table(work_dir, spreadsheets)
 
     # Save protocol columns for later use when creating sdrf.
     project_details['protocol_columns'] = protocol_columns
@@ -227,31 +239,28 @@ def create_magetab(work_dir, spreadsheets, project_details):
     protocol_columns = project_details['protocol_columns']
     configurable_fields = project_details['configurable_fields']
 
+    def generate_idf_file():
+        protocol_fields = get_protocol_idf(protocol_map)
 
-    #
-    ## IDF Part.
-    #
-    protocol_fields = get_protocol_idf(protocol_map)
+        def j(sheet, col_name, func=lambda x: x):
+            return tab.join([func(p) for p in g(sheet, col_name)])
 
-    def j(sheet, col_name, func=lambda x: x):
-        return tab.join([func(p) for p in g(sheet, col_name)])
+        def g(sheet, col_name):
+            return list(spreadsheets[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
 
-    def g(sheet, col_name):
-        return list(spreadsheets[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+        def first_letter(str):
+            return str[0] if len(str) else ''
 
-    def first_letter(str):
-        return str[0] if len(str) else ''
+        person_roles = g("project_contributors", "project.contributors.project_role.text")
+        person_roles_submitter = g("project_contributors", "project.contributors.corresponding_contributor")
 
-    person_roles = g("project_contributors", "project.contributors.project_role.text")
-    person_roles_submitter = g("project_contributors", "project.contributors.corresponding_contributor")
-
-    for (i, elem) in enumerate(person_roles_submitter):
-        person_roles[i] = person_roles[i].lower()
-        if elem == "yes":
-            person_roles[i] += ";submitter"
+        for (i, elem) in enumerate(person_roles_submitter):
+            person_roles[i] = person_roles[i].lower()
+            if elem == "yes":
+                person_roles[i] += ";submitter"
 
 
-    idf_file_contents = f"""\
+        idf_file_contents = f"""\
 MAGE-TAB Version\t1.1
 Investigation Title\t{g("project", "project.project_core.project_title")[0]}
 Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
@@ -283,160 +292,162 @@ Comment[EAExperimentType]\t{fill_this_label}
 SDRF File\t{sdrf_file_name}
 """
 
-    print(f"saving {work_dir}/{idf_file_name}")
-    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
-        idf_file.write(idf_file_contents)
+        print(f"saving {work_dir}/{idf_file_name}")
+        with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+            idf_file.write(idf_file_contents)
+
+    def generate_sdrf_file():
+        #
+        ## SDRF Part.
+        #
+
+        big_table['UNDEFINED_FIELD'] = fill_this_label
+
+        convert_map_chunks = [{
+            'Source Name': "UNDEFINED_FIELD",
+            'Characteristics[organism]': "donor_organism.genus_species.ontology_label",
+            'Characteristics[individual]': "donor_organism.biomaterial_core.biomaterial_id",
+            'Characteristics[sex]': "donor_organism.sex",
+            'Characteristics[age]': "donor_organism.organism_age",
+            'Unit [time unit]': "donor_organism.organism_age_unit.text",
+            'Characteristics[developmental stage]': "donor_organism.development_stage.text",
+            'Characteristics[organism part]': "specimen_from_organism.organ.ontology_label",
+            'Characteristics[sampling site]': "specimen_from_organism.organ_parts.ontology_label",
+            'Characteristics[cell type]': "cell_suspension.selected_cell_types.ontology_label",
+            'Characteristics[disease]': "donor_organism.diseases.ontology_label",
+            'Characteristics[organism status]': "donor_organism.is_living",
+            'Characteristics[cause of death]': "donor_organism.death.cause_of_death",
+            'Characteristics[clinical history]': "donor_organism.medical_history.test_results",
+            'Description': "specimen_from_organism.biomaterial_core.biomaterial_description",
+            'Material Type_1': "UNDEFINED_FIELD",
+        }, {
+            'Protocol REF': "GENERIC_PROTOCOL_FIELD",
+        }, {
+            'Extract Name': "UNDEFINED_FIELD",
+            'Material Type_2': "UNDEFINED_FIELD",
+            'Comment[library construction]': "library_preparation_protocol.library_construction_method.ontology_label",
+            'Comment[input molecule]': "library_preparation_protocol.input_nucleic_acid_molecule.ontology_label",
+            'Comment[primer]': "UNDEFINED_FIELD",
+            'Comment[end bias]': "library_preparation_protocol.end_bias",
+            'Comment[umi barcode read]': "UNDEFINED_FIELD",
+            'Comment[umi barcode offset]': "UNDEFINED_FIELD",
+            'Comment[umi barcode size]': "UNDEFINED_FIELD",
+            'Comment[cell barcode read]': "UNDEFINED_FIELD",
+            'Comment[cell barcode offset]': "UNDEFINED_FIELD",
+            'Comment[cell barcode size]': "UNDEFINED_FIELD",
+            'Comment[sample barcode read]': "UNDEFINED_FIELD",
+            'Comment[sample barcode offset]': "UNDEFINED_FIELD",
+            'Comment[sample barcode size]': "UNDEFINED_FIELD",
+            'Comment[single cell isolation]': "UNDEFINED_FIELD",
+            'Comment[cDNA read]': "UNDEFINED_FIELD",
+            'Comment[cDNA read offset]': "UNDEFINED_FIELD",
+            'Comment[cDNA read size]': "UNDEFINED_FIELD",
+            'Comment[LIBRARY_STRAND]': "library_preparation_protocol.strand",
+            'Comment[LIBRARY_LAYOUT]': "UNDEFINED_FIELD",
+            'Comment[LIBRARY_SOURCE]': "UNDEFINED_FIELD",
+            'Comment[LIBRARY_STRATEGY]': "UNDEFINED_FIELD",
+            'Comment[LIBRARY_SELECTION]': "UNDEFINED_FIELD",
+        }, {
+            'Protocol REF': "GENERIC_PROTOCOL_FIELD",
+        }, {
+            'Assay Name': "specimen_from_organism.biomaterial_core.biomaterial_id",
+            'Technology Type': "UNDEFINED_FIELD",
+            'Scan Name': "UNDEFINED_FIELD",
+            'Comment[RUN]': "UNDEFINED_FIELD",
+            'Comment[read1 file]': "sequence_file.file_core.file_name_read1",
+            'Comment[read2 file]': "sequence_file.file_core.file_name_read2",
+            'Comment[index1 file]': "sequence_file.file_core.file_name_index",
+        }]
+
+        def get_from_bigtable(column):
+            return big_table[column] if column in big_table.columns else big_table['UNDEFINED_FIELD']
+
+        # Chunk 1: donor info.
+        sdrf_1 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[0].items()})
+        sdrf_1 = sdrf_1.fillna('')
+
+        # Fixes for chunk 1.
+        # Organism status: convert from 'is_alive' to 'status'.
+        sdrf_1['Characteristics[organism status]'] = sdrf_1['Characteristics[organism status]'].apply(lambda x: 'alive' if x.lower() in ['yes', 'y'] else 'dead')
 
 
-    #
-    ## SDRF Part.
-    #
+        # Chunk 2: collection/dissociation/enrichment/library prep protocols
+        def convert_term(term, name):
+            return map_proto_to_id(term, protocol_map)
 
-    big_table['UNDEFINED_FIELD'] = fill_this_label
+        def convert_row(row):
+            return row.apply(lambda x: convert_term(x, row.name))
 
-    convert_map_chunks = [{
-        'Source Name': "UNDEFINED_FIELD",
-        'Characteristics[organism]': "donor_organism.genus_species.ontology_label",
-        'Characteristics[individual]': "donor_organism.biomaterial_core.biomaterial_id",
-        'Characteristics[sex]': "donor_organism.sex",
-        'Characteristics[age]': "donor_organism.organism_age",
-        'Unit [time unit]': "donor_organism.organism_age_unit.text",
-        'Characteristics[developmental stage]': "donor_organism.development_stage.text",
-        'Characteristics[organism part]': "specimen_from_organism.organ.ontology_label",
-        'Characteristics[sampling site]': "specimen_from_organism.organ_parts.ontology_label",
-        'Characteristics[cell type]': "cell_suspension.selected_cell_types.ontology_label",
-        'Characteristics[disease]': "donor_organism.diseases.ontology_label",
-        'Characteristics[organism status]': "donor_organism.is_living",
-        'Characteristics[cause of death]': "donor_organism.death.cause_of_death",
-        'Characteristics[clinical history]': "donor_organism.medical_history.test_results",
-        'Description': "specimen_from_organism.biomaterial_core.biomaterial_description",
-        'Material Type_1': "UNDEFINED_FIELD",
-    }, {
-        'Protocol REF': "GENERIC_PROTOCOL_FIELD",
-    }, {
-        'Extract Name': "UNDEFINED_FIELD",
-        'Material Type_2': "UNDEFINED_FIELD",
-        'Comment[library construction]': "library_preparation_protocol.library_construction_method.ontology_label",
-        'Comment[input molecule]': "library_preparation_protocol.input_nucleic_acid_molecule.ontology_label",
-        'Comment[primer]': "UNDEFINED_FIELD",
-        'Comment[end bias]': "library_preparation_protocol.end_bias",
-        'Comment[umi barcode read]': "UNDEFINED_FIELD",
-        'Comment[umi barcode offset]': "UNDEFINED_FIELD",
-        'Comment[umi barcode size]': "UNDEFINED_FIELD",
-        'Comment[cell barcode read]': "UNDEFINED_FIELD",
-        'Comment[cell barcode offset]': "UNDEFINED_FIELD",
-        'Comment[cell barcode size]': "UNDEFINED_FIELD",
-        'Comment[sample barcode read]': "UNDEFINED_FIELD",
-        'Comment[sample barcode offset]': "UNDEFINED_FIELD",
-        'Comment[sample barcode size]': "UNDEFINED_FIELD",
-        'Comment[single cell isolation]': "UNDEFINED_FIELD",
-        'Comment[cDNA read]': "UNDEFINED_FIELD",
-        'Comment[cDNA read offset]': "UNDEFINED_FIELD",
-        'Comment[cDNA read size]': "UNDEFINED_FIELD",
-        'Comment[LIBRARY_STRAND]': "library_preparation_protocol.strand",
-        'Comment[LIBRARY_LAYOUT]': "UNDEFINED_FIELD",
-        'Comment[LIBRARY_SOURCE]': "UNDEFINED_FIELD",
-        'Comment[LIBRARY_STRATEGY]': "UNDEFINED_FIELD",
-        'Comment[LIBRARY_SELECTION]': "UNDEFINED_FIELD",
-    }, {
-        'Protocol REF': "GENERIC_PROTOCOL_FIELD",
-    }, {
-        'Assay Name': "specimen_from_organism.biomaterial_core.biomaterial_id",
-        'Technology Type': "UNDEFINED_FIELD",
-        'Scan Name': "UNDEFINED_FIELD",
-        'Comment[RUN]': "UNDEFINED_FIELD",
-        'Comment[read1 file]': "sequence_file.file_core.file_name_read1",
-        'Comment[read2 file]': "sequence_file.file_core.file_name_read2",
-        'Comment[index1 file]': "sequence_file.file_core.file_name_index",
-    }]
+        protocols_for_sdrf_2 = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol', 'library_preparation_protocol']
 
-    def get_from_bigtable(column):
-        return big_table[column] if column in big_table.columns else big_table['UNDEFINED_FIELD']
+        sdrf_2 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_2 for col in cols]]
 
-    # Chunk 1: donor info.
-    sdrf_1 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[0].items()})
-    sdrf_1 = sdrf_1.fillna('')
+        pd.set_option('display.max_columns', 0)
+        pd.set_option('display.expand_frame_repr', False)
 
-    # Fixes for chunk 1.
-    # Organism status: convert from 'is_alive' to 'status'.
-    sdrf_1['Characteristics[organism status]'] = sdrf_1['Characteristics[organism status]'].apply(lambda x: 'alive' if x.lower() in ['yes', 'y'] else 'dead')
+        sdrf_2 = sdrf_2.apply(convert_row)
+        sdrf_2_list = []
+
+        for (_, row) in sdrf_2.iterrows():
+            short_row = list(set([x for x in row.tolist() if x != '']))
+            short_row.sort()
+            sdrf_2_list.append(short_row)
+
+        sdrf_2 = pd.DataFrame.from_records(sdrf_2_list)
+        sdrf_2.columns = ["Protocol REF" for col in sdrf_2.columns]
+        sdrf_2.fillna(value='', inplace=True)
+
+        # Chunk 3: Library prep protocol info
+        sdrf_3 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[2].items()})
+        sdrf_3 = sdrf_3.fillna('')
+
+        # Fixes for chunk 3:
+        # In column Comment[library construction], apply library_constuction_map.
+        # In column Comment[input molecule], apply input_molecule_map.
+        # In column Comment[LIBRARY_STRAND] add " strand" to the contents.
+        library_constuction_map = {
+            '': "",
+            '10X 3\' v2 sequencing':"10xV2",
+            '10X v2 sequencing': '10xV2'
+        }
+        input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
+
+        sdrf_3['Comment[library construction]'] = sdrf_3['Comment[library construction]'].apply(lambda x: library_constuction_map[x])
+        sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
+        sdrf_3['Comment[LIBRARY_STRAND]'] = sdrf_3['Comment[LIBRARY_STRAND]'] + " strand"
+
+        # Chunk 4: sequencing protocol ids.
+        protocols_for_sdrf_4 = ['sequencing_protocol']
+
+        sdrf_4 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in cols]]
+        sdrf_4 = sdrf_4.apply(convert_row)
+        sdrf_4.columns = ["Protocol REF" for col in sdrf_4.columns]
+
+        # Chunk 5: Sequence files.
+        sdrf_5 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[4].items()})
+
+        # Merge all chunks.
+        sdrf = sdrf_1.join(sdrf_2).join(sdrf_3, rsuffix="_1").join(sdrf_4, rsuffix="_1").join(sdrf_5)
+
+        # Put in configurable fields.
+        for field in configurable_fields:
+            if field.get('type', None) == "column":
+                sdrf[field['name']] = get_from_bigtable(field['value'])
+            else:
+                # print(field['value'])
+                sdrf[field['name']] = field['value']
+
+        # Fix column names.
+        sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
+
+        # Save SDRF file..
+        print(f"saving {work_dir}/{sdrf_file_name}")
+        sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+
+    generate_idf_file()
+    generate_sdrf_file()
 
 
-    # Chunk 2: collection/dissociation/enrichment/library prep protocols
-    def convert_term(term, name):
-        return map_proto_to_id(term, protocol_map)
-
-    def convert_row(row):
-        return row.apply(lambda x: convert_term(x, row.name))
-
-    protocols_for_sdrf_2 = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol', 'library_preparation_protocol']
-
-    sdrf_2 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_2 for col in cols]]
-
-    pd.set_option('display.max_columns', 0)
-    pd.set_option('display.expand_frame_repr', False)
-
-    sdrf_2 = sdrf_2.apply(convert_row)
-    sdrf_2_list = []
-
-    for (_, row) in sdrf_2.iterrows():
-        short_row = list(set([x for x in row.tolist() if x != '']))
-        short_row.sort()
-        sdrf_2_list.append(short_row)
-
-    sdrf_2 = pd.DataFrame.from_records(sdrf_2_list)
-    sdrf_2.columns = ["Protocol REF" for col in sdrf_2.columns]
-    sdrf_2.fillna(value='', inplace=True)
-
-    # Chunk 3: Library prep protocol info
-    sdrf_3 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[2].items()})
-    sdrf_3 = sdrf_3.fillna('')
-
-    # Fixes for chunk 3:
-    # In column Comment[library construction], apply library_constuction_map.
-    # In column Comment[input molecule], apply input_molecule_map.
-    # In column Comment[LIBRARY_STRAND] add " strand" to the contents.
-    library_constuction_map = {
-        '': "",
-        '10X 3\' v2 sequencing':"10xV2",
-        '10X v2 sequencing': '10xV2'
-    }
-    input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
-
-    sdrf_3['Comment[library construction]'] = sdrf_3['Comment[library construction]'].apply(lambda x: library_constuction_map[x])
-    sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
-    sdrf_3['Comment[LIBRARY_STRAND]'] = sdrf_3['Comment[LIBRARY_STRAND]'] + " strand"
-
-    # Chunk 4: sequencing protocol ids.
-    protocols_for_sdrf_4 = ['sequencing_protocol']
-
-    sdrf_4 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in cols]]
-    sdrf_4 = sdrf_4.apply(convert_row)
-    sdrf_4.columns = ["Protocol REF" for col in sdrf_4.columns]
-
-    # Chunk 5: Sequence files.
-    sdrf_5 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[4].items()})
-
-    # Merge all chunks.
-    sdrf = sdrf_1.join(sdrf_2).join(sdrf_3, rsuffix="_1").join(sdrf_4, rsuffix="_1").join(sdrf_5)
-
-    # Put in configurable fields.
-    for field in configurable_fields:
-        if field.get('type', None) == "column":
-            sdrf[field['name']] = get_from_bigtable(field['value'])
-        else:
-            # print(field['value'])
-            sdrf[field['name']] = field['value']
-
-    # Fix column names.
-    sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
-
-    # Save SDRF file..
-    print(f"saving {work_dir}/{sdrf_file_name}")
-    sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
-
-# todo: convert csv names to snake case
-# todo: check and compare the generated csv files
 def extract_csv_from_spreadsheet(work_dir, excel_file):
     xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
     print("Extracting CSV...")
@@ -447,7 +458,11 @@ def extract_csv_from_spreadsheet(work_dir, excel_file):
         path.mkdir(parents=True, exist_ok=True)
         filename = f"{convert_to_snakecase(sheet)}"
         df = pd.read_excel(excel_file, sheet_name=sheet).replace('', np.nan).dropna(how="all")
+        # todo: we could just populate a dictionary here, instead of using utils.get_all_spreadsheets()
+        #  by using something like
+        # df = pd.read_excel(excel_file, sheet_name=sheet, header=0, skiprows=[0,1,2,4]).replace('', np.nan).dropna(how="all")
         # d[filename] = df
+        # and in that case, would we even need to save these csvs to disk? we could just use the dataframes in memory to create the big table
         df.to_csv(f"{path}/{filename}.csv", encoding='utf-8', index=False, sep=";")
 
     print(f"{len(xlsx.sheet_names)} CSVs extracted to directory {path}")
