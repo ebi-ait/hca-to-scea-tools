@@ -175,7 +175,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
                     if proto is not None:
                         protocol_id_counter += 1
                         new_proto_id = f"P-{protocol_accession}-{protocol_id_counter}"
-                        protocol_map[proto_type].update({proto: {'scea_id': new_proto_id}})
+                        protocol_map[proto_type].update({proto: {'scea_id': new_proto_id, 'hca_ids': [proto]}})
 
     # Using that function, we get the description for all protocol types, and the hardware for sequencing protocols into
     # the map.
@@ -189,7 +189,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     project_details['hca_update_date'] = args.hca_update_date
     project_details['ExperimentalFactorName'] = args.experimental_factors
     project_details['related_scea_accession'] = args.related_scea_accession
-    project_details['project_release_date'] = args.public_release_date
+    project_details['public_release_date'] = args.public_release_date
 
     accessions = utils.get_accessions_for_project(tracking_sheet, identifier=project_details['project_uuid'])
     if accessions:
@@ -203,7 +203,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
         project_details['secondary_accessions'] = []
 
     # Prepare configurable fields.
-    biomaterial_id_columns = [x for x in big_table.columns if x.endswith("biomaterial_id") or x.endswith("biosamples_accession")]
+    biomaterial_id_columns = [x for x in big_table.columns if x.endswith("biomaterial_id") or x.endswith("biosamples_accession") or x.endswith("biomaterial_id") or x.endswith("insdc_run_accessions")]
 
     read_map = {'': "", 'Read 1': "read1", 'Read 2': "read2"}
 
@@ -211,32 +211,36 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
         return str(big_table[source].values[0]) if source in big_table.columns else default
 
     project_details['configurable_fields'] = [
-        {'name': "Source Name", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Comment[biomaterial name]", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Material Type_1", 'source': "cell"},
-        {'name': "Extract Name", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Material Type_2", 'source': "RNA"},
-        {'name': "Comment[primer]", 'source': "oligo-dT"},
-        {'name': "Comment[umi barcode read]", 'source': read_map[get_or_default('library_preparation_protocol.umi_barcode.barcode_read', "Read 1")]},
-        {'name': "Comment[umi barcode offset]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_offset', "16")},
-        {'name': "Comment[umi barcode size]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_length', "10")},
-        {'name': "Comment[cell barcode read]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_read', "read1")},
-        {'name': "Comment[cell barcode offset]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_offset', "0")},
-        {'name': "Comment[cell barcode size]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_length', "16")},
-        {'name': "Comment[sample barcode read]", 'source': ""},
-        {'name': "Comment[sample barcode offset]", 'source': "0"},
-        {'name': "Comment[sample barcode size]", 'source': "8"},
-        {'name': "Comment[single cell isolation]", 'type': "column", "source": ["","magnetic affinity cell sorting","fluorescence-activated cell sorting"]},
-        {'name': "Comment[cDNA read]", 'source': "read2"},
-        {'name': "Comment[cDNA read offset]", 'source': "0"},
-        {'name': "Comment[cDNA read size]", 'source': "98"},
-        {'name': "Comment[LIBRARY_LAYOUT]", 'source': "PAIRED"},
-        {'name': "Comment[LIBRARY_SOURCE]", 'source': "TRANSCRIPTOMIC SINGLE CELL"},
-        {'name': "Comment[LIBRARY_STRATEGY]", 'source': "RNA-Seq"},
-        {'name': "Comment[LIBRARY_SELECTION]", 'source': "cDNA"},
-        {'name': "Technology Type", 'source': "sequencing assay"},
-        {'name': "Scan Name", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Comment[RUN]", 'type': "column", 'source': biomaterial_id_columns},
+        {'name': "Source Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
+        {'name': "Comment [BioSD_SAMPLE]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'specimen_from_organism.biomaterial_core.biomaterial_id'},
+        {'name': "Material Type_1", 'source': 'cell', 'value': 'cell'},
+        {'name': "Extract Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
+        {'name': "Material Type_2", 'source': 'RNA', 'value': 'RNA'},
+        {'name': "Comment[primer]", 'source': 'oligo-dT', 'value': 'oligo-dT'},
+        {'name': "Comment[umi barcode read]", 'source': read_map[get_or_default('library_preparation_protocol.umi_barcode.barcode_read', 'Read 1')], 'value': 'Read 1'},
+        {'name': "Comment[umi barcode offset]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_offset', '16'), 'value': '16'},
+        {'name': "Comment[umi barcode size]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_length', '10'), 'value': '10'},
+        {'name': "Comment[cell barcode read]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_read', 'read1'), 'value': 'read1'},
+        {'name': "Comment[cell barcode offset]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_offset', '0'), 'value': '0'},
+        {'name': "Comment[cell barcode size]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_length', '16'), 'value': '16'},
+        {'name': "Comment[sample barcode read]", 'source': '', 'value': ''},
+        {'name': "Comment[sample barcode offset]", 'source': '0', 'value': '0'},
+        {'name': "Comment[sample barcode size]", 'source': '8', 'value': '8'},
+        {'name': "Comment[single cell isolation]", 'type': 'column', 'source': ['','magnetic affinity cell sorting','fluorescence-activated cell sorting'], 'value': ''},
+        {'name': "Comment[cDNA read]", 'source': 'read2', 'value': 'read2'},
+        {'name': "Comment[cDNA read offset]", 'source': '0', 'value': '0'},
+        {'name': "Comment[cDNA read size]", 'source': '98', 'value': '98'},
+        {'name': "Comment[LIBRARY_LAYOUT]", 'source': 'PAIRED', 'value': 'PAIRED'},
+        {'name': "Comment[LIBRARY_SOURCE]", 'source': 'TRANSCRIPTOMIC SINGLE CELL','value': 'TRANSCRIPTOMIC SINGLE CELL'},
+        {'name': "Comment[LIBRARY_STRATEGY]", 'source': 'RNA-Seq', 'value': 'RNA-Seq'},
+        {'name': "Comment[LIBRARY_SELECTION]", 'source': 'cDNA', 'value': 'cDNA'},
+        {'name': "Assay Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
+        {'name': "Technology Type", 'source': 'sequencing assay', 'value': 'sequencing assay'},
+        {'name': "Scan Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
+        {'name': "Comment[ENA_EXPERIMENT]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_id'},
+        {'name': "Comment[ENA_RUN]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'sequence_file.insdc_run_accessions'},
+        {'name': "Comment[RUN]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
+
     ]
 
     return project_details
@@ -256,6 +260,7 @@ def create_magetab(work_dir, spreadsheets, project_details):
     protocol_map = project_details['protocol_map']
     protocol_columns = project_details['protocol_columns']
     configurable_fields = project_details['configurable_fields']
+
 
     def generate_idf_file():
         protocol_fields = get_protocol_idf(protocol_map)
@@ -607,17 +612,8 @@ def main():
     project_info = {"accession": accession_number, "curators": args.curators}
     spreadsheets = extract_csv_from_spreadsheet(work_dir, args.spreadsheet)
     project_details = prepare_protocol_map(work_dir, spreadsheets, project_info, tracking_sheet, args)
-    # Save file
-    with open(f"{work_dir}/project_details.json", "w") as project_details_file:
-        json.dump(project_details, project_details_file, indent=2)
 
-    #fpath = input("Enter file path for updated project details file: ")
-    fpath = f"{work_dir}/updated_project_details.json"
-
-    with open(fpath) as info_file:
-        updated_project_details = json.load(info_file)
-        create_magetab(work_dir, spreadsheets, updated_project_details)
-
+    create_magetab(work_dir, spreadsheets, project_details)
 
 if __name__ == '__main__':
     main()
