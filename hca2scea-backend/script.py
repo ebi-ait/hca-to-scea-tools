@@ -7,6 +7,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd # can probably use openpyxl directly
 
+import utils
+
 # todo: sort out and clean up these imports form utils
 from utils import  (
     protocol_type_map,
@@ -145,7 +147,7 @@ def create_big_table(work_dir, spreadsheets):
     return big_table
 
 
-def prepare_protocol_map(work_dir, spreadsheets, project_details):
+def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet, args):
 
     project_details = copy.deepcopy(project_details)
     accession_number = project_details["accession"]
@@ -182,7 +184,23 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details):
 
     # Prepare project details to dump into file
     project_details['protocol_map'] = protocol_map
-    project_details['project_uuid'] = spreadsheets['project'].get('project.uuid', [''])[0]
+    project_details['project_uuid'] = args.submission_uuid
+    project_details['EAExperimentType'] = args.experiment_type
+    project_details['hca_update_date'] = args.hca_update_date
+    project_details['ExperimentalFactorName'] = args.experimental_factors
+    project_details['related_scea_accession'] = args.related_scea_accession
+    project_details['project_release_date'] = args.public_release_date
+
+    accessions = utils.get_accessions_for_project(tracking_sheet, identifier=project_details['project_uuid'])
+    if accessions:
+        accessions_uniq = utils.get_unique_accessions([accessions])
+        [accessions_uniq.remove(accession) for accession in accessions_uniq if 'HCAD' in accession.upper()]
+        if accessions_uniq:
+            project_details['secondary_accessions'] = accessions_uniq
+        else:
+            project_details['secondary_accessions'] = []
+    else:
+        project_details['secondary_accessions'] = []
 
     # Prepare configurable fields.
     biomaterial_id_columns = [x for x in big_table.columns if x.endswith("biomaterial_id") or x.endswith("biosamples_accession")]
@@ -195,10 +213,10 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details):
     project_details['configurable_fields'] = [
         {'name': "Source Name", 'type': "column", 'source': biomaterial_id_columns},
         {'name': "Comment[biomaterial name]", 'type': "column", 'source': biomaterial_id_columns},
-        {'name': "Material Type_1", 'type': "dropdown", 'source': ["whole organism", "organism part", "cell"]},
+        {'name': "Material Type_1", 'source': "cell"},
         {'name': "Extract Name", 'type': "column", 'source': biomaterial_id_columns},
         {'name': "Material Type_2", 'source': "RNA"},
-        {'name': "Comment[primer]", 'source': "oligo-DT"},
+        {'name': "Comment[primer]", 'source': "oligo-dT"},
         {'name': "Comment[umi barcode read]", 'source': read_map[get_or_default('library_preparation_protocol.umi_barcode.barcode_read', "Read 1")]},
         {'name': "Comment[umi barcode offset]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_offset', "16")},
         {'name': "Comment[umi barcode size]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_length', "10")},
@@ -208,7 +226,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details):
         {'name': "Comment[sample barcode read]", 'source': ""},
         {'name': "Comment[sample barcode offset]", 'source': "0"},
         {'name': "Comment[sample barcode size]", 'source': "8"},
-        {'name': "Comment[single cell isolation]", 'source': "magnetic affinity cell sorting"},
+        {'name': "Comment[single cell isolation]", 'type': "column", "source": ["","magnetic affinity cell sorting","fluorescence-activated cell sorting"]},
         {'name': "Comment[cDNA read]", 'source': "read2"},
         {'name': "Comment[cDNA read offset]", 'source': "0"},
         {'name': "Comment[cDNA read size]", 'source': "98"},
@@ -257,15 +275,22 @@ def create_magetab(work_dir, spreadsheets, project_details):
         for (i, elem) in enumerate(person_roles_submitter):
             person_roles[i] = person_roles[i].lower()
             if elem == "yes":
-                person_roles[i] == "submitter"
+                person_roles[i] = "submitter"
+            elif elem == "no":
+                if "curator" in person_roles[i]:
+                    person_roles[i] = "data curator"
+                else:
+                    person_roles[i] = ""
 
+        if project_details.get('related_experiment'):
 
-        idf_file_contents = f"""\
+            idf_file_contents = f"""\
+        
 MAGE-TAB Version\t1.1
 Investigation Title\t{g("project", "project.project_core.project_title")[0]}
 Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
 Experiment Description\t{g("project", "project.project_core.project_description")[0]}
-Public Release Date\t{project_details.get('last_update_date') or fill_this_label}
+Public Release Date\t{project_details.get('public_release_date')}
 Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
@@ -280,15 +305,49 @@ Protocol Hardware\t{tab.join([field[3] for field in protocol_fields])}
 Term Source Name\tEFO\tArrayExpress
 Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
-Experimental Factor Name\t{fill_this_label}
-Experimental Factor Type\t{fill_this_label}
-Comment[EAAdditionalAttributes]\t{fill_this_label}
+Experimental Factor Name\t{tab.join(project_details.get('ExperimentalFactorName'))}
+Experimental Factor Type\t{tab.join(project_details.get('ExperimentalFactorName'))}
+Comment[EAAdditionalAttributes]\t{''}
 Comment[EACurator]\t{tab.join(project_details['curators'])}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[HCALastUpdateDate]\t{project_details.get('last_update_date') or fill_this_label}
-Comment[SecondaryAccession]\t{project_details['project_uuid'] or fill_this_label}\t{tab.join(project_details.get('geo_accessions') or [])}
-Comment[EAExperimentType]\t{fill_this_label}
+Comment[RelatedExperiment]\t{project_details.get('')}
+Comment[HCALastUpdateDate]\t{project_details.get('hca_update_date')}
+Comment[SecondaryAccession]\t{project_details['project_uuid']}\t{tab.join(project_details.get('secondary_accessions') or [])}
+Comment[EAExperimentType]\t{project_details.get('EAExperimentType')}
+SDRF File\t{sdrf_file_name}
+"""
+        else:
+            idf_file_contents = f"""\
+
+MAGE-TAB Version\t1.1
+Investigation Title\t{g("project", "project.project_core.project_title")[0]}
+Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
+Experiment Description\t{g("project", "project.project_core.project_description")[0]}
+Public Release Date\t{project_details.get('public_release_date')}
+Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
+Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
+Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
+Person Email\t{j("project_contributors", "project.contributors.email")}
+Person Affiliation\t{j("project_contributors", "project.contributors.institution")}
+Person Address\t{j("project_contributors", "project.contributors.address")}
+Person Roles\t{tab.join(person_roles)}
+Protocol Type\t{tab.join([field[0] for field in protocol_fields])}
+Protocol Name\t{tab.join([field[1] for field in protocol_fields])}
+Protocol Description\t{tab.join([field[2] for field in protocol_fields])}
+Protocol Hardware\t{tab.join([field[3] for field in protocol_fields])}
+Term Source Name\tEFO\tArrayExpress
+Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayexpress/
+Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
+Experimental Factor Name\t{tab.join(project_details['ExperimentalFactorName'])}
+Experimental Factor Type\t{tab.join(project_details['ExperimentalFactorName'])}
+Comment[EAAdditionalAttributes]
+Comment[EACurator]\t{tab.join(project_details['curators'])}
+Comment[EAExpectedClusters]\t
+Comment[ExpressionAtlasAccession]\t{accession}
+Comment[HCALastUpdateDate]\t{project_details.get('hca_update_date')}
+Comment[SecondaryAccession]\t{project_details['project_uuid']}\t{tab.join(project_details['secondary_accessions'] or [])}
+Comment[EAExperimentType]\t{project_details.get('EAExperimentType')}
 SDRF File\t{sdrf_file_name}
 """
 
@@ -432,9 +491,9 @@ SDRF File\t{sdrf_file_name}
         # Put in configurable fields.
         for field in configurable_fields:
             if field.get('type', None) == "column":
-                sdrf[field['name']] = get_from_bigtable(field['name'])
+                sdrf[field['name']] = get_from_bigtable(field['value'])
             else:
-                sdrf[field['name']] = field['name']
+                sdrf[field['name']] = field['value']
 
         # Fix column names.
         sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
@@ -468,38 +527,92 @@ def extract_csv_from_spreadsheet(work_dir, excel_file):
 def main():
     parser = argparse.ArgumentParser(description="run hca -> scea tool")
     parser.add_argument(
-        "-d",
-        "--data",
+        "-s",
+        "--spreadsheet",
         type=str,
         required=True,
-        help="path/name of spreadsheet"
+        help="Please provide a path to the HCA project spreadsheet."
+    )
+    parser.add_argument(
+        "-id",
+        "--submission_uuid",
+        type=str,
+        required=True,
+        help="Please provide an ingest project submission id."
     )
     parser.add_argument(
         "-ac",
-        "--accessionnumber",
+        "--accession_number",
         type=str,
-        required=True,
-        help="the accession number"
+        required=False,
+        help="Optionally add an E-HCAD accession number. If not provided, the script will automatically detect the next accession in order by querying the google tracker sheet"
     )
     parser.add_argument(
         "-c",
         "--curators",
         nargs='+',
+        required=True,
         help="space separated names of curators"
+    )
+    parser.add_argument(
+        "-t",
+        "--experiment_type",
+        type=str,
+        required=True,
+        choices=['baseline','differential'],
+        help="Please indicate whether this is a baseline or differential experimental design"
+    )
+    parser.add_argument(
+        "-f",
+        "--experimental_factors",
+        nargs='+',
+        required=True,
+        help="space separated list of experimental factors"
+    )
+    parser.add_argument(
+        "-pd",
+        "--public_release_date",
+        type=str,
+        required=True,
+        help="Please enter the public release date in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-hd",
+        "--hca_update_date",
+        type=str,
+        required=True,
+        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-r",
+        "--related_scea_accession",
+        nargs='+',
+        required=False,
+        help="space separated list of related scea accession(s)"
     )
 
     args = parser.parse_args()
-    work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.data))[0]}"
+    work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
 
-    project_info = {"accession": args.accessionnumber, "curators": args.curators}
-    spreadsheets = extract_csv_from_spreadsheet(work_dir, args.data)
-    project_details = prepare_protocol_map(work_dir, spreadsheets, project_info)
+    tracking_sheet = utils.get_tracker_google_sheet()
+
+    if args.accession_number:
+        accession_number = args.accession_number
+    else:
+        accessions = list(tracking_sheet['data_accession']) + list(tracking_sheet['scea_accession'])
+        accessions_uniq = utils.get_unique_accessions(accessions)
+        echad_accessions = utils.get_echad_accessions(accessions_uniq)
+        accession_number = utils.get_next_echad_accession(echad_accessions)
+
+    project_info = {"accession": accession_number, "curators": args.curators}
+    spreadsheets = extract_csv_from_spreadsheet(work_dir, args.spreadsheet)
+    project_details = prepare_protocol_map(work_dir, spreadsheets, project_info, tracking_sheet, args)
     # Save file
     with open(f"{work_dir}/project_details.json", "w") as project_details_file:
         json.dump(project_details, project_details_file, indent=2)
 
     #fpath = input("Enter file path for updated project details file: ")
-    fpath = '/Users/ami/HCA/hca-to-scea-tools/hca2scea-backend/spreadsheets/DevelopingCardiacSystem_test/project_details.json'
+    fpath = f"{work_dir}/updated_project_details.json"
 
     with open(fpath) as info_file:
         updated_project_details = json.load(info_file)
