@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Disclaimer for brave explorers:
 # This script is pulled directly from the Jupyter Notebook used to fix the data,
