@@ -1,0 +1,252 @@
+{
+  "accession": "2",
+  "curators": [
+    "AD",
+    "JFG"
+  ],
+  "protocol_columns": {
+    "collection_protocol": [
+      "collection_protocol.protocol_core.protocol_id"
+    ],
+    "library_preparation_protocol": [
+      "library_preparation_protocol.protocol_core.protocol_id"
+    ],
+    "sequencing_protocol": [
+      "sequencing_protocol.protocol_core.protocol_id"
+    ],
+    "dissociation_protocol": [
+      "dissociation_protocol.protocol_core.protocol_id_0"
+    ]
+  },
+  "protocol_map": {
+    "collection_protocol": {
+      "collection_protocol_1": {
+        "scea_id": "P-HCAD2-1",
+        "hca_ids": [
+          "collection_protocol_1"
+        ],
+        "description": "Wild-type, timed pregnant CD1 mice were acquired from Jackson Laboratory (Sacramento, CA, USA). Embryonic day 16.5 (E16.5), wild-type CD1 mice were obtained from pregnant mice. Embryonic mouse hearts were harvested, and 3 zones of microdissection were isolated based on anatomic landmarks and entailed: Zone I\u2014SAN region (superior vena cava/right atrial junction), Zone II\u2014AVN/His region (crux of heart), and Zone III\u2014BB/PF region (luminal side of ventricles). Specifically, Zone II was dissected as a large area at the crux of the heart from the base of the interatrial sep- tum (including the triangle of Koch) to below the plane of the mitral annulus, from the posterior-most aspect of the heart to the anterior-most. Tissues from a total of 6 different embryos were pooled for each zone of dissection. "
+      }
+    },
+    "dissociation_protocol": {
+      "dissociation_protocol_1": {
+        "scea_id": "P-HCAD2-2",
+        "hca_ids": [
+          "dissociation_protocol_1"
+        ],
+        "description": "Dissected tissues were dissociated into single cells in a microcentrifuge tube with 100ul of 0.25% trypsin and incubated at 37 degrees celcius for 10 min. Subsequently, 1.4 mL of collagenase A/B (10 mg/ml) and 20% FBS serum in HBSS was added to the micfocentrifuge tubes and tissue samples were returned to 37 degrees celcius in a waterbath for an additional 20 min. Cells were then spun down at 1000 RPM for 5 min, supernatant was removed and cells werw washed in 20% FBS in HBSS. After suspension, cells were resuspended to around 600 cell/ul with 0.04% FBS/HBSS solution for processing on the 10X platform."
+      }
+    },
+    "enrichment_protocol": {},
+    "library_preparation_protocol": {
+      "library_protocol_1": {
+        "scea_id": "P-HCAD2-3",
+        "hca_ids": [
+          "enrichment_protocol_1"
+        ],
+        "description": "Prepared cells were captured with 10X Chromium by following the Chromium single-cell 3' reagent kits v2 user guide. Briefly, single cells were partitioned into nanoliter-scale Gel Bread-In-Emulsions in the Chromium controller. After dissolution of the Gel beads in GEMS, the primers were released, and mRNA were reverse transcribed into a barcoded cDNA library. After further clean-up and amplification, the cDNA was enzymatically fragmented and 3' end fragments were selected for library preparation. After further end repair, A-tailing, adaptor ligation and PCR amplification, sample index, UMI sequences, barcode sequences and sequencing primer P5 and P7 on both ends were added to cDNA."
+      }
+    },
+    "sequencing_protocol": {
+      "sequencing_protocol_1": {
+        "scea_id": "P-HCAD2-4",
+        "hca_ids": [
+          "sequencing_protocol_1"
+        ],
+        "description": "Libraries were sequenced using the Illumina HiSeq 4000 instrument.",
+        "hardware": "Illumina HiSeq 4000"
+      }
+    }
+  },
+  "project_uuid": "c41dffbf-ad83-447c-a0e1-13e689d9b258",
+  "public_release_date": "2021-01-26",
+  "EAExperimentType": "differential",
+  "hca_update_date": "2021-01-26",
+  "ExperimentalFactorName": [
+    "age",
+    "individual"
+  ],
+  "related_scea_accession": [
+    "E-HCAD-3"
+  ],
+  "secondary_accessions": [
+    "c41dffbf-ad83-447c-a0e1-13e689d9b258"
+  ],
+  "configurable_fields": [
+    {
+      "name": "Source Name",
+      "type": "column",
+      "source": [
+        "cell_suspension.biomaterial_core.biomaterial_id",
+        "cell_suspension.biomaterial_core.biosamples_accession",
+        "donor_organism.biomaterial_core.biomaterial_id",
+        "donor_organism.biomaterial_core.biosamples_accession",
+        "specimen_from_organism.biomaterial_core.biomaterial_id",
+        "specimen_from_organism.biomaterial_core.biosamples_accession"
+      ],
+      "value": "cell_suspension.biomaterial_core.biomaterial_id"
+    },
+    {
+      "name": "Comment[biomaterial name]",
+      "type": "column",
+      "source": [
+        "cell_suspension.biomaterial_core.biomaterial_id",
+        "cell_suspension.biomaterial_core.biosamples_accession",
+        "donor_organism.biomaterial_core.biomaterial_id",
+        "donor_organism.biomaterial_core.biosamples_accession",
+        "specimen_from_organism.biomaterial_core.biomaterial_id",
+        "specimen_from_organism.biomaterial_core.biosamples_accession"
+      ],
+      "value": "cell_suspension.biomaterial_core.biomaterial_id"
+    },
+    {
+      "name": "Material Type_1",
+      "source": "cell",
+      "value": "cell"
+    },
+    {
+      "name": "Extract Name",
+      "type": "column",
+      "source": [
+        "cell_suspension.biomaterial_core.biomaterial_id",
+        "cell_suspension.biomaterial_core.biosamples_accession",
+        "donor_organism.biomaterial_core.biomaterial_id",
+        "donor_organism.biomaterial_core.biosamples_accession",
+        "specimen_from_organism.biomaterial_core.biomaterial_id",
+        "specimen_from_organism.biomaterial_core.biosamples_accession"
+      ],
+      "value": "cell_suspension.biomaterial_core.biomaterial_id"
+    },
+    {
+      "name": "Material Type_2",
+      "source": "RNA",
+      "value": "RNA"
+    },
+    {
+      "name": "Comment[primer]",
+      "source": "oligo-dT",
+      "value": "oligo-dT"
+    },
+    {
+      "name": "Comment[umi barcode read]",
+      "source": "read1",
+      "value": "read1"
+    },
+    {
+      "name": "Comment[umi barcode offset]",
+      "source": "16.0",
+      "value": "16.0"
+    },
+    {
+      "name": "Comment[umi barcode size]",
+      "source": "10.0",
+      "value": "10.0"
+    },
+    {
+      "name": "Comment[cell barcode read]",
+      "source": "Read 1",
+      "value": "Read 1"
+    },
+    {
+      "name": "Comment[cell barcode offset]",
+      "source": "0.0",
+      "value": "0.0"
+    },
+    {
+      "name": "Comment[cell barcode size]",
+      "source": "16.0",
+      "value": "16.0"
+    },
+    {
+      "name": "Comment[sample barcode read]",
+      "source": "",
+      "value": ""
+    },
+    {
+      "name": "Comment[sample barcode offset]",
+      "source": "0",
+      "value": "0"
+    },
+    {
+      "name": "Comment[sample barcode size]",
+      "source": "8",
+      "value": "8"
+    },
+    {
+      "name": "Comment[single cell isolation]",
+      "type": "column",
+      "source": [
+        "magnetic affinity cell sorting",
+        "fluorescence-activated cell sorting",
+        ""
+      ],
+      "value": ""
+    },
+    {
+      "name": "Comment[cDNA read]",
+      "source": "read2",
+      "value": "read2"
+    },
+    {
+      "name": "Comment[cDNA read offset]",
+      "source": "0",
+      "value": "0"
+    },
+    {
+      "name": "Comment[cDNA read size]",
+      "source": "98",
+      "value": "98"
+    },
+    {
+      "name": "Comment[LIBRARY_LAYOUT]",
+      "source": "PAIRED",
+      "value": "PAIRED"
+    },
+    {
+      "name": "Comment[LIBRARY_SOURCE]",
+      "source": "TRANSCRIPTOMIC SINGLE CELL",
+      "value": "TRANSCRIPTOMIC SINGLE CELL"
+    },
+    {
+      "name": "Comment[LIBRARY_STRATEGY]",
+      "source": "RNA-Seq",
+      "value": "RNA-Seq"
+    },
+    {
+      "name": "Comment[LIBRARY_SELECTION]",
+      "source": "cDNA",
+      "value": "cDNA"
+    },
+    {
+      "name": "Technology Type",
+      "source": "sequencing assay",
+      "value": "sequencing assay"
+    },
+    {
+      "name": "Scan Name",
+      "type": "column",
+      "source": [
+        "cell_suspension.biomaterial_core.biomaterial_id",
+        "cell_suspension.biomaterial_core.biosamples_accession",
+        "donor_organism.biomaterial_core.biomaterial_id",
+        "donor_organism.biomaterial_core.biosamples_accession",
+        "specimen_from_organism.biomaterial_core.biomaterial_id",
+        "specimen_from_organism.biomaterial_core.biosamples_accession"
+      ],
+      "value": "cell_suspension.biomaterial_core.biomaterial_id"
+    },
+    {
+      "name": "Comment[RUN]",
+      "type": "column",
+      "source": [
+        "cell_suspension.biomaterial_core.biomaterial_id",
+        "cell_suspension.biomaterial_core.biosamples_accession",
+        "donor_organism.biomaterial_core.biomaterial_id",
+        "donor_organism.biomaterial_core.biosamples_accession",
+        "specimen_from_organism.biomaterial_core.biomaterial_id",
+        "specimen_from_organism.biomaterial_core.biosamples_accession"
+      ],
+      "value": "cell_suspension.biomaterial_core.biomaterial_id"
+    }
+  ]
+}
