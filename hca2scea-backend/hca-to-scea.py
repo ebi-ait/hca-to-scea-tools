@@ -450,8 +450,14 @@ SDRF File\t{sdrf_file_name}
     # In column Comment[LIBRARY_STRAND] add " strand" to the contents.
     library_constuction_map = {
         '': "",
-        '10X 3\' v2 sequencing':"10xV2",
-        '10X v2 sequencing': '10xV2'
+        '10X 3\' v2 sequencing':'10xV2',
+        '10X v2 sequencing': '10xV2',
+	'10X 3\' v3 sequencing':'10xV3',
+	'10X v3 sequencing':'10xV3',
+        '10x 3\' v2 sequencing':'10xV2',
+        '10x v2 sequencing': '10xV2',
+        '10x 3\' v3 sequencing':'10xV3',
+        '10x v3 sequencing':'10xV3'
     }
     input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
 
