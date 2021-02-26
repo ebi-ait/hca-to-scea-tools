@@ -210,38 +210,10 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     def get_or_default(source, default):
         return str(big_table[source].values[0]) if source in big_table.columns else default
 
-    project_details['configurable_fields'] = [
-        {'name': "Source Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
-        {'name': "Comment [BioSD_SAMPLE]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'specimen_from_organism.biomaterial_core.biomaterial_id'},
-        {'name': "Material Type_1", 'source': 'cell', 'value': 'cell'},
-        {'name': "Extract Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
-        {'name': "Material Type_2", 'source': 'RNA', 'value': 'RNA'},
-        {'name': "Comment[primer]", 'source': 'oligo-dT', 'value': 'oligo-dT'},
-        {'name': "Comment[umi barcode read]", 'source': read_map[get_or_default('library_preparation_protocol.umi_barcode.barcode_read', 'Read 1')], 'value': 'Read 1'},
-        {'name': "Comment[umi barcode offset]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_offset', '16'), 'value': '16'},
-        {'name': "Comment[umi barcode size]", 'source': get_or_default('library_preparation_protocol.umi_barcode.barcode_length', '10'), 'value': '10'},
-        {'name': "Comment[cell barcode read]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_read', 'read1'), 'value': 'read1'},
-        {'name': "Comment[cell barcode offset]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_offset', '0'), 'value': '0'},
-        {'name': "Comment[cell barcode size]", 'source': get_or_default('library_preparation_protocol.cell_barcode.barcode_length', '16'), 'value': '16'},
-        {'name': "Comment[sample barcode read]", 'source': '', 'value': ''},
-        {'name': "Comment[sample barcode offset]", 'source': '0', 'value': '0'},
-        {'name': "Comment[sample barcode size]", 'source': '8', 'value': '8'},
-        {'name': "Comment[single cell isolation]", 'type': 'column', 'source': ['','magnetic affinity cell sorting','fluorescence-activated cell sorting'], 'value': ''},
-        {'name': "Comment[cDNA read]", 'source': 'read2', 'value': 'read2'},
-        {'name': "Comment[cDNA read offset]", 'source': '0', 'value': '0'},
-        {'name': "Comment[cDNA read size]", 'source': '98', 'value': '98'},
-        {'name': "Comment[LIBRARY_LAYOUT]", 'source': 'PAIRED', 'value': 'PAIRED'},
-        {'name': "Comment[LIBRARY_SOURCE]", 'source': 'TRANSCRIPTOMIC SINGLE CELL','value': 'TRANSCRIPTOMIC SINGLE CELL'},
-        {'name': "Comment[LIBRARY_STRATEGY]", 'source': 'RNA-Seq', 'value': 'RNA-Seq'},
-        {'name': "Comment[LIBRARY_SELECTION]", 'source': 'cDNA', 'value': 'cDNA'},
-        {'name': "Assay Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
-        {'name': "Technology Type", 'source': 'sequencing assay', 'value': 'sequencing assay'},
-        {'name': "Scan Name", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
-        {'name': "Comment[ENA_EXPERIMENT]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_id'},
-        {'name': "Comment[ENA_RUN]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'sequence_file.insdc_run_accessions'},
-        {'name': "Comment[RUN]", 'type': "column", 'source': biomaterial_id_columns, 'value': 'cell_suspension.biomaterial_core.biomaterial_name'},
+    with open(f"technology_jsons/{args.technology_type}.json") as json_file:
+        project_details['configurable_fields'] = json.load(json_file)
 
-    ]
+    project_details['technology_type'] = args.technology_type
 
     return project_details
 
@@ -260,6 +232,7 @@ def create_magetab(work_dir, spreadsheets, project_details):
     protocol_map = project_details['protocol_map']
     protocol_columns = project_details['protocol_columns']
     configurable_fields = project_details['configurable_fields']
+    technology_type = project_details['technology_type']
 
 
     def generate_idf_file():
@@ -360,12 +333,12 @@ SDRF File\t{sdrf_file_name}
         with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
             idf_file.write(idf_file_contents)
 
-    def generate_sdrf_file():
+    def generate_sdrf_file(technology_type):
         #
         ## SDRF Part.
         #
 
-        big_table['UNDEFINED_FIELD'] = fill_this_label
+        big_table['UNDEFINED_FIELD'] = ''
 
         convert_map_chunks = [{
             'Source Name': "UNDEFINED_FIELD",
@@ -389,7 +362,7 @@ SDRF File\t{sdrf_file_name}
         }, {
             'Extract Name': "UNDEFINED_FIELD",
             'Material Type_2': "UNDEFINED_FIELD",
-            'Comment[library construction]': "library_preparation_protocol.library_construction_method.ontology_label",
+            'Comment[library construction]': technology_type,
             'Comment[input molecule]': "library_preparation_protocol.input_nucleic_acid_molecule.ontology_label",
             'Comment[primer]': "UNDEFINED_FIELD",
             'Comment[end bias]': "library_preparation_protocol.end_bias",
@@ -434,7 +407,6 @@ SDRF File\t{sdrf_file_name}
         # Organism status: convert from 'is_alive' to 'status'.
         sdrf_1['Characteristics[organism status]'] = sdrf_1['Characteristics[organism status]'].apply(lambda x: 'alive' if x.lower() in ['yes', 'y'] else 'dead')
 
-
         # Chunk 2: collection/dissociation/enrichment/library prep protocols
         def convert_term(term, name):
             return map_proto_to_id(term, protocol_map)
@@ -466,19 +438,12 @@ SDRF File\t{sdrf_file_name}
         sdrf_3 = sdrf_3.fillna('')
 
         # Fixes for chunk 3:
-        # In column Comment[library construction], apply library_constuction_map.
         # In column Comment[input molecule], apply input_molecule_map.
-        # In column Comment[LIBRARY_STRAND] add " strand" to the contents.
-        library_constuction_map = {
-            '': "",
-            '10X 3\' v2 sequencing':"10xV2",
-            '10X v2 sequencing': '10xV2'
-        }
+
         input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
 
-        sdrf_3['Comment[library construction]'] = sdrf_3['Comment[library construction]'].apply(lambda x: library_constuction_map[x])
+        sdrf_3['Comment[library construction]'] = technology_type
         sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
-        sdrf_3['Comment[LIBRARY_STRAND]'] = sdrf_3['Comment[LIBRARY_STRAND]'] + " strand"
 
         # Chunk 4: sequencing protocol ids.
         protocols_for_sdrf_4 = ['sequencing_protocol']
@@ -508,7 +473,7 @@ SDRF File\t{sdrf_file_name}
         sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
     generate_idf_file()
-    generate_sdrf_file()
+    generate_sdrf_file(technology_type)
 
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
@@ -560,7 +525,15 @@ def main():
         help="space separated names of curators"
     )
     parser.add_argument(
-        "-t",
+        "-tt",
+        "--technology_type",
+        type=str,
+        required=True,
+        choices=['10Xv1_3','10Xv2_3','10Xv2_5','10Xv3_3','drop-seq','smart-seq'],
+        help="Please indicate which single-cell sequencing technology was used."
+    )
+    parser.add_argument(
+        "-et",
         "--experiment_type",
         type=str,
         required=True,
