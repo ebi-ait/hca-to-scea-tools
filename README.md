@@ -6,80 +6,75 @@ This repo contains various tools to help on the task of converting HCA spreadshe
 
 ### Installation
 
-Prerequisites: [npm](https://www.npmjs.com/), [pip](https://pypi.org/project/pip/) and the _pip_ package [virtualenv](https://virtualenv.pypa.io/en/latest/).
+No need to install! It is installed on EC2. If you're a new team member and you need access to EC2 or permissions to run the tool, please speak with Amnon, our technical coordinator, or another HCA developer.
 
-Once those are ready, to install the application run:
+## Check points before curation
+
+- Is this dataset valid in HCA ingest prod.? Ideally it will be, so that you can add the -id and -pd arguments (see below for arguments). If you want to curate before then, you can add a dummy value and modify the field in the output files later.
+
+- Does this dataset consist of multiple species? If yes, you need to run the tool separately for each species and treat them as separate projects with separate E-HCAD-ids. There is a specific field in the idf file which can indicate related E-HCAD ids.
+
+- Does this dataset consist of multiple technologies or 10X versions if 10X technology? If yes, you need to run the tool separately for each technology and/or version and treat them as separate projects with separate E-HCAD-ids. There is a specific field in the idf file which can indicate related E-HCAD ids.
+
+- Is the technology type valid for SCEA? Valid technology types are: 
+
+## Setting the environment on EC2
+
+Go to the hca-to-scea-tools directory and activate the environment.
+```
+cd /data/tools/hca-to-scea-tools/hca2scea-backend
+source venv/bin/activate
+```
+
+## Running the tool on EC2
 
 ```
-cd hca2scea-backend
-./install.sh
+python3 script.py -s [spreadsheet (xlsx)] -id [HCA project uuid] -c [curator initials] -tt [technology] -et [experiment type] -f [factor value] -pd [dataset publication date] -hd [hca last update date]
+```
+Example:
+```
+Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12
 ```
 
-## Execution
+Arguments:
 
-In the same hca2scea-backend directory, run:
-
-```
-npm start
-```
-
-And then, head to [http://127.0.0.1:5000]() on a browser.
-
-Once run, the application will save the `idf` and `sdrf` parts of the magetab, along with any intermediate files used in the process into the folder `./hca2scea-backend/spreadsheets/<spreadsheet_name>/`.
-
-
-## Column mapping
-
-This table shows the source of the columns generated in the MAGE-TAB file.
-
-| Column in MAGE-TAB SDRF file              | Source                   | Description                                                               | Default      |
+| Argument                                  | Argument name            | Description                                                               | Required?    |
 |-------------------------------------------|--------------------------|---------------------------------------------------------------------------|--------------|
-|`Source Name`                              | Selectable from          | Any column ending with `biomaterial_id` or `biosamples_accession`         |              |
-|`Characteristics[organism]`                | Column                   | `donor_organism.genus_species.ontology_label`                             |              |
-|`Characteristics[individual]`              | Column                   | `donor_organism.biomaterial_core.biomaterial_id`                          |              |
-|`Characteristics[sex]`                     | Column                   | `donor_organism.sex`                                                      |              |
-|`Characteristics[age]`                     | Column                   | `donor_organism.organism_age`                                             |              |
-|`Unit [time unit]`                         | Column                   | `donor_organism.organism_age_unit.text`                                   |              |
-|`Characteristics[developmental stage]`     | Column                   | `donor_organism.development_stage.text`                                   |              |
-|`Characteristics[organism part]`           | Column                   | `specimen_from_organism.organ.ontology_label`                             |              |
-|`Characteristics[sampling site]`           | Column                   | `specimen_from_organism.organ_parts.ontology_label`                       |              |
-|`Characteristics[cell type]`               | Column                   | `cell_suspension.selected_cell_types.ontology_label`                      |              |
-|`Characteristics[disease]`                 | Column                   | `donor_organism.diseases.ontology_label`                                  |              |
-|`Characteristics[organism status]`         | Column                   | `donor_organism.is_living`                                                |              |
-|`Characteristics[cause of death]`          | Column                   | `donor_organism.death.cause_of_death`                                     |              |
-|`Characteristics[clinical history]`        | Column                   | `donor_organism.medical_history.test_results`                             |              |
-|`Description`                              | Column                   | `specimen_from_organism.biomaterial_core.biomaterial_description`         |              |
-|`Material Type` (first instance)           | Fill cells with one of   | `whole organism`, `organism part`, `cell`                                 |              |
-|`Protocol REF` (first group of instances)  | Special protocol columns | Includes collection/dissociation/enrichment/library prep protocols        |              |
-|`Extract Name`                             | Selectable from          | Any column ending with `biomaterial_id` or `biosamples_accession`         |              |
-|`Material Type` (second instance)          | Fill cells with value    | `RNA`                                                                     |              |
-|`Comment[library construction]`            | Column                   | `library_preparation_protocol.library_construction_method.ontology_label` |              |
-|`Comment[input molecule]`                  | Column                   | `library_preparation_protocol.input_nucleic_acid_molecule.ontology_label` |              |
-|`Comment[primer]`                          | Fill cells with value    | `oligo-DT`                                                                |              |
-|`Comment[end bias]`                        | Column                   | `library_preparation_protocol.end_bias`                                   |              |
-|`Comment[umi barcode read]`                | Column or default        | `library_preparation_protocol.umi_barcode.barcode_read`                   | `read1`      |
-|`Comment[umi barcode offset]`              | Column or default        | `library_preparation_protocol.umi_barcode.barcode_offset`                 | `16`         |
-|`Comment[umi barcode size]`                | Column or default        | `library_preparation_protocol.umi_barcode.barcode_length`                 | `10`         |
-|`Comment[cell barcode read]`               | Column or default        | `library_preparation_protocol.cell_barcode.barcode_read`                  | `read1`      |
-|`Comment[cell barcode offset]`             | Column or default        | `library_preparation_protocol.cell_barcode.barcode_offset`                | `0`          |
-|`Comment[cell barcode size]`               | Column or default        | `library_preparation_protocol.cell_barcode.barcode_length`                | `16`         |
-|`Comment[sample barcode read]`             | Empty                    |                                                                           |              |
-|`Comment[sample barcode offset]`           | Fill cells with value    | `0`                                                                       |              |
-|`Comment[sample barcode size]`             | Fill cells with value    | `8`                                                                       |              |
-|`Comment[single cell isolation]`           | Fill cells with value    | `magnetic affinity cell sorting`                                          |              |
-|`Comment[cDNA read]`                       | Fill cells with value    | `read2`                                                                   |              |
-|`Comment[cDNA read offset]`                | Fill cells with value    | `0`                                                                       |              |
-|`Comment[cDNA read size]`                  | Fill cells with value    | `98`                                                                      |              |
-|`Comment[LIBRARY_STRAND]`                  | Column                   | `library_preparation_protocol.strand`                                     |              |
-|`Comment[LIBRARY\_LAYOUT]`                 | Fill cells with value    | `PAIRED`                                                                  |              |
-|`Comment[LIBRARY\_SOURCE]`                 | Fill cells with value    | `TRANSCRIPTOMIC SINGLE CELL`                                              |              |
-|`Comment[LIBRARY\_STRATEGY]`               | Fill cells with value    | `RNA-Seq`                                                                 |              |
-|`Comment[LIBRARY\_SELECTION]`              | Fill cells with value    | `cDNA`                                                                    |              |
-|`Protocol REF (second group of instances)  | Special protocol columns | Includes sequencing protocol                                              |              |
-|`Assay Name`                               | Column                   | `specimen_from_organism.biomaterial_core.biomaterial_id`                  |              |
-|`Technology Type`                          | Fill cells with value    | `sequencing assay`                                                        |              |
-|`Scan Name`                                | Selectable from          | Any column ending with `biomaterial_id` or `biosamples_accession`         |              |
-|`Comment[RUN]`                             | Selectable from          | Any column ending with `biomaterial_id` or `biosamples_accession`         |              |
-|`Comment[read1 file]`                      | Column                   | `sequence_file.file_core.file_name_read1`                                 |              |
-|`Comment[read2 file]`                      | Column                   | `sequence_file.file_core.file_name_read2`                                 |              |
-|`Comment[index1 file]`                     | Column                   | `sequence_file.file_core.file_name_index`                                 |              |
+|-s                                         | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                           | yes          |
+|-id                                        | HCA project uuid         | This is added to the 'secondary accessions' field in idf file             | yes          | |-c                                         | Curator initials         | HCA Curator initials.                                                     | yes          |
+|-tt                                        | Technology type          | Must be 1 of [''.''.'']                                                   | yes          | 
+|-et                                          Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
+|-f                                           Factor value             | A list of user-defined factor values.                                     | yes          |
+|-pd                                          Dataset publication date | E.g. from GEO.                                                            | yes          |
+|-hd                                          HCA last update date     | The last time the HCA project was updated in ingest  UI (production).     | yes          |
+|--r                                          Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here.| no           |             
+Definitions:
+
+Experiment type: an expimeriment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
+Example differential: normal and disease, multiple developmental stages
+Example baseline: all primary samples from 1 organ type and same developmental stage and disease status.
+
+Factor value: a factor value is a chosen experimental characteristic which can be used to group or differentiate samples. If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors. The SCEA team's validator tools will fail without this.
+Example: disease developmental stage age
+
+## Output files
+
+The script will output an idf file and an sdrf file named with the same new E-HCAD-id. These files will be written into a new folder: `./hca2scea-backend/spreadsheets/<spreadsheet_name>/`.
+
+## Further curation of the idf and sdrf files
+
+Please see the example files folder to see how and where the below should appear.
+
+Both files: The script accesses the tracker google sheet to determine the next E-HCAD-id (we curate them in increasing number order). You should therefore add the output E-HCAD-id in the tracker as soon as possible. If you will be running the script more than once, you will need to update the tracker in between these 2 runs. This is the only way we can attempt tp stay on top of this without an actual database. It is an imperfect solution given multiple users can run the tool at around the same time, but it should be ok for now. The E-HCAD-ids are not difficult to change in the idf file itself and both file names.
+
+idf file:
+- Use a tab to separate every value you enter. Also, the spacing created by tabs is important, for example, tabs between author names or emails, including where the email is not known and shown as a blank.
+- Each protocol description should be simplified and include less extensive details than the HCA standard. The SCEA team prefer the protocols have general and short descriptions which provide enough information to interpret the data.
+- The protocol types are: sample collection protocol, enrichment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol. These should be obvious except that the enrichment protocol indicates both an HCA dissociation protocol and an HCA enrichment protocol. In terms of differentiation protocol, ipsc induction protocol or other, we should ask Anja or Nancy how they approach that.
+- You need to add the chosen factor values given as an input argument the idf file in both of these fields: Experimental Factor Name and Experimental Factor Type
+- You should add the other 'Comment' fields which are not factor values using the following field: Comment[EAAdditionalAttributes]
+- You should add a related project E-HCAD-id if the project was split into separate E-HCAD-ids by adding this field: Comment[RelatedExperiment]
+
+sdrf file:
+- You need to add a factor value column as the last column in the sdrf file which matches the factor value(s) you gave as an argument.
+- You can add additional columns to the sdrf file for metadata you think is important using a 'Comment' field. This can include for example: treatment, immunophenotype, cell marker.
