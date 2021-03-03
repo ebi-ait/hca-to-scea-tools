@@ -10,7 +10,7 @@ No need to install! It is installed on EC2. If you're a new team member and you 
 
 ## Check points before curation
 
-- Is this dataset valid in HCA ingest prod.? Ideally it will be, so that you can add the -id and -pd arguments (see below for arguments). If you want to curate before then, you can add a dummy value and modify the field in the output files later.
+- Is this dataset valid in HCA ingest production? Ideally it will be, so that you can add the -id and -pd arguments (see below for arguments). If you want to curate before then, you can add a dummy value and modify the field in the output files later.
 
 - Does this dataset consist of multiple species? If yes, you need to run the tool separately for each species and treat them as separate projects with separate E-HCAD-ids. There is a specific field in the idf file which can indicate related E-HCAD ids.
 
