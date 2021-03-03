@@ -43,11 +43,11 @@ Arguments:
 |-s                                         | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                           | yes          |
 |-id                                        | HCA project uuid         | This is added to the 'secondary accessions' field in idf file             | yes          | |-c                                         | Curator initials         | HCA Curator initials.                                                     | yes          |
 |-tt                                        | Technology type          | Must be 1 of [''.''.'']                                                   | yes          | 
-|-et                                          Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
-|-f                                           Factor value             | A list of user-defined factor values.                                     | yes          |
-|-pd                                          Dataset publication date | E.g. from GEO.                                                            | yes          |
-|-hd                                          HCA last update date     | The last time the HCA project was updated in ingest  UI (production).     | yes          |
-|--r                                          Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here.| no           |             
+|-et                                        | Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
+|-f                                         | Factor value             | A list of user-defined factor values.                                     | yes          |
+|-pd                                        | Dataset publication date | E.g. from GEO.                                                            | yes          |
+|-hd                                        | HCA last update date     | The last time the HCA project was updated in ingest  UI (production).     | yes          |
+|--r                                        | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here.| no           |             
 Definitions:
 
 Experiment type: an expimeriment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
@@ -70,8 +70,8 @@ Both files: The script accesses the tracker google sheet to determine the next E
 idf file:
 - Use a tab to separate every value you enter. Also, the spacing created by tabs is important, for example, tabs between author names or emails, including where the email is not known and shown as a blank.
 - Each protocol description should be simplified and include less extensive details than the HCA standard. The SCEA team prefer the protocols have general and short descriptions which provide enough information to interpret the data.
-- The protocol types are: sample collection protocol, enrichment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol. These should be obvious except that the enrichment protocol indicates both an HCA dissociation protocol and an HCA enrichment protocol. In terms of differentiation protocol, ipsc induction protocol or other, we should ask Anja or Nancy how they approach that.
-- You need to add the chosen factor values given as an input argument the idf file in both of these fields: Experimental Factor Name and Experimental Factor Type
+- The protocol types are: sample collection protocol, enrichment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol. These should be obvious except that the enrichment protocol indicates both an HCA dissociation protocol and an HCA enrichment protocol (and should be entered twice to reflect those 2). In terms of differentiation protocol, ipsc induction protocol or other, we should ask Anja or Nancy how they approach that.
+- You need to add the chosen factor values given as an input argument in the idf file in both of these fields: Experimental Factor Name and Experimental Factor Type
 - You should add the other 'Comment' fields which are not factor values using the following field: Comment[EAAdditionalAttributes]
 - You should add a related project E-HCAD-id if the project was split into separate E-HCAD-ids by adding this field: Comment[RelatedExperiment]
 
