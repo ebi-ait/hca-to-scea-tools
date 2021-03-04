@@ -18,6 +18,8 @@ No need to install! It is installed on EC2. If you're a new team member and you 
 
 - Is the technology type valid for SCEA? Valid technology types are: 10X v2, 10X v3, Drop-seq, Smart-seq2
 
+- Is the full path to fastq files available for this dataset? If only bam files or SRA objects are available, you can continue to curate this dataset, using the fields: BAM URI and BAM file, or SRA URI and SRA file. However, this cannot currently be processed. The SCEA team are working on it, the files should still be sent to them.
+
 ## Setting the environment on EC2
 
 Go to the hca-to-scea-tools directory and activate the environment.
@@ -76,5 +78,6 @@ idf file:
 - You should add a related project E-HCAD-id if the project was split into separate E-HCAD-ids by adding this field: Comment[RelatedExperiment]
 
 sdrf file:
+- You need to add new columns with the full download path to fastq files (FASTQ URI) and fastq file names.  
 - You need to add a factor value column as the last column in the sdrf file which matches the factor value(s) you gave as an argument.
 - You can add additional columns to the sdrf file for metadata you think is important using a 'Comment' field. This can include for example: treatment, immunophenotype, cell marker.
