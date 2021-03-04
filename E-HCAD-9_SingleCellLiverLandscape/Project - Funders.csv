@@ -1,7 +1,0 @@
-GRANT TITLE;GRANT ID (Required);FUNDING ORGANIZATION (Required)
-The name of the grant funding the project.;The unique grant identifier or reference.;The name of the funding organization.
-Enter a title of approximately 30 words. For example: Study of single cells in the human body.; For example: BB/P0000001/1;" For example: Biotechnology and Biological Sciences Research Council (BBSRC); California Institute of Regenerative Medicine (CIRM)"
-project.funders.grant_title;project.funders.grant_id;project.funders.organization
-FILL OUT INFORMATION BELOW THIS ROW;;
-Medicine by Design;not provided;Canada First Research Excellence Fund (CFREF)
-National Resource for Network Biology;P41 GM103504;NIH
