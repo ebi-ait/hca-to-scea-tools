@@ -1,0 +1,35 @@
+MAGE-TAB Version	1.1									
+Investigation Title	A single-cell survey of the human first-trimester placenta and decidua									
+Comment[Submitted Name]	HumanFirstTrimesterPlacentaDecidua									
+Experiment Description	Single-cell RNA sequencing of 14,341 and 6754 cells from first-trimester human placental villous and decidual tissues, respectively.									
+Experimental Factor Name	developmental stage	organism part								
+Experimental Factor Type	developmental stage	organism part								
+Public Release Date	2018-10-31									
+Person First Name	Hemant	Pavel	Alexander	Nicole	Klaas	Aitor	Manjunath	Thomas	Zev	Mallory
+Person Last Name	Suryawanshi	Morozov	Strauß	Sahasrabudhe	Max	Garzia	Kustagi	Tuschl	Williams	Freeberg
+Person Mid Initials										
+Person Email								ttuschl@rockefeller.edu	zw2421@cumc.columbia.edu	
+Person Affiliation	The Rockefeller University	The Rockefeller University	Columbia University Medical Center	Albert Einstein College of Medicine	The Rockefeller University	The Rockefeller University	The Rockefeller University	The Rockefeller University	Columbia University Medical Center	EMBL-EBI
+Person Roles								submitter	submitter	curator
+Protocol Type	sample collection protocol	enrichment protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol						
+										
+Protocol Name	P-HCAD23-1	P-HCAD23-2	P-HCAD23-3	P-HCAD23-4						
+Protocol Description	First-trimester elective termination tissue samples were obtained via manual vacuum aspiration or dilation and curettage. The chorionic villi and decidua were separated using forceps and scissors.	For cell dissociation, tissue samples were incubated in Liberase TL in PBS at 37C for 15 min. The tissue was then manually aspirated using a syringe and needle. Cells were then passed through a Falcon 40-μm cell strainer and centrifuged at 300g for 5 min.	Single-cell RNA sequencing libraries were prepared according to the standard Drop-seq protocol.	Single cell libraries were sequenced on the Illumina NextSeq 500 platform.						
+Protocol Hardware				Illumina NextSeq 500 platform						
+Term Source Name	EFO	ArrayExpress								
+Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/								
+Publication Title	A single-cell survey of the human first-trimester placenta and decidua.									
+Publication Author List	Suryawanshi H, Morozov P, Straus A, Sahasrabudhe N, Max K, Garzia A, Kustagi M, Tuschl T, Williams Z									
+										
+PubMed ID	30402542									
+Publication DOI	10.1126/sciadv.aau4788									
+Comment[AEExperimentType]	RNA-seq of coding RNA from single cells									
+Comment[EAAdditionalAttributes]	individual	sex	gestational age	sampling site						
+Comment[EACurator]	AD									
+Comment[EAExpectedClusters]										
+Comment[ExpressionAtlasAccession]	E-HCAD-23									
+Comment[HCALastUpdateDate]	2020-12-08									
+Comment[RelatedExperiment]	E-HCAD-24									
+Comment[SecondaryAccession]	SRP162461	a253e89d-cb0c-49c6-831d-562ca7bbbf82								
+Comment[EAExperimentType]	baseline									
+SDRF File	E-HCAD-23.sdrf.txt									
