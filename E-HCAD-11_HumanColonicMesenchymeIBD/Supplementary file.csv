@@ -1,5 +1,0 @@
-FILE NAME (Required);FILE FORMAT (Required);CHECKSUM;FILE DESCRIPTION
-The name of the file.;The format of the file.;MD5 checksum of the file.;A short description of the file contents.
-"Include the file extension in the file name. For example: R1.fastq.gz; codebook.json";"Indicate the full file extension including compression extensions. For example: fastq.gz; tif"; For example: e09a986c2e630130b1849d4bf9a94c06;File description could include information about how the file was generated. For example: Protocol for FACS enrichment, Image of spleen sample collection location
-supplementary_file.file_core.file_name;supplementary_file.file_core.file_format;supplementary_file.file_core.checksum;supplementary_file.file_description
-FILL OUT INFORMATION BELOW THIS ROW;;;

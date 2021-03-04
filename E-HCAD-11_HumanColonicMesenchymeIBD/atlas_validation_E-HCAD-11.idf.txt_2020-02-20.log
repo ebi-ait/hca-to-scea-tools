@@ -1,4 +1,0 @@
-2020-02-20 11:18:01,955 ATLAS INFO: Validating ./E-HCAD-11_HumanColonicMesenchymeIBD/E-HCAD-11.idf.txt and associated SDRF file
-2020-02-20 11:18:01,956 ATLAS INFO: Setting submission type to "singlecell"
-2020-02-20 11:18:02,556 ATLAS INFO: Checking FASTQ URIs. This may take a while... (Skip this check with -x option)
-2020-02-20 11:18:02,561 ATLAS INFO: Validation was successful! 🍰
