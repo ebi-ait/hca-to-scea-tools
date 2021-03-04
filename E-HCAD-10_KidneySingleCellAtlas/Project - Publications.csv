@@ -1,6 +1,0 @@
-AUTHORS (Required);PUBLICATION TITLE (Required);PUBLICATION DOI;PUBLICATION PMID;PUBLICATION URL
-A list of authors associated with the publication.;The title of the publication.;The publication digital object identifier (doi) of the publication.;The PubMed ID of the publication.;A URL for the publication.
-List each author in 'surname initials' format. For example: Doe JD; For example: Study of single cells in the human body.; For example: 10.1016/j.cell.2016.07.054; For example: 27565351; For example: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5667944/
-project.publications.authors;project.publications.title;project.publications.doi;project.publications.pmid;project.publications.url
-FILL OUT INFORMATION BELOW THIS ROW;;;;
-Stewart JB||Ferdinand RJ||Young DM||Mitchell JT||Loudon WK||Riding MA||Richoz N||Frazer LG||Staniforth LUJ||Braga VAF||Botting AR||Popescu D||Vento-Tormo R||Stephenson E||Cagan A||Farndon JS||Polanski K||Efremova M||Green K||Velasco-Herrera CDM||Guzzo C||Collord G||Mamanova L||Aho T||Armitage NJ||Riddick PCA||Mushtaq I||Farrell S||Rampling D||Nicholson J||Filby A||Burge J||Lisgo S||Lindsay S||Bajenoff M||Warren YA||Stewart DG||Sebire N||Coleman N||Haniffa M||Teichmann AS||Behjati S||Clatworthy RM;Spatiotemporal immune zonation of the human kidney;10.1126/science.aat5031;;https://science.sciencemag.org/content/365/6460/1461
