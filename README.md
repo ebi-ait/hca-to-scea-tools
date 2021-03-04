@@ -14,9 +14,9 @@ No need to install! It is installed on EC2. If you're a new team member and you 
 
 - Does this dataset consist of multiple species? If yes, you need to run the tool separately for each species and treat them as separate projects with separate E-HCAD-ids. There is a specific field in the idf file which can indicate related E-HCAD ids.
 
-- Does this dataset consist of multiple technologies or 10X versions if 10X technology? If yes, you need to run the tool separately for each technology and/or version and treat them as separate projects with separate E-HCAD-ids. There is a specific field in the idf file which can indicate related E-HCAD ids.
+- Does this dataset consist of multiple technologies? If yes, you need to run the tool separately for each technology and treat them as separate projects with separate E-HCAD-ids. There is a specific field in the idf file which can indicate related E-HCAD ids. If the 10X version is mixed (v2 & v3), that can be kept as 1 project. 10X v1 is not a valid technology type, so needs to be removed from a project. There is a specific field in the idf file which can indicate related E-HCAD ids.
 
-- Is the technology type valid for SCEA? Valid technology types are: 
+- Is the technology type valid for SCEA? Valid technology types are: 10X v2, 10X v3, Drop-seq, Smart-seq2
 
 ## Setting the environment on EC2
 
