@@ -1,8 +1,0 @@
-GRANT TITLE;GRANT ID (Required);FUNDING ORGANIZATION (Required)
-The name of the grant funding the project.;The unique grant identifier or reference.;The name of the funding organization.
-Enter a title of approximately 30 words. For example: Study of single cells in the human body.; For example: BB/P0000001/1;" For example: Biotechnology and Biological Sciences Research Council (BBSRC); California Institute of Regenerative Medicine (CIRM)"
-project.funders.grant_title;project.funders.grant_id;project.funders.organization
-FILL OUT INFORMATION BELOW THIS ROW;;
-;AI128949;National Institute of Allergy and Infectious Diseases (NIAID)
-;AI106697;National Institute of Allergy and Infectious Diseases (NIAID)
-;Pilot Projects for the Human Cell Atlas (grant to Peter Sims);Chan Zuckerberg Initiative

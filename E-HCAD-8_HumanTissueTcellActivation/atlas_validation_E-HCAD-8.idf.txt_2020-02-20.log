@@ -1,4 +1,0 @@
-2020-02-20 11:51:55,783 ATLAS INFO: Validating ./E-HCAD-8_HumanTissueTcellActivation/E-HCAD-8.idf.txt and associated SDRF file
-2020-02-20 11:51:55,784 ATLAS INFO: Setting submission type to "singlecell"
-2020-02-20 11:51:56,331 ATLAS INFO: Checking FASTQ URIs. This may take a while... (Skip this check with -x option)
-2020-02-20 11:51:56,336 ATLAS INFO: Validation was successful! 🍰
