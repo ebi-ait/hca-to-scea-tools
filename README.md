@@ -44,7 +44,7 @@ Arguments:
 |-------------------------------------------|--------------------------|---------------------------------------------------------------------------|--------------|
 |-s                                         | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                           | yes          |
 |-id                                        | HCA project uuid         | This is added to the 'secondary accessions' field in idf file             | yes          | |-c                                         | Curator initials         | HCA Curator initials.                                                     | yes          |
-|-tt                                        | Technology type          | Must be 1 of [''.''.'']                                                   | yes          | 
+|-tt                                        | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq']  | yes          |
 |-et                                        | Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
 |-f                                         | Factor value             | A list of user-defined factor values.                                     | yes          |
 |-pd                                        | Dataset publication date | E.g. from GEO.                                                            | yes          |
