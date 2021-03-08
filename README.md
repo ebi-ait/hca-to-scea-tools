@@ -81,3 +81,19 @@ sdrf file:
 - You need to add new columns with the full download path to fastq files (FASTQ URI) and fastq file names.  
 - You need to add a factor value column as the last column in the sdrf file which matches the factor value(s) you gave as an argument.
 - You can add additional columns to the sdrf file for metadata you think is important using a 'Comment' field. This can include for example: treatment, immunophenotype, cell marker.
+
+## Validation
+
+To do: the SCEA team ask us to use 2 different validation tools. We need to install both tools on EC2.
+
+## Where to send the files for review?
+
+For datasets where the full paths to fastq files is entered in the sdrf file, they should be uploaded as a new folder in the SCEA team Gitlab page, here:
+https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD
+
+For datasets where only the full paths to BAM files were available, please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1KNLOUZdDg7bYyCB19Jtvl2nt514K6Q1V Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+
+For datasets where only the full paths to BAM files were available, please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1kIEJDZM1EIuCKTAM3nDh9Hvkysnjv8J0 Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+
+
+
