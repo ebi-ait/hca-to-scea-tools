@@ -44,19 +44,21 @@ Arguments:
 |-------------------------------------------|--------------------------|---------------------------------------------------------------------------|--------------|
 |-s                                         | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                           | yes          |
 |-id                                        | HCA project uuid         | This is added to the 'secondary accessions' field in idf file             | yes          | |-c                                         | Curator initials         | HCA Curator initials.                                                     | yes          |
+|-ac                  | no          | ACCESSION_NUMBER  | Optional field to provide a SCEA accession, if not specified will be generated automatically |
 |-tt                                        | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq']  | yes          |
 |-et                                        | Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
 |-f                                         | Factor value             | A list of user-defined factor values.                                     | yes          |
-|-pd                                        | Dataset publication date | E.g. from GEO.                                                            | yes          |
-|-hd                                        | HCA last update date     | The last time the HCA project was updated in ingest  UI (production).     | yes          |
+|-pd                                        | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO.                                                            | yes          |
+|-hd                                        | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production).     | yes          |
 |--r                                        | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here.| no           |             
+
 Definitions:
 
-Experiment type: an expimeriment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
+**Experiment type:** an experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
 Example differential: normal and disease, multiple developmental stages
 Example baseline: all primary samples from 1 organ type and same developmental stage and disease status.
 
-Factor value: a factor value is a chosen experimental characteristic which can be used to group or differentiate samples. If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors. The SCEA team's validator tools will fail without this.
+**Factor value:** a factor value is a chosen experimental characteristic which can be used to group or differentiate samples. If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors. The SCEA team's validator tools will fail without this.
 Example: disease developmental stage age
 
 ## Output files
