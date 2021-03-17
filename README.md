@@ -40,17 +40,18 @@ Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-
 
 Arguments:
 
-| Argument                                  | Argument name            | Description                                                               | Required?    |
-|-------------------------------------------|--------------------------|---------------------------------------------------------------------------|--------------|
-|-s                                         | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                           | yes          |
-|-id                                        | HCA project uuid         | This is added to the 'secondary accessions' field in idf file             | yes          | |-c                                         | Curator initials         | HCA Curator initials.                                                     | yes          |
-|-ac                  | no          | ACCESSION_NUMBER  | Optional field to provide a SCEA accession, if not specified will be generated automatically |
-|-tt                                        | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq']  | yes          |
-|-et                                        | Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
-|-f                                         | Factor value             | A list of user-defined factor values.                                     | yes          |
-|-pd                                        | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO.                                                            | yes          |
-|-hd                                        | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production).     | yes          |
-|--r                                        | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here.| no           |             
+| Argument   | Argument name            | Description                                                               | Required? |
+|------------|--------------------------|---------------------------------------------------------------------------|-----------|
+|-s          | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                           | yes      |
+|-id         | HCA project uuid         | This is added to the 'secondary accessions' field in idf file             | yes      | 
+|-c          | Curator initials         | HCA Curator initials.                                                     | yes      |
+|-ac         | ACCESSION_NUMBER         | Optional field to provide a SCEA accession, if not specified will be generated automatically | no |
+|-tt         | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq']  | yes          |
+|-et         | Experiment type          | Must be 1 of ['differential','baseline'].                                 | yes          |
+|-f          | Factor value             | A list of user-defined factor values.                                     | yes          |
+|-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO.                                      | yes          |
+|-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production).     | yes          |
+|--r         | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here.| no           |             
 
 Definitions:
 
