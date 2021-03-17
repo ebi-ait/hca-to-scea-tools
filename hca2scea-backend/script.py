@@ -529,7 +529,7 @@ def main():
         "--technology_type",
         type=str,
         required=True,
-        choices=['10Xv1_3','10Xv2_3','10Xv2_5','10Xv3_3','drop-seq','smart-seq'],
+        choices=['10Xv2_3','10Xv2_5','10Xv3_3','drop-seq','smart-seq'],
         help="Please indicate which single-cell sequencing technology was used."
     )
     parser.add_argument(
