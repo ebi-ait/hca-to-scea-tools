@@ -65,6 +65,8 @@ Example: disease developmental stage age
 
 The script will output an idf file and an sdrf file named with the same new E-HCAD-id. These files will be written into a new folder: `./hca2scea-backend/spreadsheets/<spreadsheet_name>/`.
 
+Once you have copied the files to a location so you can manually curate them, please delete the folder from the above directory.
+
 ## Further curation of the idf and sdrf files
 
 Please see the example files folder to see how and where the below should appear.
