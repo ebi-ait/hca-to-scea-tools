@@ -582,9 +582,18 @@ def main():
         required=False,
         help="space separated list of related scea accession(s)"
     )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        required=False,
+        help="Provide full path to preferred output dir"
+    )
 
     args = parser.parse_args()
-    work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
+    if not args.output_dir:
+        work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
+    else:
+        work_dir = args.output_dir
 
     tracking_sheet = utils.get_tracker_google_sheet()
 
