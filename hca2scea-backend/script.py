@@ -122,6 +122,7 @@ def create_big_table(work_dir, spreadsheets):
     big_table_joined_sorted = big_table_joined.reindex(sorted(big_table_joined.columns), axis=1)
     big_table_joined_sorted = big_table_joined_sorted.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
     big_table = big_table_joined_sorted
+    big_table['donor_organism.organism_age'] = big_table_joined['donor_organism.organism_age']
 
     # Remove NAs in protocol spreadsheets.
     for protocol_type in protocol_columns.keys():
@@ -219,7 +220,6 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
 
 
 def create_magetab(work_dir, spreadsheets, project_details):
-    fill_this_label = "<FILL THIS>"
     accession_number = project_details['accession']
     accession = f"E-HCAD-{accession_number}"
     idf_file_name = f"{accession}.idf.txt"
@@ -333,6 +333,19 @@ SDRF File\t{sdrf_file_name}
         with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
             idf_file.write(idf_file_contents)
 
+    def reformat_age(age_list):
+        updated_age_list = []
+        for age in age_list:
+            age = str(age)
+            if ' - ' in age:
+                age = age.replace('-', 'to')
+            elif '-' in age and ' ' not in age:
+                age = age.replace('-', ' to ')
+            else:
+                age = age
+            updated_age_list.append(age)
+        return updated_age_list
+
     def generate_sdrf_file(technology_type):
         #
         ## SDRF Part.
@@ -402,6 +415,7 @@ SDRF File\t{sdrf_file_name}
         # Chunk 1: donor info.
         sdrf_1 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[0].items()})
         sdrf_1 = sdrf_1.fillna('')
+        sdrf_1['Characteristics[age]'] = reformat_age(list(sdrf_1['Characteristics[age]']))
 
         # Fixes for chunk 1.
         # Organism status: convert from 'is_alive' to 'status'.
