@@ -185,7 +185,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
 
     # Prepare project details to dump into file
     project_details['protocol_map'] = protocol_map
-    project_details['project_uuid'] = args.submission_uuid
+    project_details['project_uuid'] = args.project_uuid
     project_details['EAExperimentType'] = args.experiment_type
     project_details['hca_update_date'] = args.hca_update_date
     project_details['ExperimentalFactorName'] = args.experimental_factors
@@ -519,10 +519,10 @@ def main():
     )
     parser.add_argument(
         "-id",
-        "--submission_uuid",
+        "--project_uuid",
         type=str,
         required=True,
-        help="Please provide an ingest project submission id."
+        help="Please provide an HCA ingest project submission id."
     )
     parser.add_argument(
         "-ac",
