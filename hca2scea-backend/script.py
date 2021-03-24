@@ -3,7 +3,8 @@ import copy
 import json
 import os
 from pathlib import Path
-import math
+import requests as rq
+from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd # can probably use openpyxl directly
@@ -24,6 +25,79 @@ from utils import  (
     convert_to_snakecase,
 )
 
+def parse_xml(xml_content):
+    for experiment_package in xml_content.findall('EXPERIMENT_PACKAGE'):
+        yield experiment_package
+
+def check_file_types(paths):
+    for accession in paths.keys():
+        fastq = [path for path in paths[accession] if 'fastq.gz' in path]
+        if fastq and len(fastq) > 1:
+            for file in fastq:
+                if 'R1' in file or '_1' in file:
+                    paths[accession].update({'filename':{'read1':os.path.basename(file)}})
+                    paths[accession].update({'filepath':{'read1': file}})
+                elif 'R2' in file or '_2' in file:
+                    paths[accession].update({'filename': {'read2': os.path.basename(file)}})
+                    paths[accession].update({'filepath': {'read2': file}})
+                elif 'I1' in file or '_3' in file:
+                    paths[accession].update({'filename': {'index1': os.path.basename(file)}})
+                    paths[accession].update({'filepath': {'index1': file}})
+                else:
+                    paths[accession].update({'filename': {'index2': os.path.basename(file)}})
+                    paths[accession].update({'filepath': {'index2': file}})
+                paths[accession]['filetype'] = 'fastq file'
+        elif not fastq or len(fastq) < 2:
+            paths[accession].update({'filepath':paths[accession][0]})
+            paths[accession].update({'filename':os.path.basename(paths[accession][0])})
+            if paths[accession]['filename'] == accession:
+                paths[accession].update({'filetype':'SRA Object'})
+            elif 'bam' in paths[accession]['filename']:
+                paths[accession].update({'filetype':'BAM file'})
+            else:
+                paths[accession].update({'filetype':'unknown'})
+    print(paths)
+    return paths
+
+def get_fastq_path_from_sra(sdrf):
+    run_accessions = list(sdrf['Comment[ENA_RUN]'])
+    url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch/fcgi?db=sra&id={",".join(run_accessions)}'
+    srr_metadata_url = rq.get(url)
+    paths = {}
+    tree = ElementTree.fromstring(srr_metadata_url.content)
+    try:
+        for experiment_package in tree.findall('EXPERIMENT_PACKAGE'):
+            for run in experiment_package.find('RUN_SET'):
+                attributes = run.find('SRAFiles')
+                for sra_file in attributes:
+                    accession = sra_file.attrib['filename']
+                    paths[accession] = []
+                    for attrib in sra_file:
+                        url = attrib.attrib['url']
+                        paths[accession].append(url)
+    except:
+        paths = None
+    return paths
+
+def get_fastq_path_from_ena(study_accession,sra_paths):
+    try:
+        request_url = f'http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={study_accession}&result=read_run&fields=run_accession,fastq_ftp'
+        fastq_results = pd.read_csv(request_url, delimiter='\t')
+        if fastq_results.shape[0] > 0:
+            for i in range(0,len(list(fastq_results['run_accession']))):
+                accession = list(fastq_results['run_accession'])[i]
+                if accession in sra_paths.keys():
+                    sra_paths[accession].append(list(fastq_results['fastq_ftp'])[i])
+                else:
+                    continue
+            paths = sra_paths
+    except:
+        paths = sra_paths
+    return paths
+
+def get_filename(path):
+
+    return filename
 
 def create_big_table(work_dir, spreadsheets):
     # Merge sequence files with cell suspensions.
@@ -221,7 +295,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     return project_details
 
 
-def create_magetab(work_dir, spreadsheets, project_details):
+def create_magetab(work_dir, spreadsheets, project_details, args):
     accession_number = project_details['accession']
     accession = f"E-HCAD-{accession_number}"
     idf_file_name = f"{accession}.idf.txt"
@@ -348,7 +422,7 @@ SDRF File\t{sdrf_file_name}
             updated_age_list.append(age)
         return updated_age_list
 
-    def generate_sdrf_file(technology_type,name_field):
+    def generate_sdrf_file(technology_type,name_field,args):
         #
         ## SDRF Part.
         #
@@ -517,12 +591,16 @@ SDRF File\t{sdrf_file_name}
         # Fix column names.
         sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
 
+        paths = get_fastq_path_from_sra(sdrf)
+        paths = get_fastq_path_from_ena(args.study,paths)
+        paths = check_file_types(paths)
+
         # Save SDRF file..
         print(f"saving {work_dir}/{sdrf_file_name}")
         sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
     generate_idf_file()
-    generate_sdrf_file(technology_type,name_field)
+    generate_sdrf_file(technology_type,name_field,args)
 
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
@@ -558,6 +636,12 @@ def main():
         type=str,
         required=True,
         help="Please provide an HCA ingest project submission id."
+    )
+    parser.add_argument(
+        "-study",
+        type=str,
+        required=True,
+        help="Please provide the SRA or ENA study accession."
     )
     parser.add_argument(
         "-name",
@@ -651,7 +735,7 @@ def main():
     spreadsheets = extract_csv_from_spreadsheet(work_dir, args.spreadsheet)
     project_details = prepare_protocol_map(work_dir, spreadsheets, project_info, tracking_sheet, args)
 
-    create_magetab(work_dir, spreadsheets, project_details)
+    create_magetab(work_dir, spreadsheets, project_details, args)
 
 if __name__ == '__main__':
     main()
