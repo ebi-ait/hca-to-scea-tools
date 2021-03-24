@@ -146,6 +146,21 @@ def create_big_table(work_dir, spreadsheets):
 
     return big_table
 
+def reformat_tech(technology_type,FACS):
+    if '10X' in technology_type:
+        if FACS is None:
+            single_cell_isolation = '10X'
+        if '2' in technology_type:
+            technology_type_reformatted = '10xV2'
+        elif '3' in technology_type:
+            technology_type_reformatted = '10xV3'
+    else:
+        technology_type_reformatted = technology_type
+        if FACS is None:
+            single_cell_isolation = technology_type
+    if FACS is not None:
+        single_cell_isolation = FACS
+    return technology_type_reformatted,single_cell_isolation
 
 def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet, args):
 
@@ -213,7 +228,12 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     with open(f"technology_jsons/{args.technology_type}.json") as json_file:
         project_details['configurable_fields'] = json.load(json_file)
 
-    project_details['technology_type'] = args.technology_type
+    if args.facs:
+        technology_type_reformatted,facs = reformat_tech(args.technology_type,args.facs)
+    else:
+        technology_type_reformatted,facs = reformat_tech(args.technology_type,None)
+    project_details['technology_type'] = technology_type_reformatted
+    project_details['single_cell_isolation'] = facs
 
     return project_details
 
@@ -233,6 +253,7 @@ def create_magetab(work_dir, spreadsheets, project_details):
     protocol_columns = project_details['protocol_columns']
     configurable_fields = project_details['configurable_fields']
     technology_type = project_details['technology_type']
+    facs = project_details['single_cell_isolation']
 
 
     def generate_idf_file():
@@ -333,7 +354,7 @@ SDRF File\t{sdrf_file_name}
         with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
             idf_file.write(idf_file_contents)
 
-    def generate_sdrf_file(technology_type):
+    def generate_sdrf_file(technology_type,facs):
         #
         ## SDRF Part.
         #
@@ -375,7 +396,7 @@ SDRF File\t{sdrf_file_name}
             'Comment[sample barcode read]': "UNDEFINED_FIELD",
             'Comment[sample barcode offset]': "UNDEFINED_FIELD",
             'Comment[sample barcode size]': "UNDEFINED_FIELD",
-            'Comment[single cell isolation]': "UNDEFINED_FIELD",
+            'Comment[single cell isolation]': facs,
             'Comment[cDNA read]': "UNDEFINED_FIELD",
             'Comment[cDNA read offset]': "UNDEFINED_FIELD",
             'Comment[cDNA read size]': "UNDEFINED_FIELD",
@@ -473,7 +494,7 @@ SDRF File\t{sdrf_file_name}
         sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
     generate_idf_file()
-    generate_sdrf_file(technology_type)
+    generate_sdrf_file(technology_type,facs)
 
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
@@ -539,6 +560,13 @@ def main():
         required=True,
         choices=['baseline','differential'],
         help="Please indicate whether this is a baseline or differential experimental design"
+    )
+    parser.add_argument(
+        "-f",
+        "--facs",
+        action="store_true",
+        default=False,
+        help="Please specify this argument if FACS was used to isolate single cells"
     )
     parser.add_argument(
         "-f",
