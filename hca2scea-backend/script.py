@@ -228,8 +228,8 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     with open(f"technology_jsons/{args.technology_type}.json") as json_file:
         project_details['configurable_fields'] = json.load(json_file)
 
-    if args.facs:
-        technology_type_reformatted,facs = reformat_tech(args.technology_type,args.facs)
+    if args.facs is True:
+        technology_type_reformatted,facs = reformat_tech(args.technology_type,'FACS')
     else:
         technology_type_reformatted,facs = reformat_tech(args.technology_type,None)
     project_details['technology_type'] = technology_type_reformatted
@@ -464,6 +464,7 @@ SDRF File\t{sdrf_file_name}
         input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
 
         sdrf_3['Comment[library construction]'] = technology_type
+        sdrf_3['Comment[single cell isolation]'] = facs
         sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
 
         # Chunk 4: sequencing protocol ids.
@@ -562,10 +563,9 @@ def main():
         help="Please indicate whether this is a baseline or differential experimental design"
     )
     parser.add_argument(
-        "-f",
         "--facs",
         action="store_true",
-        default=False,
+        default=None,
         help="Please specify this argument if FACS was used to isolate single cells"
     )
     parser.add_argument(
