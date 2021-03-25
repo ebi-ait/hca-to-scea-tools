@@ -29,9 +29,70 @@ def parse_xml(xml_content):
     for experiment_package in xml_content.findall('EXPERIMENT_PACKAGE'):
         yield experiment_package
 
+def filter_paths(sdrf,paths):
+    runs = list(sdrf['Comment[ENA_RUN]'])
+    read1_files = []
+    read2_files = []
+    index1_files = []
+    index2_files = []
+    sra_files = []
+    bam_files = []
+    read1_paths = []
+    read2_paths = []
+    index1_paths = []
+    index2_paths = []
+    sra_paths = []
+    bam_paths = []
+    for i in range(0,len(runs)):
+        run = runs[i]
+        if paths[run]['filetype'] == 'fastq file':
+            if 'read1' in paths[run]['filename'].keys():
+                read1_files.append(paths[run]['filename']['read1'])
+                read1_paths.append(paths[run]['filepath']['read1'])
+            elif 'read2' in paths[run]['filename'].keys():
+                read2_files.append(paths[run]['filename']['read2'])
+                read2_paths.append(paths[run]['filepath']['read2'])
+            elif 'index1' in paths[run]['filename'].keys():
+                index1_files.append(paths[run]['filename']['index1'])
+                index1_paths.append(paths[run]['filepath']['index1'])
+            elif 'read2' in paths[run]['filename'].keys():
+                index2_files.append(paths[run]['filename']['index2'])
+                index2_paths.append(paths[run]['filepath']['index2'])
+        else:
+            if paths[run]['filetype'] == 'SRA Object':
+                sra_files.append(paths[run]['filename'])
+                sra_paths.append(paths[run]['filepath'])
+            elif paths[run]['filetype'] == 'BAM file':
+                bam_files.append(paths[run]['filename'])
+                bam_paths.append(paths[run]['filepath'])
+    if read1_files:
+        sdrf['Comment[read1 file]'] = read1_files
+        sdrf['Comment[read1 FASTQ_URI]'] = read1_paths
+    if read2_files:
+        sdrf['Comment[read2 file]'] = read2_files
+        sdrf['Comment[read2 FASTQ_URI]'] = read2_paths
+    if index1_files:
+        sdrf['Comment[index1 file]'] = index1_files
+        sdrf['Comment[index1 FASTQ_URI]'] = index1_paths
+    if index2_files:
+        sdrf['Comment[index2 file]'] = index2_files
+        sdrf['Comment[index2 FASTQ_URI]'] = index2_paths
+    if not read1_files:
+        sdrf.drop('Comment[read1 file]',inplace=True, axis=1)
+        sdrf.drop('Comment[read2 file]',inplace=True, axis=1)
+        sdrf.drop('Comment[index1 file]',inplace=True, axis=1)
+        if sra_files:
+            sdrf['Comment[SRA file]'] = sra_files
+            sdrf['Comment[SRA path]'] = sra_paths
+        elif sra_files:
+            sdrf['Comment[BAM file]'] = bam_files
+            sdrf['Comment[BAM path]'] = bam_paths
+    sdrf.drop_duplicates(keep=False, inplace=True)
+    return sdrf
+
 def check_file_types(paths):
     for accession in paths.keys():
-        fastq = [path for path in paths[accession] if 'fastq.gz' in path]
+        fastq = [path for path in paths[accession]['files'] if 'fastq.gz' in path]
         if fastq and len(fastq) > 1:
             for file in fastq:
                 if 'R1' in file or '_1' in file:
@@ -48,15 +109,14 @@ def check_file_types(paths):
                     paths[accession].update({'filepath': {'index2': file}})
                 paths[accession]['filetype'] = 'fastq file'
         elif not fastq or len(fastq) < 2:
-            paths[accession].update({'filepath':paths[accession][0]})
-            paths[accession].update({'filename':os.path.basename(paths[accession][0])})
+            paths[accession].update({'filepath':paths[accession]['files'][0]})
+            paths[accession].update({'filename':os.path.basename(paths[accession]['files'][0])})
             if paths[accession]['filename'] == accession:
                 paths[accession].update({'filetype':'SRA Object'})
             elif 'bam' in paths[accession]['filename']:
                 paths[accession].update({'filetype':'BAM file'})
             else:
                 paths[accession].update({'filetype':'unknown'})
-    print(paths)
     return paths
 
 def get_fastq_path_from_sra(sdrf):
@@ -71,10 +131,10 @@ def get_fastq_path_from_sra(sdrf):
                 attributes = run.find('SRAFiles')
                 for sra_file in attributes:
                     accession = sra_file.attrib['filename']
-                    paths[accession] = []
+                    paths[accession] = {'files':[]}
                     for attrib in sra_file:
                         url = attrib.attrib['url']
-                        paths[accession].append(url)
+                        paths[accession]['files'].append(url)
     except:
         paths = None
     return paths
@@ -87,17 +147,14 @@ def get_fastq_path_from_ena(study_accession,sra_paths):
             for i in range(0,len(list(fastq_results['run_accession']))):
                 accession = list(fastq_results['run_accession'])[i]
                 if accession in sra_paths.keys():
-                    sra_paths[accession].append(list(fastq_results['fastq_ftp'])[i])
+                    sra_paths[accession] = {'files':[]}
+                    sra_paths[accession]['files'].append(list(fastq_results['fastq_ftp'])[i])
                 else:
                     continue
             paths = sra_paths
     except:
         paths = sra_paths
     return paths
-
-def get_filename(path):
-
-    return filename
 
 def create_big_table(work_dir, spreadsheets):
     # Merge sequence files with cell suspensions.
@@ -431,11 +488,13 @@ SDRF File\t{sdrf_file_name}
 
         experiment_accessions = []
         for col in list(big_table.columns):
-            if 'process.process_core.process_id' in col:
+            if 'process' in col:
                 bool = isinstance(list(big_table[col])[0], float)
                 if bool is False:
                     if 'SRX' in list(big_table[col])[0]:
                         experiment_accessions = list(big_table[col])
+        if not experiment_accessions:
+            experiment_accessions = [''] * big_table.shape[0]
 
         biosample_accessions = list(big_table['cell_suspension.biomaterial_core.biosamples_accession'])
 
@@ -594,6 +653,7 @@ SDRF File\t{sdrf_file_name}
         paths = get_fastq_path_from_sra(sdrf)
         paths = get_fastq_path_from_ena(args.study,paths)
         paths = check_file_types(paths)
+        sdrf = filter_paths(sdrf,paths)
 
         # Save SDRF file..
         print(f"saving {work_dir}/{sdrf_file_name}")
@@ -646,7 +706,8 @@ def main():
     parser.add_argument(
         "-name",
         type=str,
-        required=True,
+        required=False,
+        default = 'cs_id',
         choices = ['cs_name','cs_id','sp_name','sp_id','other'],
         help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
     )
