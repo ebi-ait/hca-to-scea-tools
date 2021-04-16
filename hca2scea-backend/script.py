@@ -147,6 +147,21 @@ def create_big_table(work_dir, spreadsheets):
 
     return big_table
 
+def reformat_tech(technology_type,FACS):
+    if '10X' in technology_type:
+        if FACS is None:
+            single_cell_isolation = '10X'
+        if '2' in technology_type:
+            technology_type_reformatted = '10xV2'
+        elif '3' in technology_type:
+            technology_type_reformatted = '10xV3'
+    else:
+        technology_type_reformatted = technology_type
+        if FACS is None:
+            single_cell_isolation = technology_type
+    if FACS is not None:
+        single_cell_isolation = FACS
+    return technology_type_reformatted,single_cell_isolation
 
 def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet, args):
 
@@ -214,7 +229,12 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     with open(f"technology_jsons/{args.technology_type}.json") as json_file:
         project_details['configurable_fields'] = json.load(json_file)
 
-    project_details['technology_type'] = args.technology_type
+    if args.facs is True:
+        technology_type_reformatted,facs = reformat_tech(args.technology_type,'FACS')
+    else:
+        technology_type_reformatted,facs = reformat_tech(args.technology_type,None)
+    project_details['technology_type'] = technology_type_reformatted
+    project_details['single_cell_isolation'] = facs
 
     return project_details
 
@@ -233,6 +253,7 @@ def create_magetab(work_dir, spreadsheets, project_details):
     protocol_columns = project_details['protocol_columns']
     configurable_fields = project_details['configurable_fields']
     technology_type = project_details['technology_type']
+    facs = project_details['single_cell_isolation']
 
 
     def generate_idf_file():
@@ -333,6 +354,7 @@ SDRF File\t{sdrf_file_name}
         with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
             idf_file.write(idf_file_contents)
 
+
     def reformat_age(age_list):
         updated_age_list = []
         for age in age_list:
@@ -346,7 +368,8 @@ SDRF File\t{sdrf_file_name}
             updated_age_list.append(age)
         return updated_age_list
 
-    def generate_sdrf_file(technology_type):
+    def generate_sdrf_file(technology_type,facs):
+
         #
         ## SDRF Part.
         #
@@ -388,7 +411,7 @@ SDRF File\t{sdrf_file_name}
             'Comment[sample barcode read]': "UNDEFINED_FIELD",
             'Comment[sample barcode offset]': "UNDEFINED_FIELD",
             'Comment[sample barcode size]': "UNDEFINED_FIELD",
-            'Comment[single cell isolation]': "UNDEFINED_FIELD",
+            'Comment[single cell isolation]': facs,
             'Comment[cDNA read]': "UNDEFINED_FIELD",
             'Comment[cDNA read offset]': "UNDEFINED_FIELD",
             'Comment[cDNA read size]': "UNDEFINED_FIELD",
@@ -457,6 +480,7 @@ SDRF File\t{sdrf_file_name}
         input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
 
         sdrf_3['Comment[library construction]'] = technology_type
+        sdrf_3['Comment[single cell isolation]'] = facs
         sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
 
         # Chunk 4: sequencing protocol ids.
@@ -487,7 +511,7 @@ SDRF File\t{sdrf_file_name}
         sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
     generate_idf_file()
-    generate_sdrf_file(technology_type)
+    generate_sdrf_file(technology_type,facs)
 
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
@@ -543,7 +567,7 @@ def main():
         "--technology_type",
         type=str,
         required=True,
-        choices=['10Xv2_3','10Xv2_5','10Xv3_3','drop-seq','smart-seq'],
+        choices=['10Xv1_3','10Xv2_3','10Xv2_5','10Xv3_3','drop-seq','smart-seq','seq-well','smart-like'],
         help="Please indicate which single-cell sequencing technology was used."
     )
     parser.add_argument(
@@ -553,6 +577,12 @@ def main():
         required=True,
         choices=['baseline','differential'],
         help="Please indicate whether this is a baseline or differential experimental design"
+    )
+    parser.add_argument(
+        "--facs",
+        action="store_true",
+        default=None,
+        help="Please specify this argument if FACS was used to isolate single cells"
     )
     parser.add_argument(
         "-f",
