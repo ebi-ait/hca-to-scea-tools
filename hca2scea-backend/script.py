@@ -3,6 +3,7 @@ import copy
 import json
 import os
 from pathlib import Path
+import math
 
 import numpy as np
 import pandas as pd # can probably use openpyxl directly
@@ -229,6 +230,8 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     with open(f"technology_jsons/{args.technology_type}.json") as json_file:
         project_details['configurable_fields'] = json.load(json_file)
 
+    project_details['name_field'] = args.name
+
     if args.facs is True:
         technology_type_reformatted,facs = reformat_tech(args.technology_type,'FACS')
     else:
@@ -253,8 +256,10 @@ def create_magetab(work_dir, spreadsheets, project_details):
     protocol_columns = project_details['protocol_columns']
     configurable_fields = project_details['configurable_fields']
     technology_type = project_details['technology_type']
-    facs = project_details['single_cell_isolation']
 
+    name_field = project_details['name_field']
+
+    facs = project_details['single_cell_isolation']
 
     def generate_idf_file():
         protocol_fields = get_protocol_idf(protocol_map)
@@ -368,13 +373,23 @@ SDRF File\t{sdrf_file_name}
             updated_age_list.append(age)
         return updated_age_list
 
-    def generate_sdrf_file(technology_type,facs):
+    def generate_sdrf_file(technology_type,facs,name_field):
 
         #
         ## SDRF Part.
         #
 
         big_table['UNDEFINED_FIELD'] = ''
+
+        experiment_accessions = []
+        for col in list(big_table.columns):
+            if 'process.process_core.process_id' in col:
+                bool = isinstance(list(big_table[col])[0], float)
+                if bool is False:
+                    if 'SRX' in list(big_table[col])[0]:
+                        experiment_accessions = list(big_table[col])
+
+        biosample_accessions = list(big_table['cell_suspension.biomaterial_core.biosamples_accession'])
 
         convert_map_chunks = [{
             'Source Name': "UNDEFINED_FIELD",
@@ -427,9 +442,11 @@ SDRF File\t{sdrf_file_name}
             'Technology Type': "UNDEFINED_FIELD",
             'Scan Name': "UNDEFINED_FIELD",
             'Comment[RUN]': "UNDEFINED_FIELD",
+            'Comment[BioSD_SAMPLE]': '',
+            'Comment[ENA_EXPERIMENT]': '',
             'Comment[read1 file]': "sequence_file.file_core.file_name_read1",
             'Comment[read2 file]': "sequence_file.file_core.file_name_read2",
-            'Comment[index1 file]': "sequence_file.file_core.file_name_index",
+            'Comment[index1 file]': "sequence_file.file_core.file_name_index1"
         }]
 
         def get_from_bigtable(column):
@@ -503,6 +520,27 @@ SDRF File\t{sdrf_file_name}
             else:
                 sdrf[field['name']] = field['value']
 
+        # fixes to sample name fields
+
+        if name_field == 'cs_name':
+            name = list(big_table['cell_suspension.biomaterial_core.biomaterial_name'])
+        elif name_field == 'cs_id':
+            name = list(big_table['cell_suspension.biomaterial_core.biomaterial_id'])
+        elif name_field == 'sp_name':
+            name = list(big_table['specimen_from_organism.biomaterial_core.biomaterial_name'])
+        elif name_field == 'sp_id':
+            name = list(big_table['specimen_from_organism.biomaterial_core.biomaterial_id'])
+
+        sdrf['Source Name'] = name
+        sdrf['Scan Name'] = name
+        sdrf['Comment[RUN]'] = name
+        sdrf['Assay Name'] = name
+        sdrf['Extract Name'] = name
+
+        # fixes to ena experiment and biosample fields
+        sdrf['Comment[ENA_EXPERIMENT]'] = experiment_accessions
+        sdrf['Comment[BioSD_SAMPLE]'] = biosample_accessions
+
         # Fix column names.
         sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
 
@@ -511,8 +549,8 @@ SDRF File\t{sdrf_file_name}
         sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
     generate_idf_file()
-    generate_sdrf_file(technology_type,facs)
 
+    generate_sdrf_file(technology_type,facs,name_field)
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
     xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
@@ -547,6 +585,13 @@ def main():
         type=str,
         required=True,
         help="Please provide an HCA ingest project submission id."
+    )
+    parser.add_argument(
+        "-name",
+        type=str,
+        required=True,
+        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
+        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
     )
     parser.add_argument(
         "-ac",
