@@ -200,7 +200,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
 
     # Prepare project details to dump into file
     project_details['protocol_map'] = protocol_map
-    project_details['project_uuid'] = args.submission_uuid
+    project_details['project_uuid'] = args.project_uuid
     project_details['EAExperimentType'] = args.experiment_type
     project_details['hca_update_date'] = args.hca_update_date
     project_details['ExperimentalFactorName'] = args.experimental_factors
@@ -543,10 +543,10 @@ def main():
     )
     parser.add_argument(
         "-id",
-        "--submission_uuid",
+        "--project_uuid",
         type=str,
         required=True,
-        help="Please provide an ingest project submission id."
+        help="Please provide an HCA ingest project submission id."
     )
     parser.add_argument(
         "-ac",
@@ -612,9 +612,18 @@ def main():
         required=False,
         help="space separated list of related scea accession(s)"
     )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        required=False,
+        help="Provide full path to preferred output dir"
+    )
 
     args = parser.parse_args()
-    work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
+    if not args.output_dir:
+        work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
+    else:
+        work_dir = args.output_dir
 
     tracking_sheet = utils.get_tracker_google_sheet()
 
