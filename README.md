@@ -35,7 +35,7 @@ python3 script.py -s [spreadsheet (xlsx)] -id [HCA project uuid] -c [curator ini
 ```
 Example:
 ```
-Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12
+Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -study SRP135922
 ```
 
 **How to assign a HCAD accession**
@@ -58,7 +58,7 @@ Please note that the script will automatically assign your dataset the next E-HC
 |--r         | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here                          | no        |
 |-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
 |-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be ['']                             | no        |
-|--facs.     | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
+|--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
 
 **Definitions:**
 
