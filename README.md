@@ -38,7 +38,11 @@ Example:
 Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12
 ```
 
-Arguments:
+**How to assign a HCAD accession**
+
+Please note that the script will automatically assign your dataset the next E-HCAD id in order using information about the unique E-HCAD accessions in the tracker sheet, unless you provide the -ac argument, which will override the default. Please ensure if you use this option that the E-HCAD id is unique and not already present in the tracker sheet.
+
+**Arguments:**
 
 | Argument   | Argument name            | Description                                                                                        | Required? |
 |------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
@@ -51,8 +55,12 @@ Arguments:
 |-f          | Factor value             | A list of user-defined factor values                                                               | yes       |
 |-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
 |-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
-|--r         | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here                          | no        |             
-*Definitions:*
+|--r         | Related E-HCAD-id        | If there is a related project, you should tner the related E-HCAD-id here                          | no        |
+|-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
+|-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be ['']                             | no        |
+|--facs.     | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
+
+**Definitions:**
 
 **Experiment type:** an experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
 Example differential: normal and disease, multiple developmental stages
@@ -66,6 +74,12 @@ Example: disease developmental stage age
 The script will output an idf file and an sdrf file named with the same new E-HCAD-id. These files will be written into a new folder: `./hca2scea-backend/spreadsheets/<spreadsheet_name>/`.
 
 Once you have copied the files to a location so you can manually curate them, please delete the folder from the above directory.
+
+At this point you should enter the assigned E-HCAD id (e.g. E-HCAD-20) into the tracker sheet in all accession columns, as the script takes information from the tracker in order to assign the next E-HCAD id in order.
+
+You should also note the E-HCAD id in the dataset ticket in the Dataset Wrangling Zenhub board and move the ticket to the SCEA conversion column.
+
+The ticket should be moved to the SCEA review column only once the curated files have been handed over to the SCEA team, as described later on in this document.
 
 ## Further curation of the idf and sdrf files
 
