@@ -95,13 +95,67 @@ sdrf file:
 
 ## Validation
 
-To do: validation tools.
+_There are 2 validation steps for SCEA: a python validator and perl validator. In Silvie’s words: “the perl script checks the mage-tab format in general (plus some curation checks etc) and the the python script mainly checks for single-cell expression atlas specific fields and requirements”._
+
+### Python Validator
+
+Please note: there is a ticket to get the validation tools installed on EC2. This should be available soon, as of 28/04/2021. For now, please install and run locally, following the instructions below.
+
+A MAGE-TAB pre-validation module for running checks that guarantee the experiment can be processed for SCEA. You can clone the repository and run the script locally:
+
+[Atlas metadata validator](https://github.com/ebi-gene-expression-group/atlas-metadata-validator)
+
+To run, from the directory:
+
+```
+python atlas_validation.py path/to/test.idf.txt -sc -hca -v
+```
+
+*   The SDRF file is expected in the same directory as the IDF file. If this is not the case, the location of the SDRF and other data files can be specified with -d PATH_TO_DATA option.
+*   The script guesses the experiment type (sequencing, microarray or single-cell) from the MAGE-TAB. If this was unsuccessful the experiment type can be set by specifying the respective argument -seq, -ma or -sc.
+*   The data file and URI checks may take a long time. Hence there is an option to skip these checks with -x.
+*   Verbose logging can be activated with -v.
+*   Special validation rules for HCA-imported experiments can be invoked with -hca option. The validator will otherwise guess if the experiment is an HCA import based on the HCAD accession code in the ExpressionAtlasAccession field.
+
+An example of a successful validation looks like this:
+
+![validation](https://github.com/ebi-ait/hca-ebi-wrangler-central/raw/master/assets/images/scea_screenshots/validation.png)
+
+### Perl validator
+
+1.   Install Anaconda if you don’t have it already and the Anaconda directory to your path
+1.   Configure conda by typing the following at the terminal:
+     ```
+     conda config --add channels defaults
+     conda config --add channels bioconda
+     conda config --add channels conda-forge
+     ```
+1.   Install the perl atlas module in a new environment: 
+     ```
+     conda create -n perl-atlas-test -c ebi-gene-expression-group perl-atlas-modules
+     ```
+1.   Activate the environment:
+     ```
+     conda activate perl-atlas-test
+     ```
+1.   Download the validate_magetab.pl_ _perl script from here: [https://drive.google.com/drive/folders/1Ja2NKtHkDh2YIvUhNa1mpivL-UjCsmbR](https://drive.google.com/drive/folders/1Ja2NKtHkDh2YIvUhNa1mpivL-UjCsmbR))
+1.   Execute the script (with idf and sdrf files in the same directory)
+     ```
+     perl path-to/validate_magetab.pl -i <idf-file>
+     ```
+     (You can ignore ArrayExpress errors)
+![image](https://user-images.githubusercontent.com/25744951/116433562-87d29e80-a841-11eb-8c3f-05ceff4bba21.png)
 
 ## Where to send the files for review?
 
-For datasets where the full paths to fastq files is entered in the sdrf file, they should be uploaded as a new folder in the SCEA team Gitlab page, here:
-https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD
+We do not need to send them the fastq files. However, we do need to provide the full paths to the fastq files in the sdrf file. The latest version of the script should find and enter the file names into the sdrf file. However, it is best to check this in case the file paths were not found. If the script only finds paths to bam files or SRA objects, it is worth checking that the fastq file paths are really not openly available from NCBI or ENA to be sure (without a formal request to NCBI), though the script should account for this.
 
-For datasets where only the full paths to BAM files were available, please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1KNLOUZdDg7bYyCB19Jtvl2nt514K6Q1V Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+For datasets where the full paths to fastq files is entered in the sdrf file, you should first create a new branch from the master branch found here: https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master and name the new branch with the E-HCAD id you have assigned to the dataset. Then, in the Gitlab HCAD directory in this  new branch (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD) you will need to create a new folder named with the E-HCAD id (e.g. E-HCAD-20) and upload the idf and sdrf files inside this new folder. Once this is done, you should create a merge request for that branch, and ensure a reviewer is tagged (default). You should create a separate branch and folder for each E-HCAD dataset you upload. You will recieve automated emails once you create a merge request. They will probably say that the pipeline has failed. This is fine, you do not need to do anything. The SCEA team will review the uploaded files and make edits when they can to correct the datasets - it is from this point in their hands. However, you should look out for an email saying your dataset has been approved (most likely after some edits), so you know to close the ticket inside the Zenhub SCEA Review column so we keep on top of open tickets.
 
-For datasets where only the full paths to BAM files were available, please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1kIEJDZM1EIuCKTAM3nDh9Hvkysnjv8J0 Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+Next:
+1. ensure you have updated the tracker sheet to include the new E-HCAD-ids, as the script uses this information to automatically generate the next E-HCAD id in order.
+2. let the SCEA team know on slack that you have created a new branch (if you have more than 1 dataset to upload, it's best to notufy them once and refer to the group of E-HCAD ids).
+
+For datasets where only the full paths to BAM files were available (these will be shown in the sdrf file), please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1KNLOUZdDg7bYyCB19Jtvl2nt514K6Q1V Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+
+For datasets where only the full paths to BAM files were available (these will be shown in the sdrf file), please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1kIEJDZM1EIuCKTAM3nDh9Hvkysnjv8J0 Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
