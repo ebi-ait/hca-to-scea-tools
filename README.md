@@ -144,7 +144,6 @@ An example of a successful validation looks like this:
      perl path-to/validate_magetab.pl -i <idf-file>
      ```
      (You can ignore ArrayExpress errors)
-![image](https://user-images.githubusercontent.com/25744951/116433562-87d29e80-a841-11eb-8c3f-05ceff4bba21.png)
 
 ## Where to send the files for review?
 
