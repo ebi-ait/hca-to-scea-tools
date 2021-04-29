@@ -20,6 +20,8 @@ No need to install! It is installed on EC2. If you're a new team member and you 
 
 - Is the full path to fastq files available for this dataset? If only bam files or SRA objects are available, you can continue to curate this dataset, using the fields: BAM URI and BAM file, or SRA URI and SRA file. However, this cannot currently be processed and should be uploaded to a shared folder, as opposed to SCEA's Gitlab. The SCEA team are working on a method to process these data types. For now, please see below section *Where to send the files for review?'* about uploading the MAGE-TAB to the appropriate location.
 
+- Does the dataset contain multiple specimen ids per donor id? the script cannot account for this currently, it will raise an error. A ticket has been filed to fix this so that those datasets can still be converted using the tool.
+
 ## Setting the environment on EC2
 
 Go to the hca-to-scea-tools directory and activate the environment.
