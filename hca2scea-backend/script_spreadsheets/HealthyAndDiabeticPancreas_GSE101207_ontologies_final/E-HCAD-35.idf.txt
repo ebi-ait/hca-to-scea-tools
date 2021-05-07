@@ -1,0 +1,30 @@
+
+MAGE-TAB Version	1.1
+Investigation Title	Massively parallel single-cell RNA-seq analysis of 26,677 pancreatic islets cells from both healthy and type II diabetic (T2D) donors.
+Comment[Submitted Name]	HealthyAndDiabeticPancreas
+Experiment Description	Massively parallel single-cell RNA-seq technology (Drop-Seq) was applied to analyze the transcriptome of 26,677 pancreatic islets cells from both healthy and type II diabetic (T2D) donors.
+Public Release Date	2021-06-29
+Person First Name	Zhou	Chen	Haiyan	Ran	Weihua	Xiaoxiao	Leina	Sisi	Qing	Carlos	Peter	Anthony	Yun	Yanxin	Fulai	Yan	Ami
+Person Last Name	Fang	Weng	Li	Tao	Mai	Liu	Lu	Lai	Duan	Alvarez	Arvan	Wynshaw-Boris	Li	Pei	Jin	Li	Day
+Person Mid Initials																	
+Person Email																yxl1379@case.edu	
+Person Affiliation	School of Medicine, Case Western Reserve University	School of Medicine, Case Western Reserve University	School of Medicine, Case Western Reserve University	Brain Tumor Institute, Children's National Medical Center	School of Medicine, Case Western Reserve University	School of Medicine, Case Western Reserve University	School of Medicine, Case Western Reserve University	School of Medicine, Case Western Reserve University	University of North Carolina	School of Medicine, Case Western Reserve University	University of Michigan Medical Center	School of Medicine, Case Western Reserve University	University of North Carolina	Children's National Medical Center	School of Medicine, Case Western Reserve University	School of Medicine, Case Western Reserve University	EMBL-EBI
+Person Address	Cleveland, OH 44106	Cleveland, OH 44106	Cleveland, OH 44106	Washington, D.C. 20010	Cleveland, OH 44106	Cleveland, OH 44106	Cleveland, OH 44106	Cleveland, OH 44106	Chapel Hill, NC 27599	Cleveland, OH 44106	Ann Arbor, MI 48109	Cleveland, OH 44106	Chapel Hill, NC 27599	Washington, D.C. 20010	Cleveland, OH 44106	Cleveland, OH 44106	Wellcome Genome Campus, Hinxton
+Person Roles																submitter	
+Protocol Type	sample collection protocol	enrichment protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol
+Protocol Name	P-HCAD35-1	P-HCAD35-2	P-HCAD35-3	P-HCAD35-4
+Protocol Description	Human pancreas Islets were purchased from Prodo Laboratories, Inc. Prodo Laboratories, Inc. obtain donated human pancreases directly from hospitals by delivery under controlled temperature conditions and with appropriate paper work confirming documented informed consent. Human islets are then processed for research. In this study, purchased human pancreas islets were cultured in PIM medium with Human AB Serum (Prodo Laboratories) in 6-well plates with ultralow attachment surface. All cells were cultured at 37°C in Forma Steri-Cycle i160 CO2 Incubator with 5% CO2.	To dissociate islets into single cells, cells were washed once in HBSS and incubated in Accutase at 37°C for 20-25 min. The islets were broken up gently with a 5 mL pipette every 5 min. When > 95% of the islets were digested into single cells, PIM(S) medium were added to neutralize the Accutase. Single cells were washed again with HBSS and resuspended in HBSS at a concentration of 2 × 105/mL for Drop-Seq analysis.	Drop-Seq was performed following the protocol as previously described (Macosko et al., 2015). Briefly, three pump-controlled syringes with cell suspension (200,000 cells/mL), barcoded beads in lysis buffer (200,000 beads/mL), and droplet generation oil were connected to a microfluidic device under microscope supervision. During droplets generation, the cell and bead flow speed was set at 4,000uL/hr, and the oil speed at 15,000uL/hr. The droplets were collected into 50mL falcon tubes (usually less than 5mL). Following droplet breakage, we performed 1st strand cDNA synthesis on beads following the SMART-PCR protocol (Macosko et al., 2015). Finally, the resulting full-length cDNA library was prepared for sequencing.	Sequencing of single-cell RNA sequencing libraries on the Illumina HiSeq 2000 machine.
+Protocol Hardware				Illumina HiSeq 2000
+Term Source Name	EFO	ArrayExpress
+Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
+Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
+Experimental Factor Name	menstrual	cycle	day
+Experimental Factor Type	menstrual	cycle	day
+Comment[EAAdditionalAttributes]
+Comment[EACurator]	AD
+Comment[EAExpectedClusters]	
+Comment[ExpressionAtlasAccession]	E-HCAD-35
+Comment[HCALastUpdateDate]	2021-02-12
+Comment[SecondaryAccession]	379ed69e-be05-48bc-af5e-a7fc589709bf	GSE111976
+Comment[EAExperimentType]	differential
+SDRF File	E-HCAD-35.sdrf.txt
