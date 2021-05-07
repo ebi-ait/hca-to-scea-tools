@@ -420,7 +420,7 @@ def create_magetab(work_dir, spreadsheets, project_details, args):
         if project_details.get('related_experiment'):
 
             idf_file_contents = f"""\
-        
+
 MAGE-TAB Version\t1.1
 Investigation Title\t{g("project", "project.project_core.project_title")[0]}
 Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
