@@ -20,6 +20,7 @@ class CharacteristicTest(unittest.TestCase):
         spreadsheets = glob.glob("test/golden/*.xlsx")
         arguments_df = pd.read_csv("test/golden/arguments.txt", sep="\t")
         for spreadsheet in spreadsheets:
+            print(spreadsheet)
             arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
             output_dir = self.run_tool(spreadsheet, arguments)
             self.check_output(output_dir, spreadsheet)
@@ -76,7 +77,9 @@ class CharacteristicTest(unittest.TestCase):
 
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
+        print(output_name)
         output_dir = 'output/' + output_name
+        print(output_dir)
         print(arguments)
         os.system(
             f'python3 script.py -s {spreadsheet} -o {output_dir} -id {arguments["HCA project uuid"][0]} -ac {arguments["E-HCAD accession"][0]} -c {arguments["curator initials"][0]} -tt {arguments["technology"][0]} -et {arguments["experiment type"][0]} -f {arguments["factor values"][0]} -pd {arguments["public release date"][0]} -hd {arguments["hca last update date"][0]} -study {arguments["study accession"][0]}')

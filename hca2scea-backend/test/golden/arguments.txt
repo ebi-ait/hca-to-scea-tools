@@ -1,7 +1,5 @@
 spreadsheet	HCA project uuid	E-HCAD accession	curator initials	technology	experiment type	factor values	public release date	hca last update date	study accession
 Test01.xlsx	c893cb57-5c9f-4f26-9312-21b85be84313	E-HCAD-50	AD	10Xv2_3	baseline	individual	2009-02-27	2021-04-29	SRP257542
-Test02.xlsx	2ef3655a-973d-4d69-9b41-21fa4041eed7	E-HCAD-51	AD	10Xv2_3	baseline	individual	2019-05-30	2021-03-01	SRP199294
-Test03.xlsx	2086eb05-10b9-432b-b7f0-169ccc49d270	E-HCAD-52	AD	10Xv2_3	differential	organ part	2019-08-01	2021-03-01	SRP201293
-Test04.xlsx	41fb1734-a121-4616-95c7-3b732c9433c7	E-HCAD-53	AD	10Xv3_3	baseline	individual	2020-09-15	2021-03-01	SRP260798
-Test05.xlsx	d3a4ceac-4d66-4984-9704-2570c0647a56	E-HCAD-54	AD	10Xv3_3	differential	organ part	2020-09-02	2021-03-01	SRP279608
-Test06.xlsx	559bb888-7829-41f2-ace5-2c05c7eb81e9	E-HCAD-55	AD	10Xv2_3 differential	organ	2020-04-01	2021-03-01	SRP179761
+Test02.xlsx	2086eb05-10b9-432b-b7f0-169ccc49d270	E-HCAD-52	AD	10Xv2_3	differential	organ part	2019-08-01	2021-03-01	SRP201293
+Test03.xlsx	d3a4ceac-4d66-4984-9704-2570c0647a56	E-HCAD-54	AD	10Xv3_3	differential	organ part	2020-09-02	2021-03-01	SRP279608
+Test04.xlsx	559bb888-7829-41f2-ace5-2c05c7eb81e9	E-HCAD-55	AD	10Xv2_3 differential	organ	2020-04-01	2021-03-01	SRP179761
