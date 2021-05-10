@@ -2,10 +2,6 @@ import os
 import sys
 import unittest
 import pandas as pd
-import json
-import glob
-
-# TODO: add input/output pairs - more test scenarios
 
 class CharacteristicTest(unittest.TestCase):
 
@@ -17,15 +13,13 @@ class CharacteristicTest(unittest.TestCase):
 
     def test_hca2scea_characteristic(self):
         # run tool
-        spreadsheets = glob.glob("test/golden/*.xlsx")
         arguments_df = pd.read_csv("test/golden/arguments.txt", sep="\t")
-        for spreadsheet in spreadsheets:
-            print(spreadsheet)
-            arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
-            output_dir = self.run_tool(spreadsheet, arguments)
-            self.check_output(output_dir, spreadsheet)
-        with open("test_errors.json", "w") as out_file:
-            json.dump(self.verificationErrors, out_file)
+        for i in range(0,arguments_df.shape[0]):
+            spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
+            with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
+                arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
+                output_dir = self.run_tool(spreadsheet, arguments)
+                self.check_output(output_dir, spreadsheet)
 
     def get_content(self, golden_file, output_file):
         if golden_file.split(".")[-1] == 'csv' or golden_file.split(".")[-2] == 'sdrf':
@@ -36,32 +30,12 @@ class CharacteristicTest(unittest.TestCase):
             output_contents = open(output_file).readlines()
         return golden_contents, output_contents
 
-    def check_equal_df(self, golden_contents, output_contents, spreadsheet, output_file):
+    def check_equal_df(self, golden_contents, output_contents):
         bool = golden_contents.equals(output_contents)
-        try:
-            self.assertTrue(bool)
-            return True
-        except AssertionError:
-            if spreadsheet not in self.verificationErrors.keys():
-                self.verificationErrors[spreadsheet] = {output_file: []}
-            return False
+        self.assertTrue(bool)
 
-    def check_equal_lines(self, golden_contents, output_contents, spreadsheet, output_file):
-        try:
-            self.assertEqual(golden_contents,output_contents)
-            return False
-        except AssertionError:
-            if spreadsheet not in self.verificationErrors.keys():
-                self.verificationErrors[spreadsheet] = {output_file: []}
-            return False
-
-    def get_diff(self, golden_contents, output_contents, spreadsheet, output_file):
-        if isinstance(output_contents,pd.DataFrame):
-            output_contents = output_contents.values.tolist()
-            golden_contents = golden_contents.values.tolist()
-        for line_number in range(0,len(output_contents)):
-            if output_contents[line_number] != golden_contents[line_number]:
-                self.verificationErrors[spreadsheet][output_file].append(line_number)
+    def check_equal_lines(self, golden_contents, output_contents):
+        self.assertEqual(golden_contents,output_contents)
 
     def check_output(self, output_dir, spreadsheet):
         golden_output_dir = 'test/golden/output/' + os.path.basename(spreadsheet).split(".xlsx")[0]
@@ -69,18 +43,14 @@ class CharacteristicTest(unittest.TestCase):
             output_file = os.path.join(output_dir, os.path.basename(golden_file))
             golden_contents, output_contents = self.get_content(os.path.join(golden_output_dir, os.path.basename(golden_file)), output_file)
             if isinstance(golden_contents, pd.DataFrame):
-                equal = self.check_equal_df(golden_contents, output_contents, spreadsheet, output_file)
+                self.check_equal_df(golden_contents, output_contents)
             else:
-                equal = self.check_equal_lines(golden_contents, output_contents, spreadsheet, output_file)
-            if equal is False:
-                self.get_diff(golden_contents, output_contents, spreadsheet, output_file)
+                self.check_equal_lines(golden_contents, output_contents)
 
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
-        print(output_name)
         output_dir = 'output/' + output_name
-        print(output_dir)
-        print(arguments)
+        arguments = arguments.reset_index()
         os.system(
             f'python3 script.py -s {spreadsheet} -o {output_dir} -id {arguments["HCA project uuid"][0]} -ac {arguments["E-HCAD accession"][0]} -c {arguments["curator initials"][0]} -tt {arguments["technology"][0]} -et {arguments["experiment type"][0]} -f {arguments["factor values"][0]} -pd {arguments["public release date"][0]} -hd {arguments["hca last update date"][0]} -study {arguments["study accession"][0]}')
         return output_dir
