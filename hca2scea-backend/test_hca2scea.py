@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 import pandas as pd
+from pandas._testing import assert_frame_equal
 
 class CharacteristicTest(unittest.TestCase):
 
@@ -13,7 +14,7 @@ class CharacteristicTest(unittest.TestCase):
 
     def test_hca2scea_characteristic(self):
         # run tool
-        arguments_df = pd.read_csv("test/golden/arguments.txt", sep="\t")
+        arguments_df = pd.read_csv("test/golden/arguments.csv")
         for i in range(0,arguments_df.shape[0]):
             spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
@@ -21,27 +22,25 @@ class CharacteristicTest(unittest.TestCase):
                 output_dir = self.run_tool(spreadsheet, arguments)
                 self.check_output(output_dir, spreadsheet)
 
-    def get_content(self, golden_file, output_file):
-        if golden_file.split(".")[-1] == 'csv' or golden_file.split(".")[-2] == 'sdrf':
-            golden_contents = pd.read_csv(golden_file, sep='\t')
-            output_contents = pd.read_csv(output_file, sep='\t')
+    def get_file_content(self, file):
+        if file.split(".")[-1] == 'csv' or file.split(".")[-2] == 'sdrf':
+            file_contents = pd.read_csv(file, sep='\t')
         else:
-            golden_contents = open(golden_file).readlines()
-            output_contents = open(output_file).readlines()
-        return golden_contents, output_contents
+            file_contents = open(file).read()
+        return file_contents
 
     def check_equal_df(self, golden_contents, output_contents):
-        bool = golden_contents.equals(output_contents)
-        self.assertTrue(bool)
+        assert_frame_equal(golden_contents, output_contents)
 
     def check_equal_lines(self, golden_contents, output_contents):
-        self.assertEqual(golden_contents,output_contents)
+        self.assertMultiLineEqual(golden_contents,output_contents)
 
     def check_output(self, output_dir, spreadsheet):
         golden_output_dir = 'test/golden/output/' + os.path.basename(spreadsheet).split(".xlsx")[0]
         for golden_file in os.listdir(golden_output_dir):
             output_file = os.path.join(output_dir, os.path.basename(golden_file))
-            golden_contents, output_contents = self.get_content(os.path.join(golden_output_dir, os.path.basename(golden_file)), output_file)
+            golden_contents = self.get_file_content(os.path.join(golden_output_dir, os.path.basename(golden_file)))
+            output_contents = self.get_file_content(output_file)
             if isinstance(golden_contents, pd.DataFrame):
                 self.check_equal_df(golden_contents, output_contents)
             else:
