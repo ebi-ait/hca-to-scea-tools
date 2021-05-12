@@ -1,5 +1,5 @@
 import argparse
-import copy
+import sys
 import json
 import os
 from pathlib import Path
@@ -20,6 +20,19 @@ def get_protocol_idf(protocol_map):
     proto_descs = [protocol['description'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
     proto_hware = [protocol.get('hardware', '') for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
     return list(zip(proto_types, proto_names, proto_descs, proto_hware))
+
+def extract_multiprotocols(tabs_dict, merged_tabs):
+    for (protocol_type, protocol_field) in protocol.multiprotocols.items():
+        if tabs_dict.get(protocol_type) is not None:
+            tabs_dict[protocol_type] = tabs_dict[protocol_type].fillna('')
+            proto_df, proto_df_columns = protocol.split_multiprotocols(merged_tabs, protocol_field)
+            for proto_column in proto_df_columns:
+                if protocol.protocol_columns.get(protocol_type) == None:
+                    protocol.protocol_columns[protocol_type] = []
+                protocol.protocol_columns[protocol_type].append(proto_column)
+            for column_name in proto_df.columns:
+                merged_tabs[column_name] = list(proto_df[column_name])
+    return merged_tabs
 
 def parse_xml(xml_content):
     for experiment_package in xml_content.findall('EXPERIMENT_PACKAGE'):
@@ -164,130 +177,23 @@ def merge(tab1, tab2, key):
     return df
 
 def merge_tabs(work_dir, tabs_dict):
+
     df1 = merge(tab1=tabs_dict['sequence_file'], tab2=tabs_dict['cell_suspension'], key='cell_suspension.biomaterial_core.biomaterial_id')
-    df1.to_csv('TEST1.txt',sep='\t')
     df2 = merge(tab1=df1, tab2=tabs_dict['specimen_from_organism'], key='specimen_from_organism.biomaterial_core.biomaterial_id')
-    df2.to_csv('TEST2.txt',sep='\t')
     df3 = merge(tab1=df2, tab2=tabs_dict['donor_organism'], key='donor_organism.biomaterial_core.biomaterial_id')
-    df3.to_csv('TEST3.txt',sep='\t')
-
-    # Merge sequence files with cell suspensions.
-    merged_tabs = tabs_dict['cell_suspension'].merge(
-        tabs_dict['sequence_file'],
-        how="outer",
-        on="cell_suspension.biomaterial_core.biomaterial_id"
-    )
-
-    # Take specimen ids from cell suspensions if there are any.
-    def get_specimen(cell_line_id):
-        return tabs_dict['cell_line'].loc[
-            tabs_dict['cell_line']['cell_line.biomaterial_core.biomaterial_id'] == cell_line_id][
-            'specimen_from_organism.biomaterial_core.biomaterial_id'].values[0]
-
-    if 'cell_line' in tabs_dict.keys():
-        merged_tabs['specimen_from_organism.biomaterial_core.biomaterial_id'] = merged_tabs[
-            'specimen_from_organism.biomaterial_core.biomaterial_id'].fillna(
-            merged_tabs.loc[merged_tabs['specimen_from_organism.biomaterial_core.biomaterial_id'].isna()][
-                'cell_line.biomaterial_core.biomaterial_id'].apply(get_specimen))
-
-    # Merge specimens into big table.
-    merged_tabs = tabs_dict['specimen_from_organism'].merge(
-        merged_tabs,
-        how="outer",
-        on="specimen_from_organism.biomaterial_core.biomaterial_id"
-    )
-
-    # Merge donor organisms into big table.
-    merged_tabs = tabs_dict['donor_organism'].merge(
-        merged_tabs,
-        how="outer",
-        on="donor_organism.biomaterial_core.biomaterial_id"
-    )
-
-    # Merge library preparation into big table.
-    merged_tabs = tabs_dict['library_preparation_protocol'].merge(
-        merged_tabs,
-        how="outer",
-        on="library_preparation_protocol.protocol_core.protocol_id"
-    )
-
-    # Merge sequencing protocol into big table.
-    merged_tabs = tabs_dict['sequencing_protocol'].merge(
-        merged_tabs,
-        how="outer",
-        on="sequencing_protocol.protocol_core.protocol_id"
-    )
-
-    # Merge the two rows for each read (read1 and read2).
-    merged_tabs_read1 = merged_tabs.loc[merged_tabs['sequence_file.read_index'] == 'read1']
-    merged_tabs_read2 = merged_tabs.loc[merged_tabs['sequence_file.read_index'] == 'read2']
-
-    merged_tabs_read2_short = merged_tabs_read2[[
-        'cell_suspension.biomaterial_core.biomaterial_id',
-        'sequence_file.file_core.file_name',
-        'sequence_file.read_length',
-        'sequence_file.lane_index',
-    ]]
-
-    merged_tabs_joined = merged_tabs_read1.merge(
-        merged_tabs_read2_short,
-        on=['cell_suspension.biomaterial_core.biomaterial_id', 'sequence_file.lane_index'],
-        suffixes=("_read1", "_read2")
-    )
-
-    # Merge index rows for each read.
-    if ('index1' in merged_tabs['sequence_file.read_index'].values):
-        merged_tabs = merged_tabs.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-
-        merged_tabs_index1 = merged_tabs.loc[merged_tabs['sequence_file.read_index'] == 'index1']
-
-        merged_tabs_index1_short = merged_tabs_index1[[
-            'cell_suspension.biomaterial_core.biomaterial_id',
-            'sequence_file.file_core.file_name',
-            'sequence_file.read_length',
-            'sequence_file.lane_index',
-        ]]
-
-        merged_tabs_index1_short.columns = [f"{x}_index1" for x in merged_tabs_index1_short.columns]
-
-        merged_tabs_joined2 = merged_tabs_joined.merge(
-            merged_tabs_index1_short,
-            left_on=['cell_suspension.biomaterial_core.biomaterial_id', 'sequence_file.lane_index'],
-            right_on=["cell_suspension.biomaterial_core.biomaterial_id_index1", 'sequence_file.lane_index_index1'],
-        )
-
-        merged_tabs_joined = merged_tabs_joined2
-
-    merged_tabs_joined = merged_tabs_joined[[x for x in merged_tabs_joined.columns if
-                                         x not in merged_tabs_joined.columns[merged_tabs_joined.columns.duplicated()]]]
-
-    # Fix up and sort big table.
-    merged_tabs_joined.reset_index(inplace=True)
-    merged_tabs_joined = merged_tabs_joined.rename(
-        columns={'sequence_file.file_core.file_name': 'sequence_file.file_core.file_name_read1'})
-    merged_tabs_joined_sorted = merged_tabs_joined.reindex(sorted(merged_tabs_joined.columns), axis=1)
-    merged_tabs_joined_sorted = merged_tabs_joined_sorted.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-    merged_tabs = merged_tabs_joined_sorted
-    merged_tabs['donor_organism.organism_age'] = merged_tabs_joined['donor_organism.organism_age']
+    df4 = merge(tab1=df3, tab2=tabs_dict['library_preparation_protocol'], key='library_preparation_protocol.protocol_core.protocol_id')
+    df5 = merge(tab1=df4, tab2=tabs_dict['sequencing_protocol'], key='sequencing_protocol.protocol_core.protocol_id')
+    merged_tabs = df5
 
     # Remove NAs in protocol spreadsheets.
     for protocol_type in protocol.protocol_columns.keys():
         tabs_dict[protocol_type] = tabs_dict[protocol_type].fillna('')
 
-    # This extracts the lists from protocol types which can have more than one instance and creates extra columns in the
-    # Big Table for each of the items, as well as the count and the python-style list.
-    for (protocol_type, protocol_field) in protocol.multiprotocols.items():
-        if tabs_dict.get(protocol_type) is not None:
-            tabs_dict[protocol_type] = tabs_dict[protocol_type].fillna('')
-            proto_df, proto_df_columns = protocol.split_multiprotocols(merged_tabs, protocol_field)
-            for proto_column in proto_df_columns:
-                if protocol.protocol_columns.get(protocol_type) == None:
-                    protocol.protocol_columns[protocol_type] = []
-                protocol.protocol_columns[protocol_type].append(proto_column)
+    # Extract the lists from protocol types which can have more than one instance and creates extra columns in the
+    # merged_tabs df for each of the items, as well as the count and the python-style list.
+    merged_tabs = extract_multiprotocols(tabs_dict, merged_tabs)
 
-            merged_tabs = merged_tabs.merge(proto_df, left_index=True, right_index=True)
-
-    # Saving the Big Table.
+    # Saving merged_tabs dataframe as a single .csv file.
     merged_tabs.to_csv(f"{work_dir}/merged_tabs.csv", index=False, sep=";")
 
     return merged_tabs
@@ -308,14 +214,12 @@ def reformat_tech(technology_type,FACS):
         single_cell_isolation = FACS
     return technology_type_reformatted,single_cell_isolation
 
-def prepare_protocol_map(merged_tabs, tabs_dict, project_info, args):
-
-    project_details = project_info
+def prepare_protocol_map(merged_tabs, tabs_dict, project_details):
 
     '''
     Get the prefix for the protocol ids using the accession number.
     '''
-    accession_number = project_details["accession"]
+    accession_number = project_details["accession"].split("-")[-1]
     protocol_accession = f"HCAD{accession_number}"
 
     # Save protocol columns for later use when creating sdrf.
@@ -327,55 +231,41 @@ def prepare_protocol_map(merged_tabs, tabs_dict, project_info, args):
     # Then, protocol map is created: a dict containing types of protocols, and inside each, a map from HCA ids to SCEA ids.
     protocol_map = {x: {} for x in protocol.protocol_order}
     for proto_type in protocol.protocol_order:
-        for (ptype, proto_columns) in protocol.protocol_columns.items():
-            if ptype == proto_type:
-                new_protos = []
-                for proto_column in proto_columns:
-                    new_protos = new_protos + pd.unique(merged_tabs[proto_column]).tolist()
-                for proto in new_protos:
-                    if proto is not None:
-                        protocol_id_counter += 1
-                        new_proto_id = f"P-{protocol_accession}-{protocol_id_counter}"
-                        protocol_map[proto_type].update({proto: {'scea_id': new_proto_id, 'hca_ids': [proto]}})
+        key = proto_type + ".protocol_core.protocol_id"
+        proto_type_columns = protocol.get_proto_type_columns(merged_tabs, key)
+        proto_type_values = protocol.get_proto_type_values(merged_tabs, key, proto_type_columns)
+        for proto_type_value in proto_type_values:
+            protocol_id_counter += 1
+            new_proto_id = f"P-{protocol_accession}-{protocol_id_counter}"
+            protocol_map[proto_type].update({proto_type_value: {'scea_id': new_proto_id, 'hca_ids': [proto_type_value]}})
 
     # Using that function, we get the description for all protocol types, and the hardware for sequencing protocols into
     # the map.
     protocol.extract_protocol_info(protocol_map, tabs_dict, f"protocol_core.protocol_description", "description")
     protocol.extract_protocol_info(protocol_map, tabs_dict, f"instrument_manufacturer_model.ontology_label", "hardware", ["sequencing_protocol"])
 
-    # Prepare project details to dump into file
-    project_details['protocol_map'] = protocol_map
-    project_details['project_uuid'] = args.project_uuid
-    project_details['EAExperimentType'] = args.experiment_type
-    project_details['hca_update_date'] = args.hca_update_date
-    project_details['ExperimentalFactorName'] = args.experimental_factors
-    project_details['related_scea_accession'] = args.related_scea_accession
-    project_details['public_release_date'] = args.public_release_date
+    return protocol_map
 
-    accessions = tracker.get_accessions_for_project(tracker.get_tracker_google_sheet(), identifier=project_details['project_uuid'])
+def prepare_project_details(project_details, args):
+
+    '''
+    Get the list of project level secondary accessions for the MAGE-TAB files.
+    '''
+    accessions = tracker.get_accessions_for_project(tracker.get_tracker_google_sheet(), identifier=args.project_uuid)
     if accessions:
-        accessions_uniq = tracker.get_unique_accessions([accessions])
-        [accessions_uniq.remove(accession) for accession in accessions_uniq if 'HCAD' in accession.upper()]
-        if accessions_uniq:
-            project_details['secondary_accessions'] = accessions_uniq
-        else:
-            project_details['secondary_accessions'] = []
+        project_details['secondary_accessions'] = tracker.get_project_accessions(accessions)
     else:
         project_details['secondary_accessions'] = []
 
-    # Prepare configurable fields.
-    biomaterial_id_columns = [x for x in merged_tabs.columns if x.endswith("biomaterial_id") or x.endswith("biosamples_accession") or x.endswith("biomaterial_id") or x.endswith("insdc_run_accessions")]
-
-    read_map = {'': "", 'Read 1': "read1", 'Read 2': "read2"}
-
-    def get_or_default(source, default):
-        return str(merged_tabs[source].values[0]) if source in merged_tabs.columns else default
-
+    '''
+    Get configurable technology type related fields from appropriate technology_json file.
+    '''
     with open(f"technology_jsons/{args.technology_type}.json") as json_file:
         project_details['configurable_fields'] = json.load(json_file)
 
-    project_details['name_field'] = args.name
-
+    '''
+    Save the reformatted technoloy type and single cell isolation method in project_details dict.
+    '''
     if args.facs is True:
         technology_type_reformatted,facs = reformat_tech(args.technology_type,'FACS')
     else:
@@ -385,8 +275,7 @@ def prepare_protocol_map(merged_tabs, tabs_dict, project_info, args):
 
     return project_details
 
-
-def create_magetab(work_dir, tabs_dict, project_details, merged_tabs, args):
+def create_magetab(work_dir, tabs_dict, protocol_map, project_details, merged_tabs, args):
 
     accession_number = project_details['accession']
     accession = f"E-HCAD-{accession_number}"
@@ -394,16 +283,10 @@ def create_magetab(work_dir, tabs_dict, project_details, merged_tabs, args):
     sdrf_file_name = f"{accession}.sdrf.txt"
 
     tab = '\t'
-    protocol_map = project_details['protocol_map']
     protocol_columns = project_details['protocol_columns']
-    configurable_fields = project_details['configurable_fields']
-    technology_type = project_details['technology_type']
-
-    name_field = project_details['name_field']
-
-    facs = project_details['single_cell_isolation']
 
     def generate_idf_file():
+
         protocol_fields = get_protocol_idf(protocol_map)
 
         def j(sheet, col_name, func=lambda x: x):
@@ -428,7 +311,7 @@ def create_magetab(work_dir, tabs_dict, project_details, merged_tabs, args):
                 else:
                     person_roles[i] = ""
 
-        if project_details.get('related_experiment'):
+        if args.related_experiment:
 
             idf_file_contents = f"""\
 
@@ -436,7 +319,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{g("project", "project.project_core.project_title")[0]}
 Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
 Experiment Description\t{g("project", "project.project_core.project_description")[0]}
-Public Release Date\t{project_details.get('public_release_date')}
+Public Release Date\t{args.public_release_date}
 Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
@@ -451,16 +334,16 @@ Protocol Hardware\t{tab.join([field[3] for field in protocol_fields])}
 Term Source Name\tEFO\tArrayExpress
 Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
-Experimental Factor Name\t{tab.join(project_details.get('ExperimentalFactorName'))}
-Experimental Factor Type\t{tab.join(project_details.get('ExperimentalFactorName'))}
+Experimental Factor Name\t{tab.join(args.factor_values)}
+Experimental Factor Type\t{tab.join(args.factor_values)}
 Comment[EAAdditionalAttributes]\t{''}
-Comment[EACurator]\t{tab.join(project_details['curators'])}
+Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[RelatedExperiment]\t{project_details.get('')}
-Comment[HCALastUpdateDate]\t{project_details.get('hca_update_date')}
-Comment[SecondaryAccession]\t{project_details['project_uuid']}\t{tab.join(project_details.get('secondary_accessions') or [])}
-Comment[EAExperimentType]\t{project_details.get('EAExperimentType')}
+Comment[RelatedExperiment]\t{args.related_experiment}
+Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(project_details.get('secondary_accessions') or [])}
+Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 """
         else:
@@ -470,7 +353,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{g("project", "project.project_core.project_title")[0]}
 Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
 Experiment Description\t{g("project", "project.project_core.project_description")[0]}
-Public Release Date\t{project_details.get('public_release_date')}
+Public Release Date\t{args.public_release_date}
 Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
@@ -485,22 +368,21 @@ Protocol Hardware\t{tab.join([field[3] for field in protocol_fields])}
 Term Source Name\tEFO\tArrayExpress
 Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
-Experimental Factor Name\t{tab.join(project_details['ExperimentalFactorName'])}
-Experimental Factor Type\t{tab.join(project_details['ExperimentalFactorName'])}
+Experimental Factor Name\t{tab.join(args.factor_values)}
+Experimental Factor Type\t{tab.join(args.factor_values)}
 Comment[EAAdditionalAttributes]
-Comment[EACurator]\t{tab.join(project_details['curators'])}
+Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[HCALastUpdateDate]\t{project_details.get('hca_update_date')}
-Comment[SecondaryAccession]\t{project_details['project_uuid']}\t{tab.join(project_details['secondary_accessions'] or [])}
-Comment[EAExperimentType]\t{project_details.get('EAExperimentType')}
+Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(project_details['secondary_accessions'] or [])}
+Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 """
 
         print(f"saving {work_dir}/{idf_file_name}")
         with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
             idf_file.write(idf_file_contents)
-
 
     def reformat_age(age_list):
         updated_age_list = []
@@ -515,7 +397,7 @@ SDRF File\t{sdrf_file_name}
             updated_age_list.append(age)
         return updated_age_list
 
-    def generate_sdrf_file(technology_type,facs,name_field,args):
+    def generate_sdrf_file(project_details, args):
     
         #
         ## SDRF Part.
@@ -557,7 +439,7 @@ SDRF File\t{sdrf_file_name}
         }, {
             'Extract Name': "UNDEFINED_FIELD",
             'Material Type_2': "UNDEFINED_FIELD",
-            'Comment[library construction]': technology_type,
+            'Comment[library construction]': project_details['technology_type'],
             'Comment[input molecule]': "library_preparation_protocol.input_nucleic_acid_molecule.ontology_label",
             'Comment[primer]': "UNDEFINED_FIELD",
             'Comment[end bias]': "library_preparation_protocol.end_bias",
@@ -570,7 +452,7 @@ SDRF File\t{sdrf_file_name}
             'Comment[sample barcode read]': "UNDEFINED_FIELD",
             'Comment[sample barcode offset]': "UNDEFINED_FIELD",
             'Comment[sample barcode size]': "UNDEFINED_FIELD",
-            'Comment[single cell isolation]': facs,
+            'Comment[single cell isolation]': project_details['single_cell_isolation'],
             'Comment[cDNA read]': "UNDEFINED_FIELD",
             'Comment[cDNA read offset]': "UNDEFINED_FIELD",
             'Comment[cDNA read size]': "UNDEFINED_FIELD",
@@ -639,9 +521,6 @@ SDRF File\t{sdrf_file_name}
         # In column Comment[input molecule], apply input_molecule_map.
 
         input_molecule_map = {'': "", 'polyA RNA extract': "polyA RNA", 'polyA RNA': "polyA RNA"}
-
-        sdrf_3['Comment[library construction]'] = technology_type
-        sdrf_3['Comment[single cell isolation]'] = facs
         sdrf_3['Comment[input molecule]'] = sdrf_3['Comment[input molecule]'].apply(lambda x: input_molecule_map[x])
 
         # Chunk 4: sequencing protocol ids.
@@ -666,13 +545,13 @@ SDRF File\t{sdrf_file_name}
 
         # fixes to sample name fields
 
-        if name_field == 'cs_name':
+        if args.name == 'cs_name':
             name = list(merged_tabs['cell_suspension.biomaterial_core.biomaterial_name'])
-        elif name_field == 'cs_id':
+        elif args.name == 'cs_id':
             name = list(merged_tabs['cell_suspension.biomaterial_core.biomaterial_id'])
-        elif name_field == 'sp_name':
+        elif args.name == 'sp_name':
             name = list(merged_tabs['specimen_from_organism.biomaterial_core.biomaterial_name'])
-        elif name_field == 'sp_id':
+        elif args.name == 'sp_id':
             name = list(merged_tabs['specimen_from_organism.biomaterial_core.biomaterial_id'])
 
         sdrf['Source Name'] = name
@@ -699,7 +578,7 @@ SDRF File\t{sdrf_file_name}
 
     generate_idf_file()
 
-    generate_sdrf_file(technology_type,facs,name_field,args)
+    generate_sdrf_file(project_details, args)
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
     xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
@@ -838,7 +717,7 @@ def main():
     '''
     Initialise a dictionary to store the E-HCAD ID accession number and curator initials.
     '''
-    project_info = {"accession": accession_number, "curators": args.curators}
+    project_details = {"accession": accession_number}
 
     '''
     Extract each tab from an input multi-tab spreadsheet into separate pandas dataframes and then merge the dataframes
@@ -850,12 +729,17 @@ def main():
     '''
     Prepare a map of the protocol information derived from the extracted spreadsheets.
     '''
-    project_details = prepare_protocol_map(merged_tabs, tabs_dict, project_info, args)
+    protocol_map = prepare_protocol_map(merged_tabs, tabs_dict, project_details)
 
     '''
-    Create MAGE-TAB files using the protocol information and extracted spreadsheets.
+    Prepare project details to be entered into the MAGE-TAB files.
     '''
-    create_magetab(work_dir, tabs_dict, project_details, merged_tabs, args)
+    project_details = prepare_project_details(project_details, args)
+
+    '''
+    Create MAGE-TAB files using the protocol map, project details dict and extracted spreadsheet tabs.
+    '''
+    create_magetab(work_dir, tabs_dict, protocol_map, project_details, merged_tabs, args)
 
 if __name__ == '__main__':
     main()

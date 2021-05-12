@@ -64,3 +64,11 @@ def get_accessions_for_project(tracking_sheet: pd.DataFrame,identifier: str) -> 
         return accession_list
     else:
         return None
+
+def get_project_accessions(accessions):
+    accessions_uniq = get_unique_accessions([accessions])
+    [accessions_uniq.remove(accession) for accession in accessions_uniq if 'HCAD' in accession.upper()]
+    if accessions_uniq:
+        return accessions_uniq
+    else:
+         return []
