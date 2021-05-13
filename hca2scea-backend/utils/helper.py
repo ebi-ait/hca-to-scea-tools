@@ -1,5 +1,27 @@
 import re
 
+def get_list_from_dict(dict, tab, key):
+    return list(dict[tab][key].fillna('').replace(r'[\n\r]', ' ', regex=True))
+
+def get_tab_separated_list_from_dict(dict, tab, key, func=lambda x: x):
+    return '\t'.join([func(p) for p in get_list_from_dict(dict, tab, key)])
+
+def get_first_letter(str):
+    return str[0] if len(str) else ''
+
+def replace_dash_with_to(input_list):
+    updated_input_list = []
+    for string_value in input_list:
+        string_value = str(string_value)
+        if ' - ' in string_value:
+            string_value = string_value.replace('-', 'to')
+        elif '-' in string_value and ' ' not in string_value:
+            string_value = string_value.replace('-', ' to ')
+        else:
+            string_value = string_value
+        updated_input_list.append(string_value)
+    return updated_input_list
+
 def atoi(text):
     if text.isdigit():
         return int(text)

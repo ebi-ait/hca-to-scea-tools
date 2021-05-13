@@ -241,8 +241,8 @@ def prepare_protocol_map(merged_tabs, tabs_dict, project_details):
 
     # Using that function, we get the description for all protocol types, and the hardware for sequencing protocols into
     # the map.
-    protocol.extract_protocol_info(protocol_map, tabs_dict, f"protocol_core.protocol_description", "description")
-    protocol.extract_protocol_info(protocol_map, tabs_dict, f"instrument_manufacturer_model.ontology_label", "hardware", ["sequencing_protocol"])
+    protocol.extract_protocol_description(protocol_map, tabs_dict, f"protocol_core.protocol_description", "description")
+    protocol.extract_protocol_description(protocol_map, tabs_dict, f"instrument_manufacturer_model.ontology_label", "hardware", ["sequencing_protocol"])
 
     return protocol_map
 
@@ -275,57 +275,53 @@ def prepare_project_details(project_details, args):
 
     return project_details
 
-def create_magetab(work_dir, tabs_dict, protocol_map, project_details, merged_tabs, args):
+def correct_person_roles(person_roles, person_roles_submitter):
+    for (i, elem) in enumerate(person_roles_submitter):
+        person_roles[i] = person_roles[i].lower()
+        if elem == "yes":
+            person_roles[i] = "submitter"
+        elif elem == "no":
+            if "curator" in person_roles[i]:
+                person_roles[i] = "data curator"
+            else:
+                person_roles[i] = ""
+    return person_roles
 
-    accession_number = project_details['accession']
-    accession = f"E-HCAD-{accession_number}"
-    idf_file_name = f"{accession}.idf.txt"
-    sdrf_file_name = f"{accession}.sdrf.txt"
+def generate_idf_file(work_dir, tabs_dict, protocol_map, project_details, idf_file_name, sdrf_file_name, args, accession):
+
+    '''
+    Retrieve the required experimental protocol information from the protocol map.
+    '''
+    protocol_fields = get_protocol_idf(protocol_map)
+
+    '''
+    Retrieve and correct the contributors person roles to meet SCEA requirements.
+    '''
+    person_roles = helper.get_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.project_role.text")
+    person_roles_submitter = helper.get_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.corresponding_contributor")
+    person_roles = correct_person_roles(person_roles, person_roles_submitter)
+
+    '''
+    Write the MAGE-TAB idf file as an f string. The expressions inside brackets are evaluated at run time.
+    '''
 
     tab = '\t'
-    protocol_columns = project_details['protocol_columns']
 
-    def generate_idf_file():
+    if args.related_scea_accession:
 
-        protocol_fields = get_protocol_idf(protocol_map)
-
-        def j(sheet, col_name, func=lambda x: x):
-            return tab.join([func(p) for p in g(sheet, col_name)])
-
-        def g(sheet, col_name):
-            return list(tabs_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
-
-        def first_letter(str):
-            return str[0] if len(str) else ''
-
-        person_roles = g("project_contributors", "project.contributors.project_role.text")
-        person_roles_submitter = g("project_contributors", "project.contributors.corresponding_contributor")
-
-        for (i, elem) in enumerate(person_roles_submitter):
-            person_roles[i] = person_roles[i].lower()
-            if elem == "yes":
-                person_roles[i] = "submitter"
-            elif elem == "no":
-                if "curator" in person_roles[i]:
-                    person_roles[i] = "data curator"
-                else:
-                    person_roles[i] = ""
-
-        if args.related_experiment:
-
-            idf_file_contents = f"""\
+        idf_file_contents = f"""\
 
 MAGE-TAB Version\t1.1
-Investigation Title\t{g("project", "project.project_core.project_title")[0]}
-Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
-Experiment Description\t{g("project", "project.project_core.project_description")[0]}
+Investigation Title\t{helper.get_list_from_dict(dict=tabs_dict, tab="project", key="project.project_core.project_title")[0]}
+Comment[Submitted Name]\t{helper.get_list_from_dict(dict=tabs_dict,tab="project", key="project.project_core.project_short_name")[0]}
+Experiment Description\t{helper.get_list_from_dict(dict=tabs_dict, tab="project", key="project.project_core.project_description")[0]}
 Public Release Date\t{args.public_release_date}
-Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
-Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
-Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
-Person Email\t{j("project_contributors", "project.contributors.email")}
-Person Affiliation\t{j("project_contributors", "project.contributors.institution")}
-Person Address\t{j("project_contributors", "project.contributors.address")}
+Person First Name\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.name", func=lambda x: x.split(',')[0])}
+Person Last Name\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.name", func=lambda x: x.split(',')[2])}
+Person Mid Initials\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.name", func=lambda x: helper.get_first_letter(x.split(',')[1]))}
+Person Email\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.email")}
+Person Affiliation\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.institution")}
+Person Address\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.address")}
 Person Roles\t{tab.join(person_roles)}
 Protocol Type\t{tab.join([field[0] for field in protocol_fields])}
 Protocol Name\t{tab.join([field[1] for field in protocol_fields])}
@@ -334,32 +330,32 @@ Protocol Hardware\t{tab.join([field[3] for field in protocol_fields])}
 Term Source Name\tEFO\tArrayExpress
 Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
-Experimental Factor Name\t{tab.join(args.factor_values)}
-Experimental Factor Type\t{tab.join(args.factor_values)}
+Experimental Factor Name\t{tab.join(args.experimental_factors)}
+Experimental Factor Type\t{tab.join(args.experimental_factors)}
 Comment[EAAdditionalAttributes]\t{''}
 Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[RelatedExperiment]\t{args.related_experiment}
+Comment[RelatedExperiment]\t{args.related_scea_accession}
 Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(project_details.get('secondary_accessions') or [])}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 """
-        else:
-            idf_file_contents = f"""\
+    else:
+        idf_file_contents = f"""\
 
 MAGE-TAB Version\t1.1
-Investigation Title\t{g("project", "project.project_core.project_title")[0]}
-Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
-Experiment Description\t{g("project", "project.project_core.project_description")[0]}
+Investigation Title\t{helper.get_list_from_dict(dict=tabs_dict, tab="project", key="project.project_core.project_title")[0]}
+Comment[Submitted Name]\t{helper.get_list_from_dict(dict=tabs_dict, tab="project", key="project.project_core.project_short_name")[0]}
+Experiment Description\t{helper.get_list_from_dict(dict=tabs_dict, tab="project", key="project.project_core.project_description")[0]}
 Public Release Date\t{args.public_release_date}
-Person First Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
-Person Last Name\t{j("project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
-Person Mid Initials\t{j("project_contributors", "project.contributors.name", lambda x: first_letter(x.split(',')[1]))}
-Person Email\t{j("project_contributors", "project.contributors.email")}
-Person Affiliation\t{j("project_contributors", "project.contributors.institution")}
-Person Address\t{j("project_contributors", "project.contributors.address")}
+Person First Name\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.name", func=lambda x: x.split(',')[0])}
+Person Last Name\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.name", func=lambda x: x.split(',')[2])}
+Person Mid Initials\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.name", func=lambda x: helper.get_first_letter(x.split(',')[1]))}
+Person Email\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.email")}
+Person Affiliation\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.institution")}
+Person Address\t{helper.get_tab_separated_list_from_dict(dict=tabs_dict, tab="project_contributors", key="project.contributors.address")}
 Person Roles\t{tab.join(person_roles)}
 Protocol Type\t{tab.join([field[0] for field in protocol_fields])}
 Protocol Name\t{tab.join([field[1] for field in protocol_fields])}
@@ -368,8 +364,8 @@ Protocol Hardware\t{tab.join([field[3] for field in protocol_fields])}
 Term Source Name\tEFO\tArrayExpress
 Term Source File\thttp://www.ebi.ac.uk/efo/efo.owl\thttp://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]\tRNA-seq of coding RNA from single cells
-Experimental Factor Name\t{tab.join(args.factor_values)}
-Experimental Factor Type\t{tab.join(args.factor_values)}
+Experimental Factor Name\t{tab.join(args.experimental_factors)}
+Experimental Factor Type\t{tab.join(args.experimental_factors)}
 Comment[EAAdditionalAttributes]
 Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
@@ -380,25 +376,12 @@ Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 """
 
-        print(f"saving {work_dir}/{idf_file_name}")
-        with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
-            idf_file.write(idf_file_contents)
+    print(f"saving {work_dir}/{idf_file_name}")
+    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+        idf_file.write(idf_file_contents)
 
-    def reformat_age(age_list):
-        updated_age_list = []
-        for age in age_list:
-            age = str(age)
-            if ' - ' in age:
-                age = age.replace('-', 'to')
-            elif '-' in age and ' ' not in age:
-                age = age.replace('-', ' to ')
-            else:
-                age = age
-            updated_age_list.append(age)
-        return updated_age_list
+def generate_sdrf_file(project_details, args):
 
-    def generate_sdrf_file(project_details, args):
-    
         #
         ## SDRF Part.
         #
@@ -481,11 +464,12 @@ SDRF File\t{sdrf_file_name}
         # Chunk 1: donor info.
         sdrf_1 = pd.DataFrame({k: get_from_merged_tabs(v) for k, v in convert_map_chunks[0].items()})
         sdrf_1 = sdrf_1.fillna('')
-        sdrf_1['Characteristics[age]'] = reformat_age(list(sdrf_1['Characteristics[age]']))
+        sdrf_1['Characteristics[age]'] = helper.replace_dash_with_to(list(sdrf_1['Characteristics[age]']))
 
         # Fixes for chunk 1.
         # Organism status: convert from 'is_alive' to 'status'.
-        sdrf_1['Characteristics[organism status]'] = sdrf_1['Characteristics[organism status]'].apply(lambda x: 'alive' if x.lower() in ['yes', 'y'] else 'dead')
+        sdrf_1['Characteristics[organism status]'] = sdrf_1['Characteristics[organism status]'].apply(
+            lambda x: 'alive' if x.lower() in ['yes', 'y'] else 'dead')
 
         # Chunk 2: collection/dissociation/enrichment/library prep protocols
         def convert_term(term, name):
@@ -494,9 +478,12 @@ SDRF File\t{sdrf_file_name}
         def convert_row(row):
             return row.apply(lambda x: convert_term(x, row.name))
 
-        protocols_for_sdrf_2 = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol', 'library_preparation_protocol']
+        protocols_for_sdrf_2 = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol',
+                                'library_preparation_protocol']
 
-        sdrf_2 = merged_tabs[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_2 for col in cols]]
+        sdrf_2 = merged_tabs[
+            [col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_2 for col in
+             cols]]
 
         pd.set_option('display.max_columns', 0)
         pd.set_option('display.expand_frame_repr', False)
@@ -526,7 +513,9 @@ SDRF File\t{sdrf_file_name}
         # Chunk 4: sequencing protocol ids.
         protocols_for_sdrf_4 = ['sequencing_protocol']
 
-        sdrf_4 = merged_tabs[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in cols]]
+        sdrf_4 = merged_tabs[
+            [col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in
+             cols]]
         sdrf_4 = sdrf_4.apply(convert_row)
         sdrf_4.columns = ["Protocol REF" for col in sdrf_4.columns]
 
@@ -565,20 +554,39 @@ SDRF File\t{sdrf_file_name}
         sdrf['Comment[BioSD_SAMPLE]'] = biosample_accessions
 
         # Fix column names.
-        sdrf = sdrf.rename(columns = {'Protocol REF_1' : "Protocol REF", 'Material Type_1': "Material Type", 'Material Type_2': "Material Type"})
+        sdrf = sdrf.rename(columns={'Protocol REF_1': "Protocol REF", 'Material Type_1': "Material Type",
+                                    'Material Type_2': "Material Type"})
 
         paths = get_fastq_path_from_sra(sdrf)
-        paths = get_fastq_path_from_ena(args.study,paths)
+        paths = get_fastq_path_from_ena(args.study, paths)
         paths = check_file_types(paths)
-        sdrf = filter_paths(sdrf,paths)
+        sdrf = filter_paths(sdrf, paths)
 
         # Save SDRF file..
         print(f"saving {work_dir}/{sdrf_file_name}")
         sdrf.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
-    generate_idf_file()
-
     generate_sdrf_file(project_details, args)
+
+def create_magetab(work_dir, tabs_dict, protocol_map, project_details, merged_tabs, args):
+
+    '''
+    Create a name for the MAGE-TAB files using the newly assigned E-HCAD accession.
+    '''
+    accession_number = project_details['accession']
+    accession = f"E-HCAD-{accession_number}"
+    idf_file_name = f"{accession}.idf.txt"
+    sdrf_file_name = f"{accession}.sdrf.txt"
+
+    '''
+    Create and write MAGE-TAB idf file.
+    '''
+    generate_idf_file(work_dir, tabs_dict, protocol_map, project_details, idf_file_name, sdrf_file_name, args, accession)
+
+    '''
+    Create and write MAGE-TAB sdrf file.
+    '''
+    generate_sdrf_file(work_dir, tabs_dict, protocol_map, project_details, idf_file_name, sdrf_file_name, args, accession)
 
 def extract_csv_from_spreadsheet(work_dir, excel_file):
     xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
@@ -593,7 +601,6 @@ def extract_csv_from_spreadsheet(work_dir, excel_file):
         d[filename] = df
     print(f"{len(xlsx.sheet_names)} sheets converted to dataframes")
     return d
-
 
 def main():
     parser = argparse.ArgumentParser(description="run hca -> scea tool")
@@ -737,7 +744,7 @@ def main():
     project_details = prepare_project_details(project_details, args)
 
     '''
-    Create MAGE-TAB files using the protocol map, project details dict and extracted spreadsheet tabs.
+    Create MAGE-TAB and write files using the protocol map, project details dict and extracted spreadsheet tabs.
     '''
     create_magetab(work_dir, tabs_dict, protocol_map, project_details, merged_tabs, args)
 
