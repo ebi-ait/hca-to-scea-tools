@@ -31,7 +31,7 @@ source venv/bin/activate
 ```
 
 ## Running the tool on EC2
-
+The easiest way might be to copy the example below, and replace the arguments as necessary whilst referring to this readme. 
 ```
 python3 script.py -s [spreadsheet (xlsx)] -id [HCA project uuid] -c [curator initials] -tt [technology] -et [experiment type] -f [factor value] -pd [dataset publication date] -hd [hca last update date] -study [study accession (SRPxxx)]
 ```
@@ -42,7 +42,7 @@ Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-
 
 **How to assign a HCAD accession**
 
-Please note that the script will automatically assign your dataset the next E-HCAD id in order using information about the unique E-HCAD accessions in the tracker sheet, unless you provide the -ac argument, which will override the default. Please ensure if you use this option that the E-HCAD id is unique and not already present in the tracker sheet.
+Please note that the script will automatically assign your dataset the next E-HCAD id in order using information about the unique E-HCAD accessions in the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0), unless you provide the -ac argument, which will override the default. Please ensure if you use this option that the E-HCAD id is unique and not already present in the tracker sheet.
 
 **Arguments:**
 
