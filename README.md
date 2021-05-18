@@ -42,7 +42,9 @@ Python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-
 
 **How to assign a HCAD accession**
 
-Please note that the script will automatically assign your dataset the next E-HCAD id in order using information about the unique E-HCAD accessions in the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0), unless you provide the -ac argument, which will override the default. Please ensure if you use this option that the E-HCAD id is unique and not already present in the tracker sheet.
+Please note that the script will automatically assign your dataset the next E-HCAD id in order using information about the unique E-HCAD accessions in the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0), unless you provide the -ac argument, which will override the default. Please ensure if you use this option that the E-HCAD id is unique and not already present in the tracker sheet. It is also a good idea to notify in hca-wrangler-metadata that you are doing some SCEA wrangling to ensure the E-HCAD-id does not get duplicated.
+
+
 
 **Arguments:**
 
