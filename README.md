@@ -115,19 +115,13 @@ _There are 2 validation steps for SCEA: a python validator and perl validator. I
 
 ### Python Validator
 
-Please note: there is a ticket to get the validation tools installed on EC2. This should be available soon, as of 28/04/2021. For now, please install and run locally, following the instructions below.
+It is not possible to get this validation tool running globally for all users in the /data/tools folder on EC2. It is better to install it individually in your home directory or subdirectory. If you follow the install instructions detailed here: https://pypi.org/project/atlas-metadata-validator/ you should be able to get it installed and running.
 
-A MAGE-TAB pre-validation module for running checks that guarantee the experiment can be processed for SCEA. You can clone the repository and run the script locally:
-
-[Atlas metadata validator](https://github.com/ebi-gene-expression-group/atlas-metadata-validator)
-
-To run, from the directory:
+To run the tool once installed, type this command, indicating the path to the idf file which you wish to validate. The corresponding sdrf file should be in the same folder. The tool will automatically detect the sdrf file given the idf filename prefix:
 
 ```
 python atlas_validation.py path/to/test.idf.txt -sc -hca -v
 ```
-
-*   The SDRF file is expected in the same directory as the IDF file. If this is not the case, the location of the SDRF and other data files can be specified with -d PATH_TO_DATA option.
 *   The script guesses the experiment type (sequencing, microarray or single-cell) from the MAGE-TAB. If this was unsuccessful the experiment type can be set by specifying the respective argument -seq, -ma or -sc.
 *   The data file and URI checks may take a long time. Hence there is an option to skip these checks with -x.
 *   Verbose logging can be activated with -v.
@@ -139,23 +133,25 @@ An example of a successful validation looks like this:
 
 ### Perl validator
 
+It is not possible to get this validation tool running globally for all users in the /data/tools folder on EC2. It is better to install it individually in your home directory or subdirectory. If you follow the below install instructions you should be able to get it installed and running on EC2.
+
 1.   Install Anaconda if you don’t have it already and the Anaconda directory to your path
-1.   Configure conda by typing the following at the terminal:
+2.   Configure conda by typing the following at the terminal:
      ```
      conda config --add channels defaults
      conda config --add channels bioconda
      conda config --add channels conda-forge
      ```
-1.   Install the perl atlas module in a new environment: 
+3.   Install the perl atlas module in a new environment: 
      ```
      conda create -n perl-atlas-test -c ebi-gene-expression-group perl-atlas-modules
      ```
-1.   Activate the environment:
+4.   Activate the environment:
      ```
      conda activate perl-atlas-test
      ```
-1.   Download the validate_magetab.pl_ _perl script from here: [https://drive.google.com/drive/folders/1Ja2NKtHkDh2YIvUhNa1mpivL-UjCsmbR](https://drive.google.com/drive/folders/1Ja2NKtHkDh2YIvUhNa1mpivL-UjCsmbR))
-1.   Execute the script (with idf and sdrf files in the same directory)
+5.   Copy the validate_magetab.pl perl script into your home or other directory where you will run the tool, it can be found on EC2 in the /data/tools/scea-perl-atlas-validator folder. The corresponding sdrf file should be in the same folder. The tool will automatically detect the sdrf file given the idf filename prefix.
+6.   Execute the script (with idf and sdrf files in the same directory)
      ```
      perl path-to/validate_magetab.pl -i <idf-file>
      ```
