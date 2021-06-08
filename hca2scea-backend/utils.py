@@ -185,3 +185,4 @@ def map_proto_to_id(protocol_name, protocol_map):
             if protocol_name in proto['hca_ids']:
                 return proto.get('scea_id')
     return ''
+

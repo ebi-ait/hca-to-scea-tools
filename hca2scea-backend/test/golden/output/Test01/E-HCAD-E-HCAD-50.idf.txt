@@ -1,0 +1,30 @@
+
+MAGE-TAB Version	1.1
+Investigation Title	A single cell atlas of the human proximal epididymis reveals cell-type specific functions and distinct roles for CFTR.
+Comment[Submitted Name]	ProximalEpididymisCFTR
+Experiment Description	Spermatozoa released from the testis are unable to fertilize an egg without a coordinated process of maturation in the lumen of the epididymis. Relatively little is known about the molecular events that integrate this critical progression along the male genital ducts in man. Here, single cell RNA-sequencing was used to construct an atlas of the human proximal epididymis.
+Public Release Date	2009-02-27
+Person First Name	Shih-Hsing	Shiyi	Jenny	Wilmel	Ann	Ami
+Person Last Name	Leir	Yin	Kerschner	Cosme	Harris	Day
+Person Mid Initials			L			
+Person Email					ann.harris@case.edu	
+Person Affiliation	Case Western Reserve University School of Medicine, and Case Comprehensive Cancer Center	Case Western Reserve University School of Medicine, and Case Comprehensive Cancer Center	Case Western Reserve University School of Medicine, and Case Comprehensive Cancer Center	Case Western Reserve University School of Medicine, and Case Comprehensive Cancer Center	Case Western Reserve University School of Medicine, and Case Comprehensive Cancer Center	EMBL-EBI
+Person Address	Cleveland, OH	Cleveland, OH	Cleveland, OH	Cleveland, OH	Cleveland, OH	Wellcome Genome Campus, Hinxton
+Person Roles					submitter	
+Protocol Type	sample collection protocol	enrichment protocol	enrichment protocol	enrichment protocol	enrichment protocol	enrichment protocol	enrichment protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol
+Protocol Name	P-HCADE-HCAD-50-1	P-HCADE-HCAD-50-2	P-HCADE-HCAD-50-3	P-HCADE-HCAD-50-4	P-HCADE-HCAD-50-5	P-HCADE-HCAD-50-6	P-HCADE-HCAD-50-7	P-HCADE-HCAD-50-8	P-HCADE-HCAD-50-9
+Protocol Description	Human epididymis tissue was obtained with Institutional Review Board (IRB) approval from consented patients undergoing inguinal radical orchiectomy for a clinical diagnosis of testicular cancer. Collected tissue samples were from normal epididymis tissues and not pathological specimens. Connective tissue and fat were removed from epididymis tissue within ∼2 h of surgery and the tissue was separated into efferent duct, caput, and corpus according to anatomical features.	Caput tissue was cut into 1–2 mm pieces and digested with 2 mg/ml collagenase + 150 μg/ml DNAse I at 37°C for 2 h with constant shaking. Digesting tissue was then agitated by pipetting and the supernatant collected and stored on ice as cell suspension 1. Fresh collagenase solution was then added to the tissue, which was digested for a further 2 h with shaking at 37°C, with subsequent agitation and settling as before. The supernatant (cell suspension 2) was then pooled with cell suspension 1.	Cells were then centrifuged (300g) and washed in PBS.	Cells were then digested with Accutase for 20–30 min.	Once single-cell digestion was complete the cell pellet was lysed with ammonium chloride solution for 3 min and centrifuged at 300g for 5 min to remove red blood cells.	Tissue debris removed by passage through a 100-μm cell strainer.	Epithelial cells collected were washed twice in Hank’s Balanced Salt Solution + 2% FBS with centrifugation at (200g), then resuspended in Hank’s Balanced Salt Solution and passed through Flowmi cell strainers (40 μm) to prepare single cells.	scRNA-seq libraries were generated using the 10× Genomics Chromium Single Cell 3′ Reagent Kit (v2).	scRNA-seq libraries were sequenced on an Illumina NovaSeq 600 sequencer.
+Protocol Hardware									Illumina NovaSeq 6000
+Term Source Name	EFO	ArrayExpress
+Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
+Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
+Experimental Factor Name	individual
+Experimental Factor Type	individual
+Comment[EAAdditionalAttributes]
+Comment[EACurator]	AD
+Comment[EAExpectedClusters]	
+Comment[ExpressionAtlasAccession]	E-HCAD-E-HCAD-50
+Comment[HCALastUpdateDate]	2021-04-29
+Comment[SecondaryAccession]	c893cb57-5c9f-4f26-9312-21b85be84313	GSE116222
+Comment[EAExperimentType]	baseline
+SDRF File	E-HCAD-E-HCAD-50.sdrf.txt
