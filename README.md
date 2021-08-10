@@ -72,6 +72,7 @@ Example baseline: all primary samples from 1 organ type and same developmental s
 
 **Factor value:** a factor value is a chosen experimental characteristic which can be used to group or differentiate samples. If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors. The SCEA team's validator tools will fail without this. Technology cannot be a factor value
 Example: disease developmental stage age
+A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
 
 **Related E-HCAD-id:** If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
 
@@ -104,10 +105,11 @@ idf file:
 - You should add a related project E-HCAD-id if the project was split into separate E-HCAD-ids by adding this field: Comment[RelatedExperiment]
 
 sdrf file:
+- The format should be 1 RUN per row, with files (read1,read2,index1) in separate Comment columns.
 - You need to add new columns with the full download path to fastq files and fastq file names. The column names should be "Comment[read1 file]" and "Comment[FASTQ_URI]" respectively and "Comment[read2 file]" and "Comment[FASTQ_URI]" respectively. You should also add "Comment[index1 file]" and "Comment[FASTQ_URI]" respectively if there is an index1 file available. A "Comment[FASTQ_URI]" column with the relevant file paths should always following a "Comment[[enter read index] file]" column. It is currently up to the wrangler to identify the names and full paths of the fastq files either in the NCBI SRA or ENA DB. The full download path should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp.". While I am in the process of automating getting the fastq file paths into the sdrf file, I am waiting to be on development until I can get this finished. Therefore, for now the "ftp://" prefix will need to be added to the paths manually or via a small script. If a path to the fastq files can not be found, the fastq file columns should be removed from the sdrf file. They should be replaced with Comment[SRA file] and Comment[SRA_URI] or Comment[BAM file] and Comment[BAM_URI] respectively. If the paths to an SRA object can be found then that is preferred over a path to the bam files as the scea team cannot currently process bam files.
 - You need to add a factor value column as the last column in the sdrf file which matches the factor value(s) you gave as an argument and entered in the idf file.
 - You will need to check that the number and name of the protocol REF ids in the idf file (e.g. P-HCADX-1,P-HCADX-2) matches correctly with the experiment rows in the sdrf files, based on the experimental design. The automatic conversion should be correct but this is a good check to do.
-- Controlled vocabulary is applicable in certain sdrf fields: please see the shared documents from Silvie found here: [SCEA controlled vocabulary](https://drive.google.com/drive/folders/1GHaqpQsz4CY6_KkBTTXHJo69J4FXMNcw)
+- Add a new Comment[technical replicate group] column if there are multiple runs per sample. This column should be added immediately following the Assay Name column. The column values should be either the Biosample IDs or given group ids e.g. group1,group2, etc.
 - For time unit ranges, please use ‘to’ instead of ‘-‘. For example: ‘20 to 60’ years.
 - Make sure you save the sdrf file as a tab-delimited .txt file: beware of excel changing your time unit ranges to a date format and of empty rows/lines at the bottom of the file. Empty rows/lines will cause errors in validation.
 
