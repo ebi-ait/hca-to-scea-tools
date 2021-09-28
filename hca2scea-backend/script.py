@@ -742,8 +742,8 @@ def main():
         "-ac",
         "--accession_number",
         type=str,
-        required=False,
-        help="Optionally add an E-HCAD accession number. If not provided, the script will automatically detect the next accession in order by querying the google tracker sheet"
+        required=True,
+        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
     )
     parser.add_argument(
         "-c",
@@ -817,13 +817,7 @@ def main():
 
     tracking_sheet = utils.get_tracker_google_sheet()
 
-    if args.accession_number:
-        accession_number = args.accession_number
-    else:
-        accessions = list(tracking_sheet['data_accession']) + list(tracking_sheet['scea_accession'])
-        accessions_uniq = utils.get_unique_accessions(accessions)
-        echad_accessions = utils.get_echad_accessions(accessions_uniq)
-        accession_number = utils.get_next_echad_accession(echad_accessions)
+    accession_number = args.accession_number
 
     project_info = {"accession": accession_number, "curators": args.curators}
     spreadsheets = extract_csv_from_spreadsheet(work_dir, args.spreadsheet)

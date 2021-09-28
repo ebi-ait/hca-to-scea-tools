@@ -28,3 +28,7 @@ hca2scea-frontend/public
 
 # Logs
 *.log
+
+output/
+
+.idea/
