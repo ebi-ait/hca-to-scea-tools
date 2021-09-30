@@ -13,8 +13,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      working-directory: hca2scea-backend
+    defaults:
+      run:
+        working-directory: hca2scea-backend
 
     steps:
     - uses: actions/checkout@v2
