@@ -14,6 +14,7 @@ venv
 
 # converted spreadsheets
 hca2scea-backend/spreadsheets/
+hca2scea-backend/output/
 
 # frontend cache
 **/.cache
@@ -27,3 +28,7 @@ hca2scea-frontend/public
 
 # Logs
 *.log
+
+output/
+
+.idea/
