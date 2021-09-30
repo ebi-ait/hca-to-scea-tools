@@ -28,4 +28,4 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with unittest
       run: |
-        python -m unittest -v test_hca2scea.py
+        python -m unittest -v test_hca2scea.CharacteristicTest
