@@ -330,6 +330,7 @@ def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet
     extract_protocol_info(protocol_map, spreadsheets, f"protocol_core.protocol_description", "description")
     extract_protocol_info(protocol_map, spreadsheets, f"instrument_manufacturer_model.ontology_label", "hardware", ["sequencing_protocol"])
 
+
     # Prepare project details to dump into file
     project_details['protocol_map'] = protocol_map
     project_details['project_uuid'] = args.project_uuid
@@ -420,7 +421,7 @@ def create_magetab(work_dir, spreadsheets, project_details, args):
         if project_details.get('related_experiment'):
 
             idf_file_contents = f"""\
-
+        
 MAGE-TAB Version\t1.1
 Investigation Title\t{g("project", "project.project_core.project_title")[0]}
 Comment[Submitted Name]\t{g("project", "project.project_core.project_short_name")[0]}
@@ -680,7 +681,10 @@ SDRF File\t{sdrf_file_name}
         paths = get_fastq_path_from_sra(sdrf)
         paths = get_fastq_path_from_ena(args.study,paths)
         paths = check_file_types(paths)
-        sdrf = filter_paths(sdrf,paths)
+        try:
+            sdrf = filter_paths(sdrf,paths)
+        except:
+            sdrf = sdrf
 
         # Save SDRF file..
         print(f"saving {work_dir}/{sdrf_file_name}")
@@ -742,8 +746,8 @@ def main():
         "-ac",
         "--accession_number",
         type=str,
-        required=True,
-        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
+        required=False,
+        help="Optionally add an E-HCAD accession number. If not provided, the script will automatically detect the next accession in order by querying the google tracker sheet"
     )
     parser.add_argument(
         "-c",
@@ -817,7 +821,13 @@ def main():
 
     tracking_sheet = utils.get_tracker_google_sheet()
 
-    accession_number = args.accession_number
+    if args.accession_number:
+        accession_number = args.accession_number
+    else:
+        accessions = list(tracking_sheet['data_accession']) + list(tracking_sheet['scea_accession'])
+        accessions_uniq = utils.get_unique_accessions(accessions)
+        echad_accessions = utils.get_echad_accessions(accessions_uniq)
+        accession_number = utils.get_next_echad_accession(echad_accessions)
 
     project_info = {"accession": accession_number, "curators": args.curators}
     spreadsheets = extract_csv_from_spreadsheet(work_dir, args.spreadsheet)
