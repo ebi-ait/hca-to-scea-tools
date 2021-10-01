@@ -680,7 +680,10 @@ SDRF File\t{sdrf_file_name}
         paths = get_fastq_path_from_sra(sdrf)
         paths = get_fastq_path_from_ena(args.study,paths)
         paths = check_file_types(paths)
-        sdrf = filter_paths(sdrf,paths)
+        try:
+            sdrf = filter_paths(sdrf,paths)
+        except:
+            sdrf = sdrf
 
         # Save SDRF file..
         print(f"saving {work_dir}/{sdrf_file_name}")
