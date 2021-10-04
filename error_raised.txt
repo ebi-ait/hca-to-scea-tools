@@ -1,3 +1,0 @@
-# Please list the full command with the full path to the input spreadsheet in cases where an error had occurred.
-
-python script.py -s /Users/ami/Downloads/GSE157829_ontologies_final_25032021.xlsx -id 0fd8f918-62d6-4b8b-ac35-4c53dd601f71 -c AD -tt 10Xv2_3 -et differential -f disease -pd 2020-09-12 -hd 2021-03-19 -study SRP282057
