@@ -24,7 +24,7 @@ class CharacteristicTest(unittest.TestCase):
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
                 arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
                 output_dir = self.run_tool(spreadsheet, arguments)
-                self.check_output(output_dir, spreadsheet)
+                self.check_output(os.path.join("test/golden",output_dir), spreadsheet)
 
     def get_file_content(self, file):
         if file.split(".")[-2] == 'sdrf':

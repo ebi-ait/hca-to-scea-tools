@@ -15,6 +15,7 @@ venv
 # converted spreadsheets
 hca2scea-backend/spreadsheets/
 hca2scea-backend/output/
+hca2scea-backend/script_spreadsheets/
 
 # frontend cache
 **/.cache
