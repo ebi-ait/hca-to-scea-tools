@@ -3,16 +3,13 @@ import copy
 import json
 import os
 from pathlib import Path
-import sys
-
-import fetch_fastq_path
-
 import numpy as np
-import pandas as pd # can probably use openpyxl directly
+import pandas as pd
 
+import multitab_excel_to_single_txt
+import fetch_fastq_path
 import utils
-
-from utils import  (
+from utils import (
     protocol_type_map,
     protocol_order,
     protocol_columns,
@@ -23,134 +20,7 @@ from utils import  (
     get_protocol_idf,
     map_proto_to_id,
     convert_to_snakecase,
-)
-
-def parse_xml(xml_content):
-    for experiment_package in xml_content.findall('EXPERIMENT_PACKAGE'):
-        yield experiment_package
-
-def create_big_table(work_dir, spreadsheets):
-    # Merge sequence files with cell suspensions.
-    big_table = spreadsheets['cell_suspension'].merge(
-        spreadsheets['sequence_file'],
-        how="outer",
-        on="cell_suspension.biomaterial_core.biomaterial_id"
     )
-
-    # Take specimen ids from cell suspensions if there are any.
-    def get_specimen(cell_line_id):
-        return spreadsheets['cell_line'].loc[
-            spreadsheets['cell_line']['cell_line.biomaterial_core.biomaterial_id'] == cell_line_id][
-            'specimen_from_organism.biomaterial_core.biomaterial_id'].values[0]
-
-    if 'cell_line' in spreadsheets.keys():
-        big_table['specimen_from_organism.biomaterial_core.biomaterial_id'] = big_table[
-            'specimen_from_organism.biomaterial_core.biomaterial_id'].fillna(
-            big_table.loc[big_table['specimen_from_organism.biomaterial_core.biomaterial_id'].isna()][
-                'cell_line.biomaterial_core.biomaterial_id'].apply(get_specimen))
-
-    # Merge specimens into big table.
-    big_table = spreadsheets['specimen_from_organism'].merge(
-        big_table,
-        how="outer",
-        on="specimen_from_organism.biomaterial_core.biomaterial_id"
-    )
-
-    # Merge donor organisms into big table.
-    big_table = spreadsheets['donor_organism'].merge(
-        big_table,
-        how="outer",
-        on="donor_organism.biomaterial_core.biomaterial_id"
-    )
-
-    # Merge library preparation into big table.
-    big_table = spreadsheets['library_preparation_protocol'].merge(
-        big_table,
-        how="outer",
-        on="library_preparation_protocol.protocol_core.protocol_id"
-    )
-
-    # Merge sequencing protocol into big table.
-    big_table = spreadsheets['sequencing_protocol'].merge(
-        big_table,
-        how="outer",
-        on="sequencing_protocol.protocol_core.protocol_id"
-    )
-
-    # Merge the two rows for each read (read1 and read2).
-    big_table_read1 = big_table.loc[big_table['sequence_file.read_index'] == 'read1']
-    big_table_read2 = big_table.loc[big_table['sequence_file.read_index'] == 'read2']
-
-    big_table_read2_short = big_table_read2[[
-        'cell_suspension.biomaterial_core.biomaterial_id',
-        'sequence_file.file_core.file_name',
-        'sequence_file.read_length',
-        'sequence_file.lane_index',
-    ]]
-
-    big_table_joined = big_table_read1.merge(
-        big_table_read2_short,
-        on=['cell_suspension.biomaterial_core.biomaterial_id', 'sequence_file.lane_index'],
-        suffixes=("_read1", "_read2")
-    )
-
-    # Merge index rows for each read.
-    if ('index1' in big_table['sequence_file.read_index'].values):
-        big_table = big_table.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-
-        big_table_index1 = big_table.loc[big_table['sequence_file.read_index'] == 'index1']
-
-        big_table_index1_short = big_table_index1[[
-            'cell_suspension.biomaterial_core.biomaterial_id',
-            'sequence_file.file_core.file_name',
-            'sequence_file.read_length',
-            'sequence_file.lane_index',
-        ]]
-
-        big_table_index1_short.columns = [f"{x}_index1" for x in big_table_index1_short.columns]
-
-        big_table_joined2 = big_table_joined.merge(
-            big_table_index1_short,
-            left_on=['cell_suspension.biomaterial_core.biomaterial_id', 'sequence_file.lane_index'],
-            right_on=["cell_suspension.biomaterial_core.biomaterial_id_index1", 'sequence_file.lane_index_index1'],
-        )
-
-        big_table_joined = big_table_joined2
-
-    big_table_joined = big_table_joined[[x for x in big_table_joined.columns if
-                                         x not in big_table_joined.columns[big_table_joined.columns.duplicated()]]]
-
-    # Fix up and sort big table.
-    big_table_joined.reset_index(inplace=True)
-    big_table_joined = big_table_joined.rename(
-        columns={'sequence_file.file_core.file_name': 'sequence_file.file_core.file_name_read1'})
-    big_table_joined_sorted = big_table_joined.reindex(sorted(big_table_joined.columns), axis=1)
-    big_table_joined_sorted = big_table_joined_sorted.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-    big_table = big_table_joined_sorted
-    big_table['donor_organism.organism_age'] = big_table_joined['donor_organism.organism_age']
-
-    # Remove NAs in protocol spreadsheets.
-    for protocol_type in protocol_columns.keys():
-        spreadsheets[protocol_type] = spreadsheets[protocol_type].fillna('')
-
-    # This extracts the lists from protocol types which can have more than one instance and creates extra columns in the
-    # Big Table for each of the items, as well as the count and the python-style list.
-    for (protocol_type, protocol_field) in multiprotocols.items():
-        if spreadsheets.get(protocol_type) is not None:
-            spreadsheets[protocol_type] = spreadsheets[protocol_type].fillna('')
-            proto_df, proto_df_columns = split_multiprotocols(big_table, protocol_field)
-            for proto_column in proto_df_columns:
-                if protocol_columns.get(protocol_type) == None:
-                    protocol_columns[protocol_type] = []
-                protocol_columns[protocol_type].append(proto_column)
-
-            big_table = big_table.merge(proto_df, left_index=True, right_index=True)
-
-    # todo: do we even need to save this to file? can we not just work with it in memory?
-    # Saving the Big Table.
-    big_table.to_csv(f"{work_dir}/big_table.csv", index=False, sep=";")
-
-    return big_table
 
 def reformat_tech(technology_type,FACS):
     if '10X' in technology_type:
@@ -168,13 +38,14 @@ def reformat_tech(technology_type,FACS):
         single_cell_isolation = FACS
     return technology_type_reformatted,single_cell_isolation
 
-def prepare_protocol_map(work_dir, spreadsheets, project_details, tracking_sheet, args):
+
+def prepare_protocol_map(work_dir, xlsx_dict, project_details, tracking_sheet, args):
 
     project_details = copy.deepcopy(project_details)
-    accession_number = project_details["accession"]
-    protocol_accession = f"HCAD{accession_number}"
 
-    big_table = create_big_table(work_dir, spreadsheets)
+    protocol_accession_prefix = f"P-HCAD{args.accession_number}"
+
+    big_table = create_big_table(work_dir, xlsx_dict)
 
     # Save protocol columns for later use when creating sdrf.
     project_details['protocol_columns'] = protocol_columns
@@ -577,23 +448,6 @@ SDRF File\t{sdrf_file_name}
 
     generate_sdrf_file(technology_type,facs,name_field,args)
 
-def extract_csv_from_spreadsheet(work_dir, excel_file):
-    xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
-    print("Converting sheets in excel file to dataframes...")
-
-    d = {}
-    for sheet in xlsx.sheet_names:
-        path = Path(work_dir)
-        path.mkdir(parents=True, exist_ok=True)
-        filename = f"{convert_to_snakecase(sheet)}"
-        df = pd.read_excel(excel_file, sheet_name=sheet, header=0, skiprows=[0,1,2,4], engine='openpyxl').replace('', np.nan).dropna(how="all")
-        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-        d[filename] = df
-
-    print(f"{len(xlsx.sheet_names)} sheets converted to dataframes")
-
-    return d
-
 
 def main():
     parser = argparse.ArgumentParser(description="run hca -> scea tool")
@@ -628,7 +482,7 @@ def main():
     parser.add_argument(
         "-ac",
         "--accession_number",
-        type=str,
+        type=int,
         required=True,
         help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
     )
@@ -707,8 +561,27 @@ def main():
     accession_number = args.accession_number
 
     project_info = {"accession": accession_number, "curators": args.curators}
-    spreadsheets = extract_csv_from_spreadsheet(work_dir, args.spreadsheet)
-    project_details = prepare_protocol_map(work_dir, spreadsheets, project_info, tracking_sheet, args)
+
+    '''Merge the multitab spreadsheet into a single dataframe, while preserving the relationships
+    between biomaterials and protocols.
+    '''
+    xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
+    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict)
+
+    '''The merged df consists of a row per read index (read1, read2, index1). To conform to
+    SCEA MAGE-TAB format, the rows should be merged by read pair including any index files.
+    '''
+    merged_df = multitab_excel_to_single_txt.merge_rows_by_read_pair(merged_df)
+    merged_df = multitab_excel_to_single_txt.merge_index_reads(merged_df)
+    merged_df = multitab_excel_to_single_txt.clean_merged_df(merged_df)
+
+    project_details = prepare_protocol_map(
+                                           work_dir,
+                                           merged_df,
+                                           project_info,
+                                           tracking_sheet,
+                                           args
+                                           )
 
     create_magetab(work_dir, spreadsheets, project_details, args)
 
