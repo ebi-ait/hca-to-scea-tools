@@ -1,0 +1,49 @@
+# This workflow builds, tests, & deploys using to wrangler tools EC2 instance using SSH
+# IMPORTANT!
+# A separate SSH key should be used for this that is only used for this CD pipeline and can be revoked at anytime
+
+name: Continuous Integration & Deployment
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hca2scea-backend
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Test with unittest
+      run: |
+        python -m unittest -v
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: wrangler-tools-ec2
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: cd ${{ secrets.TOOL_DIR }} && git checkout master && git pull
+
