@@ -1,0 +1,21 @@
+# Use SSH to pull master to the EC2 instance
+# IMPORTANT!
+# A separate SSH key should be used for this that is only used for this CD pipeline and can be revoked at anytime
+
+name: Deploy to Wrangler Tools EC2 Instance
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: cd ${{ secrets.TOOL_DIR }} && git checkout master && git pull
