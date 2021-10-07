@@ -2,8 +2,6 @@ import argparse
 import copy
 import json
 import os
-from pathlib import Path
-import numpy as np
 import pandas as pd
 
 import multitab_excel_to_single_txt
@@ -447,7 +445,6 @@ SDRF File\t{sdrf_file_name}
     generate_idf_file()
 
     generate_sdrf_file(technology_type,facs,name_field,args)
-
 
 def main():
     parser = argparse.ArgumentParser(description="run hca -> scea tool")
