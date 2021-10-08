@@ -1,23 +1,17 @@
 import argparse
-import copy
 import json
 import os
 import pandas as pd
 
 import multitab_excel_to_single_txt
+import get_protocol_map
 import fetch_fastq_path
 import utils
 from utils import (
-    protocol_type_map,
-    protocol_order,
-    protocol_columns,
-    multiprotocols,
     get_all_spreadsheets,
-    split_multiprotocols,
-    extract_protocol_info,
-    get_protocol_idf,
     map_proto_to_id,
-    convert_to_snakecase,
+    get_protocol_idf,
+    convert_to_snakecase
     )
 
 def reformat_tech(technology_type,FACS):
@@ -37,43 +31,15 @@ def reformat_tech(technology_type,FACS):
     return technology_type_reformatted,single_cell_isolation
 
 
-def prepare_protocol_map(work_dir, xlsx_dict, project_details, tracking_sheet, args):
+def prepare_project_details(dataset_protocol_map, df, tracking_sheet, args):
 
-    project_details = copy.deepcopy(project_details)
-
-    protocol_accession_prefix = f"P-HCAD{args.accession_number}"
-
-    big_table = create_big_table(work_dir, xlsx_dict)
-
+    project_details = {}
+    project_details = {"accession": args.accession_number, "curators": args.curators}
     # Save protocol columns for later use when creating sdrf.
-    project_details['protocol_columns'] = protocol_columns
-
-    # First, we prepare an ID minter for the protocols following SCEA MAGE-TAB standards.
-    protocol_id_counter = 0
-
-    # Then, protocol map is created: a dict containing types of protocols, and inside each, a map from HCA ids to SCEA ids.
-    protocol_map = {x: {} for x in protocol_order}
-
-    for proto_type in protocol_order:
-        for (ptype, proto_columns) in protocol_columns.items():
-            if ptype == proto_type:
-                new_protos = []
-                for proto_column in proto_columns:
-                    new_protos = new_protos + pd.unique(big_table[proto_column]).tolist()
-
-                for proto in new_protos:
-                    if proto is not None:
-                        protocol_id_counter += 1
-                        new_proto_id = f"P-{protocol_accession}-{protocol_id_counter}"
-                        protocol_map[proto_type].update({proto: {'scea_id': new_proto_id, 'hca_ids': [proto]}})
-
-    # Using that function, we get the description for all protocol types, and the hardware for sequencing protocols into
-    # the map.
-    extract_protocol_info(protocol_map, spreadsheets, f"protocol_core.protocol_description", "description")
-    extract_protocol_info(protocol_map, spreadsheets, f"instrument_manufacturer_model.ontology_label", "hardware", ["sequencing_protocol"])
+    project_details['protocol_columns'] = get_protocol_map.map_of_hca_protocol_type_id_keys
 
     # Prepare project details to dump into file
-    project_details['protocol_map'] = protocol_map
+    project_details['protocol_map'] = dataset_protocol_map
     project_details['project_uuid'] = args.project_uuid
     project_details['EAExperimentType'] = args.experiment_type
     project_details['hca_update_date'] = args.hca_update_date
@@ -93,12 +59,12 @@ def prepare_protocol_map(work_dir, xlsx_dict, project_details, tracking_sheet, a
         project_details['secondary_accessions'] = []
 
     # Prepare configurable fields.
-    biomaterial_id_columns = [x for x in big_table.columns if x.endswith("biomaterial_id") or x.endswith("biosamples_accession") or x.endswith("biomaterial_id") or x.endswith("insdc_run_accessions")]
+    biomaterial_id_columns = [x for x in df.columns if x.endswith("biomaterial_id") or x.endswith("biosamples_accession") or x.endswith("biomaterial_id") or x.endswith("insdc_run_accessions")]
 
     read_map = {'': "", 'Read 1': "read1", 'Read 2': "read2"}
 
     def get_or_default(source, default):
-        return str(big_table[source].values[0]) if source in big_table.columns else default
+        return str(df[source].values[0]) if source in df.columns else default
 
     with open(f"technology_jsons/{args.technology_type}.json") as json_file:
         project_details['configurable_fields'] = json.load(json_file)
@@ -115,14 +81,12 @@ def prepare_protocol_map(work_dir, xlsx_dict, project_details, tracking_sheet, a
     return project_details
 
 
-def create_magetab(work_dir, spreadsheets, project_details, args):
-    accession_number = project_details['accession']
+def create_magetab(work_dir, xlsx_dict, df, project_details, args):
+
+    accession_number = args.accession_number
     accession = f"E-HCAD-{accession_number}"
     idf_file_name = f"{accession}.idf.txt"
     sdrf_file_name = f"{accession}.sdrf.txt"
-
-    # Read the big table csv.
-    big_table = pd.read_csv(f"{work_dir}/big_table.csv", sep=";")
 
     tab = '\t'
     protocol_map = project_details['protocol_map']
@@ -141,7 +105,7 @@ def create_magetab(work_dir, spreadsheets, project_details, args):
             return tab.join([func(p) for p in g(sheet, col_name)])
 
         def g(sheet, col_name):
-            return list(spreadsheets[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+            return list(xlsx_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
 
         def first_letter(str):
             return str[0] if len(str) else ''
@@ -246,25 +210,25 @@ SDRF File\t{sdrf_file_name}
             updated_age_list.append(age)
         return updated_age_list
 
-    def generate_sdrf_file(technology_type,facs,name_field,args):
+    def generate_sdrf_file(df,technology_type,facs,name_field,args):
     
         #
         ## SDRF Part.
         #
 
-        big_table['UNDEFINED_FIELD'] = ''
+        df['UNDEFINED_FIELD'] = ''
 
         experiment_accessions = []
-        for col in list(big_table.columns):
+        for col in list(df.columns):
             if 'process' in col:
-                bool = isinstance(list(big_table[col])[0], float)
+                bool = isinstance(list(df[col])[0], float)
                 if bool is False:
-                    if 'SRX' in list(big_table[col])[0]:
-                        experiment_accessions = list(big_table[col])
+                    if 'SRX' in list(df[col])[0]:
+                        experiment_accessions = list(df[col])
         if not experiment_accessions:
-            experiment_accessions = [''] * big_table.shape[0]
+            experiment_accessions = [''] * df.shape[0]
 
-        biosample_accessions = list(big_table['cell_suspension.biomaterial_core.biosamples_accession'])
+        biosample_accessions = list(df['cell_suspension.biomaterial_core.biosamples_accession'])
 
         convert_map_chunks = [{
             'Source Name': "UNDEFINED_FIELD",
@@ -325,7 +289,7 @@ SDRF File\t{sdrf_file_name}
         }]
 
         def get_from_bigtable(column):
-            return big_table[column] if column in big_table.columns else big_table['UNDEFINED_FIELD']
+            return df[column] if column in df.columns else df['UNDEFINED_FIELD']
 
         # Chunk 1: donor info.
         sdrf_1 = pd.DataFrame({k: get_from_bigtable(v) for k, v in convert_map_chunks[0].items()})
@@ -345,7 +309,7 @@ SDRF File\t{sdrf_file_name}
 
         protocols_for_sdrf_2 = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol', 'library_preparation_protocol']
 
-        sdrf_2 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_2 for col in cols]]
+        sdrf_2 = df[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_2 for col in cols]]
 
         pd.set_option('display.max_columns', 0)
         pd.set_option('display.expand_frame_repr', False)
@@ -378,7 +342,7 @@ SDRF File\t{sdrf_file_name}
         # Chunk 4: sequencing protocol ids.
         protocols_for_sdrf_4 = ['sequencing_protocol']
 
-        sdrf_4 = big_table[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in cols]]
+        sdrf_4 = df[[col for (proto_type, cols) in protocol_columns.items() if proto_type in protocols_for_sdrf_4 for col in cols]]
         sdrf_4 = sdrf_4.apply(convert_row)
         sdrf_4.columns = ["Protocol REF" for col in sdrf_4.columns]
 
@@ -398,13 +362,13 @@ SDRF File\t{sdrf_file_name}
         # fixes to sample name fields
 
         if name_field == 'cs_name':
-            name = list(big_table['cell_suspension.biomaterial_core.biomaterial_name'])
+            name = list(df['cell_suspension.biomaterial_core.biomaterial_name'])
         elif name_field == 'cs_id':
-            name = list(big_table['cell_suspension.biomaterial_core.biomaterial_id'])
+            name = list(df['cell_suspension.biomaterial_core.biomaterial_id'])
         elif name_field == 'sp_name':
-            name = list(big_table['specimen_from_organism.biomaterial_core.biomaterial_name'])
+            name = list(df['specimen_from_organism.biomaterial_core.biomaterial_name'])
         elif name_field == 'sp_id':
-            name = list(big_table['specimen_from_organism.biomaterial_core.biomaterial_id'])
+            name = list(df['specimen_from_organism.biomaterial_core.biomaterial_id'])
 
         sdrf['Source Name'] = name
         sdrf['Scan Name'] = name
@@ -429,7 +393,7 @@ SDRF File\t{sdrf_file_name}
             paths_sra = fetch_fastq_path.get_fastq_path_from_sra(sdrf)
             if paths_sra:
                 paths = fetch_fastq_path.sort_sra(paths_sra)
-            if not paths:
+            if not paths_sra:
                paths = None
         try:
             sdrf = fetch_fastq_path.filter_paths(sdrf, paths)
@@ -444,7 +408,7 @@ SDRF File\t{sdrf_file_name}
 
     generate_idf_file()
 
-    generate_sdrf_file(technology_type,facs,name_field,args)
+    generate_sdrf_file(df,technology_type,facs,name_field,args)
 
 def main():
     parser = argparse.ArgumentParser(description="run hca -> scea tool")
@@ -555,32 +519,35 @@ def main():
 
     tracking_sheet = utils.get_tracker_google_sheet()
 
-    accession_number = args.accession_number
-
-    project_info = {"accession": accession_number, "curators": args.curators}
-
     '''Merge the multitab spreadsheet into a single dataframe, while preserving the relationships
-    between biomaterials and protocols.
+    between HCA biomaterials and protocols.
     '''
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
     merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict)
-
     '''The merged df consists of a row per read index (read1, read2, index1). To conform to
     SCEA MAGE-TAB format, the rows should be merged by read pair including any index files.
     '''
-    merged_df = multitab_excel_to_single_txt.merge_rows_by_read_pair(merged_df)
-    merged_df = multitab_excel_to_single_txt.merge_index_reads(merged_df)
-    merged_df = multitab_excel_to_single_txt.clean_merged_df(merged_df)
+    merged_df_by_reads = multitab_excel_to_single_txt.merge_rows_by_read_pair(merged_df)
+    if ('index1' in merged_df['sequence_file.read_index'].values):
+        merged_df_by_index = multitab_excel_to_single_txt.merge_index_reads(merged_df, merged_df_by_reads)
+        clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_by_index)
+    else:
+        clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_by_reads)
 
-    project_details = prepare_protocol_map(
-                                           work_dir,
-                                           merged_df,
-                                           project_info,
-                                           tracking_sheet,
-                                           args
-                                           )
+    '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
+    creates extra columns in the df for each of the ids.'''
+    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict)
 
-    create_magetab(work_dir, spreadsheets, project_details, args)
+    '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
+    key protocol metadata that will be added to the SCEA sdrf file.'''
+    dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
+
+    '''Refactoring of the below TBD.'''
+    project_details = prepare_project_details(dataset_protocol_map, df,
+                                              tracking_sheet, args)
+
+    '''Refactoring of the below TBD.'''
+    create_magetab(work_dir, xlsx_dict, df, project_details, args)
 
 if __name__ == '__main__':
     main()

@@ -12,6 +12,9 @@ from os.path import splitext, basename
 
 import pandas as pd
 
+def convert_to_snakecase(label):
+    return re.sub(r'(\s-\s)|\s', '_', label).lower()
+
 def get_tracker_google_sheet() -> pd.DataFrame:
     '''
     Parse the tracker google sheet where we store all our dataset tracking data. Return it as a pd.DataFrame.

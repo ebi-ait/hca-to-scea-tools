@@ -1,7 +1,25 @@
 from pathlib import Path
 import numpy as np
+import pandas as pd
 
-def multitab_spreadsheet_to_dict(work_dir, excel_file):
+import utils
+import get_protocol_map
+
+def clean_dictionary(xlsx_dict):
+
+    for filename in xlsx_dict.keys():
+        xlsx_df = xlsx_dict[filename]
+        xlsx_df_clean = xlsx_df.replace('', np.nan).dropna(how="all")
+        xlsx_df_clean = xlsx_df_clean.loc[:, ~xlsx_df_clean.columns.str.contains('^Unnamed')]
+        xlsx_dict[filename] = xlsx_df_clean
+
+    '''Remove NAs in protocol dataframes.'''
+    for protocol_type in get_protocol_map.map_of_hca_protocol_type_id_keys.keys():
+        xlsx_dict[protocol_type] = xlsx_dict[protocol_type].fillna('')
+
+    return xlsx_dict
+
+def multitab_excel_to_dict(work_dir, excel_file):
 
     '''Each tab in the multitab excel_file is saved as a
     pandas dataframe. The set of dataframes are stored in
@@ -11,21 +29,22 @@ def multitab_spreadsheet_to_dict(work_dir, excel_file):
     xlsx = pd.ExcelFile(excel_file, engine='openpyxl')
 
     xlsx_dict = {}
+
     for sheet in xlsx.sheet_names:
         path = Path(work_dir)
         path.mkdir(parents=True, exist_ok=True)
-        filename = f"{convert_to_snakecase(sheet)}"
+        filename = f"{utils.convert_to_snakecase(sheet)}"
         xlsx_df = pd.read_excel(
             excel_file,
             sheet_name=sheet,
             header=0,
             skiprows=[0,1,2,4],
             engine='openpyxl')
-        xlsx_df = xlsx_df.replace('', np.nan).dropna(how="all")
-        xlsx_df = xlsx_df.loc[:, ~xlsx_df.columns.str.contains('^Unnamed')]
         xlsx_dict[filename] = xlsx_df
 
-    return xlsx_dict
+    xlsx_dict_clean = clean_dictionary(xlsx_dict)
+
+    return xlsx_dict_clean
 
 
 def get_specimen(xlsx_dict: {}, cell_line_id: str) -> str:
@@ -123,61 +142,67 @@ def merge_rows_by_read_pair(merged_df):
     return merged_df_joined
 
 
-def merge_index_reads(merged_df):
+def merge_index_reads(merged_df, merged_df_by_reads):
 
-    if ('index1' in merged_df['sequence_file.read_index'].values):
-        merged_df = merged_df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+    merged_df = merged_df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
 
-        merged_df_index1 = merged_df.loc[merged_df['sequence_file.read_index'] == 'index1']
+    merged_df_index1 = merged_df.loc[merged_df['sequence_file.read_index'] == 'index1']
 
-        merged_df_index1_short = merged_df_index1[[
-            'cell_suspension.biomaterial_core.biomaterial_id',
-            'sequence_file.file_core.file_name',
-            'sequence_file.read_length',
-            'sequence_file.lane_index',
-        ]]
+    merged_df_index1_short = merged_df_index1[[
+        'cell_suspension.biomaterial_core.biomaterial_id',
+        'sequence_file.file_core.file_name',
+        'sequence_file.read_length',
+        'sequence_file.lane_index',
+    ]]
 
-        merged_df_index1_short.columns = [f"{x}_index1" for x in merged_df_index1_short.columns]
+    merged_df_index1_short.columns = [f"{x}_index1" for x in merged_df_index1_short.columns]
 
-        merged_df_joined2 = merged_df_joined.merge(
+    merged_df_by_index = merged_df_by_reads.merge(
             merged_df_index1_short,
             left_on=['cell_suspension.biomaterial_core.biomaterial_id', 'sequence_file.lane_index'],
             right_on=["cell_suspension.biomaterial_core.biomaterial_id_index1", 'sequence_file.lane_index_index1'],
         )
 
-        merged_df_joined = merged_df_joined2
+    return merged_df_by_index
 
-    merged_df_joined = merged_df_joined[[x for x in merged_df_joined.columns if
-                                         x not in merged_df_joined.columns[merged_df_joined.columns.duplicated()]]]
 
-    return merged_df_joined
+def reorder_columns(df):
 
-def clean_merged_df():
-
-    # Fix up and sort big table.
-    big_table_joined.reset_index(inplace=True)
-    big_table_joined = big_table_joined.rename(
+    df.reset_index(inplace=True)
+    df = df.rename(
         columns={'sequence_file.file_core.file_name': 'sequence_file.file_core.file_name_read1'})
-    big_table_joined_sorted = big_table_joined.reindex(sorted(big_table_joined.columns), axis=1)
-    big_table_joined_sorted = big_table_joined_sorted.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-    big_table = big_table_joined_sorted
-    big_table['donor_organism.organism_age'] = big_table_joined['donor_organism.organism_age']
+    df_sorted = df.reindex(sorted(df.columns), axis=1)
+    df_sorted = df_sorted.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+    reordered_df = df_sorted
+    reordered_df['donor_organism.organism_age'] = df['donor_organism.organism_age']
 
-    # Remove NAs in protocol spreadsheets.
-    for protocol_type in protocol_columns.keys():
-        spreadsheets[protocol_type] = spreadsheets[protocol_type].fillna('')
+    return reordered_df
 
-    # This extracts the lists from protocol types which can have more than one instance and creates extra columns in the
-    # Big Table for each of the items, as well as the count and the python-style list.
-    for (protocol_type, protocol_field) in multiprotocols.items():
-        if spreadsheets.get(protocol_type) is not None:
-            spreadsheets[protocol_type] = spreadsheets[protocol_type].fillna('')
-            proto_df, proto_df_columns = split_multiprotocols(big_table, protocol_field)
+
+def clean_df(df):
+
+    '''Remove duplicate columns.'''
+    df = df[[x for x in df.columns if x not in df.columns[df.columns.duplicated()]]]
+
+    '''Reorder columns by column names.'''
+    df_clean = reorder_columns(df)
+
+    return df_clean
+
+
+def create_new_protocol_columns(df, xlsx_dict):
+
+    '''This extracts the lists from protocol types which can have more than one instance and creates extra columns in the
+    df for each of the items.'''
+    for (protocol_type, protocol_field) in get_protocol_map.multiprotocols.items():
+        if xlsx_dict.get(protocol_type) is not None:
+            xlsx_dict[protocol_type] = xlsx_dict[protocol_type].fillna('')
+            proto_df, proto_df_columns = get_protocol_map.split_multiprotocols(df, protocol_field)
             for proto_column in proto_df_columns:
-                if protocol_columns.get(protocol_type) == None:
-                    protocol_columns[protocol_type] = []
-                protocol_columns[protocol_type].append(proto_column)
+                if get_protocol_map.map_of_hca_protocol_type_id_keys.get(protocol_type) == None:
+                    get_protocol_map.map_of_hca_protocol_type_id_keys[protocol_type] = []
+                get_protocol_map.map_of_hca_protocol_type_id_keys[protocol_type].append(proto_column)
 
-            big_table = big_table.merge(proto_df, left_index=True, right_index=True)
+            df = df.merge(proto_df, left_index=True, right_index=True)
 
-    return merged_df
+    return df
