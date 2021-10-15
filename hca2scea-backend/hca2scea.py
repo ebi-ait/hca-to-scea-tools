@@ -3,10 +3,10 @@ import json
 import os
 import pandas as pd
 
-import multitab_excel_to_single_txt
-import get_protocol_map
-import fetch_fastq_path
-import utils
+from helpers import multitab_excel_to_single_txt
+from helpers import get_protocol_map
+from helpers import fetch_fastq_path
+from helpers import utils
 
 
 def get_secondary_accessions(tracking_sheet, args):
@@ -247,7 +247,7 @@ def add_protocol_columns(df, dataset_protocol_map):
 def add_scea_specimen_columns(args, df):
 
     '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-    with open(f"sdrf_map.json") as sdrf_map_file:
+    with open(f"json_files/sdrf_map.json") as sdrf_map_file:
         sdrf_map = json.load(sdrf_map_file)
 
     '''Get user-specified HCA sample names key.'''
@@ -287,7 +287,7 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
     sdrf_1 = add_scea_specimen_columns(args, df)
 
     '''Get technology-specific SCEA metadata and add to sdrf_1 dataframe.'''
-    with open(f"technology_jsons/{args.technology_type}.json") as technology_json_file:
+    with open(f"json_files/{args.technology_type}.json") as technology_json_file:
         technology_dict = json.load(technology_json_file)
     for key in technology_dict.keys():
         sdrf_1[key] = technology_dict[key]

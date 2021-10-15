@@ -2,8 +2,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import utils
-import get_protocol_map
+from helpers import utils
+from helpers import get_protocol_map
 
 def clean_dictionary(xlsx_dict):
 
