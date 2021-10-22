@@ -59,7 +59,7 @@ source venv/bin/activate
 The easiest way might be to copy the example below, and replace the arguments as necessary whilst referring to this readme.
 
 ```
-python3 script.py -s [spreadsheet (xlsx)] -id [hca project uuid] -study [study accession (SRPxxx)] -name {cs_name,cs_id,sp_name,sp_id,other} -ac [accession number] -c [curator initials] -tt [technology type] -et [experiment type] -f [factor values] -pd [dataset publication date] -hd [hca last update date] -r [related scea accession] -o [output dir]
+python3 script.py -s [spreadsheet (xlsx)] -id [hca project uuid] -study [study accession (SRPxxx)] -name {cs_name,cs_id,sp_name,sp_id,other} -ac [accession number] -c [curator initials] -tt [technology type] -et [experiment type] -f [factor values] -pd [dataset publication date] -hd [hca last update date] -r [related scea accession] --facs -o [output dir]
 ```
 
 **Examples**
@@ -77,6 +77,11 @@ python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-
 Specify optional related scea accession:
 ```
 python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -r 51
+```
+
+Specify that FACS was used:
+```
+python3 script.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 --facs
 ```
 
 Specify optional output dir:
@@ -101,18 +106,19 @@ The next accession number would be 33.
 |-s          | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                                                    | yes       |
 |-id         | HCA project uuid         | This is added to the 'secondary accessions' field in idf file                                      | yes       | 
 |-c          | Curator initials         | HCA Curator initials.                                                                              | yes       |
-|-ac         | ACCESSION_NUMBER         | Optional field to provide a SCEA accession, if not specified will be generated automatically       | yes       |
+|-ac         | accession number         | Provide an SCEA accession number (integer).                                                        | yes       |
 |-tt         | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq','seq-well','smart-like']   | yes       |
 |-et         | Experiment type          | Must be 1 of ['differential','baseline']                                                           | yes       |
 |-f          | Factor value             | A list of user-defined factor values e.g.['individual','disease','development stage','age']        | yes       |
 |-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
 |-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
-|--r         | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
+|-r          | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
 |-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
 |-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be 1 of                             | no        |
-|            |                          | ['cs_name, cs_id, sp_name, sp_id, other'] where cs indicates "cell suspension" and sp indicates.   |           |
+|            |                          | ['cs_name, cs_id, sp_name, sp_id, other'] where cs indicates "cell suspension" and sp indicates    |           |
 |            |                          |    "specimen from organism". Default is cs_name.                                                   |           |
 |--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
+|-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no
 
 **Definitions:**
 
@@ -130,8 +136,9 @@ all primary samples from 1 organ type and same developmental stage and disease s
 
 **Factor value:**
 
-A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.**
-The SCEA team's validator tools will fail without this. Technology cannot be a factor value.
+A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.** The SCEA team's validator tools will fail without this.
+
+Technology cannot be a factor value.
 
 **Example:**
 
