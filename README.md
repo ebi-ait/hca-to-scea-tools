@@ -184,9 +184,8 @@ Please also manage the SCEA curation status of your dataset using the SCEA wrang
 
 ## Further curation of the idf and sdrf files
 
-Please see the example files folder to see how and where the below should appear.
+### idf file:
 
-idf file:
 - Use a tab to separate every value you enter. Also, the spacing created by tabs is important, for example, tabs between author names or emails, including where the email is not known and shown as a blank.
 - The Protocol Name is used in the sdrf file to detail which protocols are applied in which experiments. It is worth checking these are all correct in the sdrf after running the tool.
 - The protocol Name should be ordered by number.
@@ -198,7 +197,18 @@ idf file:
 - Other 'Comment' fields that you think are useful to display in the SCEA browser can be chosen and added to the Comment[EAAdditionalAttributes]. However, they should not be Factor Values. All metadata will be displayed in a table in browser. However, these specific attributes will be displayed as a user hovers over individual cells in their multi-dimensional cell visualisation tool. Some examples are: immunophenotype, treatment, stimulus, if they are not Factor Values.
 - You should add a related project E-HCAD-id if the project was split into separate E-HCAD-ids by adding this field: Comment[RelatedExperiment]
 
-sdrf file:
+### sdrf file:
+
+**File paths**
+
+We do not need to send raw data files to SCEA However, we do need to provide the full paths to either the fastq files, or if not available, the full paths to the SRA object files. These should be filled in thr sdrf file.
+
+The latest version of the script searches for and enters the fastq file paths for each given run accession in the sdrf file. If it is not able to obtain the fastq file path, it searches for and enters the SRA Object file paths. It also obtains the fastq file names associated with the SRA object file.
+
+If no fastq paths or SRA file paths can be found, the script will leave the "Comment[read1 file]", "Comment[read2  file]", "Comment[fastq URI]" and "Comment[SRA URI]" columns empty, and these should be manually filled.
+
+**Other**
+
 - The format should be 1 RUN per row, with files (read1,read2,index1) in separate Comment columns.
 - You need to add new columns with the full download path to fastq files and fastq file names. The column names should be "Comment[read1 file]" and "Comment[FASTQ_URI]" respectively and "Comment[read2 file]" and "Comment[FASTQ_URI]" respectively. You should also add "Comment[index1 file]" and "Comment[FASTQ_URI]" respectively if there is an index1 file available. A "Comment[FASTQ_URI]" column with the relevant file paths should always following a "Comment[[enter read index] file]" column. It is currently up to the wrangler to identify the names and full paths of the fastq files either in the NCBI SRA or ENA DB. The full download path should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp.". While I am in the process of automating getting the fastq file paths into the sdrf file, I am waiting to be on development until I can get this finished. Therefore, for now the "ftp://" prefix will need to be added to the paths manually or via a small script. If a path to the fastq files can not be found, the fastq file columns should be removed from the sdrf file. They should be replaced with Comment[SRA file] and Comment[SRA_URI] or Comment[BAM file] and Comment[BAM_URI] respectively. If the paths to an SRA object can be found then that is preferred over a path to the bam files as the scea team cannot currently process bam files.
 - You need to add a factor value column as the last column in the sdrf file which matches the factor value(s) you gave as an argument and entered in the idf file.
@@ -257,13 +267,18 @@ It is not possible to get this validation tool running globally for all users in
 
 ## Where to send the files for review?
 
-We do not need to send them the fastq files. However, we do need to provide the full paths to the fastq files in the sdrf file. The latest version of the script should find and enter the file names into the sdrf file. However, it is best to check this in case the file paths were not found. If the script only finds paths to bam files or SRA objects, it is worth checking that the fastq file paths are really not openly available from NCBI or ENA to be sure (without a formal request to NCBI), though the script should account for this.
+We do not need to send SCEA the raw data files. The file paths should be in the sdrf file. They will use the filepaths to obtain the raw data.
 
-For datasets where the full paths to fastq files is entered in the sdrf file, you should first create a new branch from the master branch found here: https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master and name the new branch with the E-HCAD id you have assigned to the dataset. Then, in the Gitlab HCAD directory in this  new branch (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD) you will need to create a new folder named with the E-HCAD id (e.g. E-HCAD-20) and upload the idf and sdrf files inside this new folder. Once this is done, you should create a merge request for that branch, and ensure a reviewer is tagged (default). You should create a separate branch and folder for each E-HCAD dataset you upload. You will recieve automated emails once you create a merge request. They will probably say that the pipeline has failed. This is fine, you do not need to do anything. The SCEA team will review the uploaded files and make edits when they can to correct the datasets - it is from this point in their hands. However, you should look out for an email saying your dataset has been approved (most likely after some edits), so you know to close the ticket inside the Zenhub SCEA Review column so we keep on top of open tickets.
+You should ask for access to the SCEA gitlab repo (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata), if you do not already have access.
 
-Next:
-Let the SCEA team know on slack that you have created a new branch (if you have more than 1 dataset to upload, it's best to notufy them once and refer to the group of E-HCAD ids).
+First, create a new branch from the master branch found here: https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master and name the new branch with the E-HCAD id you have assigned to the dataset. You should create a separate branch and folder for each E-HCAD dataset you upload.
 
-For datasets where only the full paths to BAM files were available (these will be shown in the sdrf file), please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1KNLOUZdDg7bYyCB19Jtvl2nt514K6Q1V Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+Then, in the Gitlab HCAD directory in this  new branch (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD) you will need to create a new folder named with the E-HCAD id (e.g. E-HCAD-20) and upload the idf and sdrf files inside this new folder.
 
-For datasets where only the full paths to BAM files were available (these will be shown in the sdrf file), please upload the idf and sdrf files here: https://drive.google.com/drive/folders/1kIEJDZM1EIuCKTAM3nDh9Hvkysnjv8J0 Also create a new empty directory with this E-HCAD id in the Gitlab page so we know a dataset with this id exists and awaits upload.
+Make sure you delete any .gitignore files that appear in the folder, if any.
+
+Once done, you should create a merge request for the branch, and ensure a reviewer is tagged (default). It is also a good idea to let the SCEA team know on slack that you have created a new branch.
+
+You will recieve automated emails once you create a merge request. They will probably say that the pipeline has failed. This is ok, you do not need to do anything. The SCEA team will review the files and we will receive an automated email with their comments. Once you have updated the file based on their feedback, a merge request should again be sent.
+
+Once your dataset has been approved in Gitlab, you can close the ticket inside the Zenhub SCEA Review column.
