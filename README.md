@@ -28,6 +28,14 @@ Before you start converting your dataset to SCEA format, you will need to decide
 
 - Cell lines other than iPSC, hESC or organoid are not eligible e.g. 2D immortalised cell lines.
 
+### Protocol type eligibility criteria
+
+- Experiments involving cell-type enrichment using cell markers are eligible. However, the script does not currently support the addition list of the sample cell marker status. See below for guidance on how to manually add the cell marker status to the output sdrf file.
+
+- Experiments involving treatment with a drug, stimulus or other treatment type are eligible. However, the script does not currently support the addition list of this protocol type or treatment status. See below for guidance on how to manually add a treatment protocol type and treatment status to the output idf file and sdrf file, respectively.
+
+- Experiments involving a differentiation protocol are eligible. However, the script does not currently support the addition of this protocol type. See below for guidance on how to mnually add a differentiation protocol to the output idf file.
+
 ### Data availability criteria
 
 - The full path to fastq files or SRA object files is available for the dataset run accessions. Datasets with only raw data in bam file format are not currently eligible.
@@ -105,11 +113,11 @@ The next accession number would be 33.
 |------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
 |-s          | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                                                    | yes       |
 |-id         | HCA project uuid         | This is added to the 'secondary accessions' field in idf file                                      | yes       | 
-|-c          | Curator initials         | HCA Curator initials.                                                                              | yes       |
+|-c          | Curator initials         | HCA Curator initials. Space-separated list.                                                                             | yes       |
 |-ac         | accession number         | Provide an SCEA accession number (integer).                                                        | yes       |
 |-tt         | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq','seq-well','smart-like']   | yes       |
 |-et         | Experiment type          | Must be 1 of ['differential','baseline']                                                           | yes       |
-|-f          | Factor value             | A list of user-defined factor values e.g.['individual','disease','development stage','age']        | yes       |
+|-f          | Factor value             | A space-separated list of user-defined factor values e.g. age disease                              | yes       |
 |-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
 |-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
 |-r          | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
