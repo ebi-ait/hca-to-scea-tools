@@ -42,9 +42,9 @@ The hca-to-scea tool is installed on EC2. If you're a new team member and you ne
 
 In order to use the hca-to-scea tool on EC2, you will need to copy your input HCA spreadsheet there, for example in your home folder. An example command to do this:
 
-'''
+```
 scp -i [OPENSSH PRIVATE KEY file path] [path to spreadsheet] [username]@tool.archive.data.humancellatlas.org:/home/[username]
-'''
+```
 
 ### Setting the environment on EC2
 
@@ -115,15 +115,23 @@ The next accession number would be 33.
 
 **Definitions:**
 
-**Experiment type:** an experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
-**Example differential:** normal and disease, multiple developmental stages
-**Example baseline:** all primary samples from 1 organ type and same developmental stage and disease status.
+**Experiment type:**
 
-**Factor value:** a factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.** The SCEA team's validator tools will fail without this. Technology cannot be a factor value.
-**Example:** individual, disease, developmental stage, age
+An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
+**Example differential:**
+normal and disease, multiple developmental stages
+**Example baseline:**
+all primary samples from 1 organ type and same developmental stage and disease status.
+
+**Factor value:**
+A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.**
+The SCEA team's validator tools will fail without this. Technology cannot be a factor value.
+**Example:**
+individual, disease, developmental stage, age
 A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
 
-**Related E-HCAD-id:** If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
+**Related E-HCAD-id:**
+If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
 **Example**
 E-HCAD-34
 
@@ -133,13 +141,13 @@ The script will output an idf file and an sdrf file named with the same new E-HC
 
 You will then need to copy them to your local desktop to further manually curate them. Please delete the folder from the above directory once you have done this. An example command to do this is below. It must be run from the terminal on your local desktop, not from inside EC2:
 
-'''
+```
 scp -i [OPENSSH PRIVATE KEY file path] [username]@tool.archive.data.humancellatlas.org:/home/tools/hca-to-scea-tools/hca2scea-backend/script_spreadsheets/[your output dir] [local folder path] 
-'''
+```
 
 Alternatively, see [here](https://ebi-ait.github.io/hca-ebi-wrangler-central/tools/handy_snippets.html#transfer-files-between-local-machine-and-ec2-scp-rsync) for tips on how to do this.
 
-## Update tracker sheet with newly assigned E-HCAD id
+## Update tracker sheet with newly assigned E-HCAD ID
 
 At this point you should enter the newly assigned E-HCAD id(s) (e.g. E-HCAD-33) into the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0). Please enter in all relevent accession columns to make sure they are visible to other wranglers when they select the next E-HCAD accession number for their dataset.
 
