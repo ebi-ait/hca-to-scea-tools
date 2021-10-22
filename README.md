@@ -136,6 +136,7 @@ The SCEA team's validator tools will fail without this. Technology cannot be a f
 **Example:**
 
 individual, disease, developmental stage, age
+
 A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
 
 **Related E-HCAD-id:**
