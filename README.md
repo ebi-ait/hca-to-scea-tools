@@ -90,6 +90,7 @@ Please check the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQj
 It is also a good idea to notify in hca-wrangler-metadata that you are doing some SCEA wrangling to ensure the E-HCAD-id does not get duplicated. The accession is a required argument for the script.
 
 **Example**
+
 Accessions E-HCAD1 to E-HCAD32 have already been assigned to datasets.
 The next accession number would be 33.
 
@@ -118,21 +119,31 @@ The next accession number would be 33.
 **Experiment type:**
 
 An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
+
 **Example differential:**
+
 normal and disease, multiple developmental stages
+
 **Example baseline:**
+
 all primary samples from 1 organ type and same developmental stage and disease status.
 
 **Factor value:**
+
 A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.**
 The SCEA team's validator tools will fail without this. Technology cannot be a factor value.
+
 **Example:**
+
 individual, disease, developmental stage, age
 A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
 
 **Related E-HCAD-id:**
+
 If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
+
 **Example**
+
 E-HCAD-34
 
 ## Output files
