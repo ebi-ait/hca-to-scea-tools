@@ -99,11 +99,12 @@ Specify optional output dir:
 python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir
 ```
 
-#### About arguments ####
+#### Arguments ####
 
-#### How to choose an E-HCAD accession number ####
+##### How to choose an E-HCAD accession number #####
 
 Please check the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0) for the next suitable E-HCAD accession number. Please ensure the E-HCAD id you choose is unique and not already present in the tracker sheet. It should be the next consecutive number after the maximum number in the sheet.
+
 It is also a good idea to notify in hca-wrangler-metadata that you are doing some SCEA wrangling to ensure the E-HCAD-id does not get duplicated. The accession is a required argument for the script.
 
 **Example**
@@ -111,7 +112,6 @@ It is also a good idea to notify in hca-wrangler-metadata that you are doing som
 Accessions E-HCAD1 to E-HCAD32 have already been assigned to datasets.
 The next accession number would be 33.
 
-#### Arguments ####
 
 | Argument   | Argument name            | Description                                                                                        | Required? |
 |------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
@@ -134,7 +134,7 @@ The next accession number would be 33.
 
 #### Definitions ####
 
-**Experiment type**
+##### Experiment type #####
 
 An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
 
@@ -146,7 +146,7 @@ normal and disease, multiple developmental stages
 
 all primary samples from 1 organ type and same developmental stage and disease status.
 
-**Factor values**
+##### Factor values #####
 
 A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.** The SCEA team's validator tools will fail without this.
 
@@ -158,7 +158,7 @@ individual, disease, developmental stage, age
 
 A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
 
-**Related E-HCAD-ID:**
+##### Related E-HCAD-ID #####
 
 If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
 
@@ -166,7 +166,7 @@ If the project has been split into two separate E-HCAD datasets, due to differen
 
 E-HCAD-34
 
-#### Output
+#### Output ####
 
 The script will output an idf file and an sdrf file named with the same new E-HCAD-id. These files will be written into a new folder: `./hca2scea-backend/script_spreadsheets/<spreadsheet_name>/`.
 
@@ -178,7 +178,7 @@ scp -i [OPENSSH PRIVATE KEY file path] [username]@tool.archive.data.humancellatl
 
 Alternatively, see [here](https://ebi-ait.github.io/hca-ebi-wrangler-central/tools/handy_snippets.html#transfer-files-between-local-machine-and-ec2-scp-rsync) for tips on how to do this.
 
-## Record newly assigned E-HCAD ID
+## Record assigned E-HCAD ID
 
 At this point you should enter the newly assigned E-HCAD id(s) (e.g. E-HCAD-33) into the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0). Please enter in all relevent accession columns to make sure they are visible to other wranglers when they select the next E-HCAD accession number for their dataset.
 
