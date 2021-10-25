@@ -184,65 +184,70 @@ Please also manage the SCEA curation status of your dataset using the SCEA wrang
 
 ## Further curation of the idf and sdrf files
 
-### idf file:
+### idf file
 
-**idf file formatting**
+#### Format ####
 
-**tab-separated format**
+##### tab-separated format #####
 
 What to separate by a tab:
 
 - a field name and corresponding value(s)
-- separate values in a list of values
+- values in a list of values
 - empty values in a list
 
 What to separate by a space:
 
 - multiple words within a single string
 
-Example1:
+*Example1*
 
 Protocol[space]Type[space]sample[tab]collection[space]protocol[tab]sample[space]collection[space]protocol
 
-Example2:
+*Example2:*
 
 Experimental[space]Factor[space]Name[tab]organ[tab]disease
 
-Example3:
+*Example3:*
 
 Person First Name[tab][author1 first name][tab][author2 first name][tab][author3 first name][tab][author4 first name]
 Person Email[tab][author1 email][tab][author2 email][tab][tab][author4 email]
 
-**Valid Protocol Types**
+##### Valid Protocol Types #####
 
-- Valid protocol types are: sample collection protocol, enrichment protocol, growth protocol, treatment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol
+Valid protocol types are: sample collection protocol, enrichment protocol, growth protocol, treatment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol
 
-- A protocol type map (hca2scea):
+Hca2scea Protocol type map:
 
-Collection protocol = sample collection protocol
-Dissociation protocol = enrichment protocol
-Enrichment protocol = enrichment protocol
-Differentiation protocol = growth protocol
-[hca treatment protocol is not yet a protocol type in the HCA schema] = treatment protocol
-Library preparation protocol = nucleic acid library construction protocol
-Sequencing protocol = nucleic acid sequencing protocol
+| HCA Protocol Type                 | SCEA Protocol Type                         |
+|-----------------------------------|--------------------------------------------|
+| Collection protocol               | sample collection protocol                 |
+| Dissociation protocol             | enrichment protocol                        |
+| Enrichment protocol               | enrichment protocol                        |
+| Differentiation protocol          | growth protocol                            |
+| unspecified                       | treatment protocol                         |
+| Library preparation protocol      | nucleic acid library construction protocol |
+| Sequencing protocol               | nucleic acid sequencing protocol           |
 
-**Protocol Type format**
+##### Protocol Type format #####
 
 - The protocol Name should be ordered by number
 - The protocol Type and Description order must reflect the Name order https://github.com/ebi-gene-expression-group/atlas-fastq-provider
 - Aim to simplify every protocol description to no more than 2 sentences. The SCEA team prefer the protocols have general and short descriptions with less extensive detail
 
-**Additional fields**
+#### Additional fields ####
 
 Additional fields that are not yet automated by the hca2sceal tool are:
 
 - Comment[EAAdditionalAttributes]
+<p>
 You should add a tab separated list of key variables of interest which will be displayed in the SCEA visualisation tool.
 Key variables are chosen from the column names in the sdrf file annotated with "Comment[]".
 Key variables should not be factor values.
 If available in the sdrf file, always include at least: 'individual', 'sex' and 'age'.
+</p>
 Example:
+
 Comment[EAAdditionalAttributes] individual  sex age
 
 ### sdrf file:
