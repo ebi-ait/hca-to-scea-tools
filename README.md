@@ -40,7 +40,7 @@ Before you start converting your dataset to SCEA format, you will need to decide
 
 - The full path to fastq files or SRA object files is available for the dataset run accessions. Datasets with only raw data in bam file format are not currently eligible.
 
-## hca2scea tool
+## Running the hca2scea tool
 
 ### Installation
 
@@ -63,6 +63,8 @@ source venv/bin/activate
 ```
 
 ### Running the tool on EC2
+
+#### Command-line ####
 
 The easiest way might be to copy the example below, and replace the arguments as necessary whilst referring to this readme.
 
@@ -97,7 +99,9 @@ Specify optional output dir:
 python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir
 ```
 
-**How to choose an E-HCAD accession number**
+#### About arguments ####
+
+#### How to choose an E-HCAD accession number ####
 
 Please check the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0) for the next suitable E-HCAD accession number. Please ensure the E-HCAD id you choose is unique and not already present in the tracker sheet. It should be the next consecutive number after the maximum number in the sheet.
 It is also a good idea to notify in hca-wrangler-metadata that you are doing some SCEA wrangling to ensure the E-HCAD-id does not get duplicated. The accession is a required argument for the script.
@@ -107,7 +111,7 @@ It is also a good idea to notify in hca-wrangler-metadata that you are doing som
 Accessions E-HCAD1 to E-HCAD32 have already been assigned to datasets.
 The next accession number would be 33.
 
-**Arguments:**
+#### Arguments ####
 
 | Argument   | Argument name            | Description                                                                                        | Required? |
 |------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
@@ -126,43 +130,43 @@ The next accession number would be 33.
 |            |                          | ['cs_name, cs_id, sp_name, sp_id, other'] where cs indicates "cell suspension" and sp indicates    |           |
 |            |                          |    "specimen from organism". Default is cs_name.                                                   |           |
 |--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
-|-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no
+|-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no        |
 
-**Definitions:**
+#### Definitions ####
 
-**Experiment type:**
+**Experiment type**
 
 An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
 
-**Example differential:**
+*Example differential*
 
 normal and disease, multiple developmental stages
 
-**Example baseline:**
+*Example baseline*
 
 all primary samples from 1 organ type and same developmental stage and disease status.
 
-**Factor value:**
+**Factor values**
 
 A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. **If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors.** The SCEA team's validator tools will fail without this.
 
 Technology cannot be a factor value.
 
-**Example:**
+*Example:*
 
 individual, disease, developmental stage, age
 
 A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
 
-**Related E-HCAD-id:**
+**Related E-HCAD-ID:**
 
 If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
 
-**Example**
+*Example*
 
 E-HCAD-34
 
-## Output files
+#### Output
 
 The script will output an idf file and an sdrf file named with the same new E-HCAD-id. These files will be written into a new folder: `./hca2scea-backend/script_spreadsheets/<spreadsheet_name>/`.
 
@@ -174,7 +178,7 @@ scp -i [OPENSSH PRIVATE KEY file path] [username]@tool.archive.data.humancellatl
 
 Alternatively, see [here](https://ebi-ait.github.io/hca-ebi-wrangler-central/tools/handy_snippets.html#transfer-files-between-local-machine-and-ec2-scp-rsync) for tips on how to do this.
 
-## Update tracker sheet with newly assigned E-HCAD ID
+## Record newly assigned E-HCAD ID
 
 At this point you should enter the newly assigned E-HCAD id(s) (e.g. E-HCAD-33) into the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0). Please enter in all relevent accession columns to make sure they are visible to other wranglers when they select the next E-HCAD accession number for their dataset.
 
@@ -184,11 +188,13 @@ Please also manage the SCEA curation status of your dataset using the SCEA wrang
 
 ## Further curation of the idf and sdrf files
 
+Some curation is required to be done manually. These steps will be automated as we develop the tool, where possible.
+
 ### idf file
 
 #### Format ####
 
-##### tab-separated format #####
+#### tab-separated format ####
 
 What to separate by a tab:
 
@@ -213,7 +219,7 @@ Experimental[space]Factor[space]Name[tab]organ[tab]disease
 Person First Name[tab][author1 first name][tab][author2 first name][tab][author3 first name][tab][author4 first name]
 Person Email[tab][author1 email][tab][author2 email][tab][tab][author4 email]
 
-##### Valid Protocol Types #####
+#### Valid Protocol Types ####
 
 Valid protocol types are: sample collection protocol, enrichment protocol, growth protocol, treatment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol
 
@@ -229,7 +235,7 @@ Hca2scea Protocol type map:
 | Library preparation protocol      | nucleic acid library construction protocol |
 | Sequencing protocol               | nucleic acid sequencing protocol           |
 
-##### Protocol Type format #####
+#### Protocol Type format ####
 
 - The protocol Name should be ordered by number
 - The protocol Type and Description order must reflect the Name order https://github.com/ebi-gene-expression-group/atlas-fastq-provider
@@ -252,7 +258,7 @@ Comment[EAAdditionalAttributes] individual  sex age
 
 ### sdrf file:
 
-**File paths**
+#### File paths ####
 
 We do not need to send raw data files to SCEA However, we do need to provide the full paths to either the fastq files, or if not available, the full paths to the SRA object files. These should be filled in thr sdrf file.
 
@@ -260,7 +266,7 @@ The latest version of the script searches for and enters the fastq file paths fo
 
 If no fastq paths or SRA file paths can be found, the script will leave the "Comment[read1 file]", "Comment[read2  file]", "Comment[fastq URI]" and "Comment[SRA URI]" columns empty, and these should be manually filled.
 
-**Other**
+#### Other ####
 
 - The format should be 1 RUN per row, with files (read1,read2,index1) in separate Comment columns.
 - You need to add new columns with the full download path to fastq files and fastq file names. The column names should be "Comment[read1 file]" and "Comment[FASTQ_URI]" respectively and "Comment[read2 file]" and "Comment[FASTQ_URI]" respectively. You should also add "Comment[index1 file]" and "Comment[FASTQ_URI]" respectively if there is an index1 file available. A "Comment[FASTQ_URI]" column with the relevant file paths should always following a "Comment[[enter read index] file]" column. It is currently up to the wrangler to identify the names and full paths of the fastq files either in the NCBI SRA or ENA DB. The full download path should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp.". While I am in the process of automating getting the fastq file paths into the sdrf file, I am waiting to be on development until I can get this finished. Therefore, for now the "ftp://" prefix will need to be added to the paths manually or via a small script. If a path to the fastq files can not be found, the fastq file columns should be removed from the sdrf file. They should be replaced with Comment[SRA file] and Comment[SRA_URI] or Comment[BAM file] and Comment[BAM_URI] respectively. If the paths to an SRA object can be found then that is preferred over a path to the bam files as the scea team cannot currently process bam files.
