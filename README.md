@@ -256,25 +256,91 @@ Example:
 
 Comment[EAAdditionalAttributes] individual  sex age
 
-### sdrf file:
+### sdrf file ###
 
 #### File paths ####
 
-We do not need to send raw data files to SCEA However, we do need to provide the full paths to either the fastq files, or if not available, the full paths to the SRA object files. These should be filled in thr sdrf file.
+We do not need to send raw data files to SCEA However, we do need to provide the full paths to either the fastq files, or if not available, the full paths to the SRA object files. These should be filled in the sdrf file.
 
-The latest version of the script searches for and enters the fastq file paths for each given run accession in the sdrf file. If it is not able to obtain the fastq file path, it searches for and enters the SRA Object file paths. It also obtains the fastq file names associated with the SRA object file.
+The latest version of the script automatically searches for and enters the fastq file paths for each given run accession in the sdrf file. If it is not able to obtain the fastq file path, it searches for and enters the SRA Object file paths. If none are available, it will return the sdrf file leaving the file columns empty.
 
-If no fastq paths or SRA file paths can be found, the script will leave the "Comment[read1 file]", "Comment[read2  file]", "Comment[fastq URI]" and "Comment[SRA URI]" columns empty, and these should be manually filled.
+**Download path format**
 
-#### Other ####
+-All download paths should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp." The script accounts for this.
 
-- The format should be 1 RUN per row, with files (read1,read2,index1) in separate Comment columns.
-- You need to add new columns with the full download path to fastq files and fastq file names. The column names should be "Comment[read1 file]" and "Comment[FASTQ_URI]" respectively and "Comment[read2 file]" and "Comment[FASTQ_URI]" respectively. You should also add "Comment[index1 file]" and "Comment[FASTQ_URI]" respectively if there is an index1 file available. A "Comment[FASTQ_URI]" column with the relevant file paths should always following a "Comment[[enter read index] file]" column. It is currently up to the wrangler to identify the names and full paths of the fastq files either in the NCBI SRA or ENA DB. The full download path should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp.". While I am in the process of automating getting the fastq file paths into the sdrf file, I am waiting to be on development until I can get this finished. Therefore, for now the "ftp://" prefix will need to be added to the paths manually or via a small script. If a path to the fastq files can not be found, the fastq file columns should be removed from the sdrf file. They should be replaced with Comment[SRA file] and Comment[SRA_URI] or Comment[BAM file] and Comment[BAM_URI] respectively. If the paths to an SRA object can be found then that is preferred over a path to the bam files as the scea team cannot currently process bam files.
-- You need to add a factor value column as the last column in the sdrf file which matches the factor value(s) you gave as an argument and entered in the idf file.
-- You will need to check that the number and name of the protocol REF ids in the idf file (e.g. P-HCADX-1,P-HCADX-2) matches correctly with the experiment rows in the sdrf files, based on the experimental design. The automatic conversion should be correct but this is a good check to do.
-- Add a new Comment[technical replicate group] column if there are multiple runs per sample. This column should be added immediately following the Assay Name column. The column values should be either the Biosample IDs or given group ids e.g. group1,group2, etc.
-- For time unit ranges, please use ‘to’ instead of ‘-‘. For example: ‘20 to 60’ years.
-- Make sure you save the sdrf file as a tab-delimited .txt file: beware of excel changing your time unit ranges to a date format and of empty rows/lines at the bottom of the file. Empty rows/lines will cause errors in validation.
+-Download paths should not be aws or google cloud paths i.e. file paths with 's3://' and 'gs://'. The script checks for this.
+
+**Column names**
+
+*Valid column names for file names*
+
+"Comment[read1 file]"
+"Comment[read2  file]"
+"Comment[index1  file]"
+
+*Valid column names for file paths*
+
+"Comment[fastq URI]"
+"Comment[SRA URI]"
+
+**Selecting column names (script logic)**
+
+*Fastq paths were found*
+
+The script checks for a minimum of both read1 and read2 file paths.
+
+The script will automatically fill the following columns:
+
+"Comment[read1 file]", "Comment[fastq URI]", "Comment[read2  file]", "Comment[fastq URI]", "Comment[index1  file]", "Comment[fastq URI]".
+
+*Index fastq path was not found*
+
+The script will automatically delete the following columns:
+
+"Comment[index1  file]", "Comment[fastq URI]"
+
+*Fastq paths were not found*
+
+The script checks for a minimum of both read1 and read2 file paths.
+
+The script will automatically delete all instances of the following column:
+
+"Comment[fastq URI]"
+
+*SRA paths were found in place of fastq paths*
+
+The script will automatically fill the following columns:
+
+"Comment[read1 file]", "Comment[read2 file]" "Comment[SRA URI]"
+ 
+ *fastq paths and SRA paths are not found*
+
+The script will leave the following columns empty:
+
+"Comment[read1 file]", "Comment[read2  file]", "Comment[fastq URI]" and "Comment[SRA URI]"
+
+These columns should be manually filled based on the file type you are able to find. You can search for the file paths in the NCBI SRA database and/or ENA database.
+
+You will need to delete any unused empty columns.
+
+#### Additional fields ####
+
+- Add new factor value columns to the file. These should be the last column(s) in the table. The columns should be filled with the factor value(s) that you selected earlier *(See above for the Definition of "Factor Value")*.
+- The factor value column names should be "Factor Value[column name]", where the column name is the selected Factor value of interest.
+
+*For example:*
+
+"Factor Value[disease]"
+"Factor Value[sampling site]"
+
+### Important checks ###
+
+- You will need to check that the number and name of the protocol REF ids in the idf file (e.g. P-HCADX-1,P-HCADX-2) matches correctly with the experiment rows in the sdrf files, based on the experimental design. The automatic conversion is correct most of the time, but I have filed a ticket for a couple of exceptions.
+
+### Saving the files ###
+
+- Make sure you save the idf file and sdrf file as a tab-delimited .txt file
+- Make sure you remove any empty lines/spaces at the end of the file. They will cause validation errors.
 
 ## Validation
 
