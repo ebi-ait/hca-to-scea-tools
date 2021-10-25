@@ -186,16 +186,64 @@ Please also manage the SCEA curation status of your dataset using the SCEA wrang
 
 ### idf file:
 
-- Use a tab to separate every value you enter. Also, the spacing created by tabs is important, for example, tabs between author names or emails, including where the email is not known and shown as a blank.
-- The Protocol Name is used in the sdrf file to detail which protocols are applied in which experiments. It is worth checking these are all correct in the sdrf after running the tool.
-- The protocol Name should be ordered by number.
+**idf file formatting**
+
+**tab-separated format**
+
+What to separate by a tab:
+
+- a field name and corresponding value(s)
+- separate values in a list of values
+- empty values in a list
+
+What to separate by a space:
+
+- multiple words within a single string
+
+Example1:
+
+Protocol[space]Type[space]sample[tab]collection[space]protocol[tab]sample[space]collection[space]protocol
+
+Example2:
+
+Experimental[space]Factor[space]Name[tab]organ[tab]disease
+
+Example3:
+
+Person First Name[tab][author1 first name][tab][author2 first name][tab][author3 first name][tab][author4 first name]
+Person Email[tab][author1 email][tab][author2 email][tab][tab][author4 email]
+
+**Valid Protocol Types**
+
+- Valid protocol types are: sample collection protocol, enrichment protocol, growth protocol, treatment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol
+
+- A protocol type map (hca2scea):
+
+Collection protocol = sample collection protocol
+Dissociation protocol = enrichment protocol
+Enrichment protocol = enrichment protocol
+Differentiation protocol = growth protocol
+[hca treatment protocol is not yet a protocol type in the HCA schema] = treatment protocol
+Library preparation protocol = nucleic acid library construction protocol
+Sequencing protocol = nucleic acid sequencing protocol
+
+**Protocol Type format**
+
+- The protocol Name should be ordered by number
 - The protocol Type and Description order must reflect the Name order https://github.com/ebi-gene-expression-group/atlas-fastq-provider
-- The protocol types are: sample collection protocol, enrichment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol. These should be obvious except that the enrichment protocol indicates both an HCA dissociation protocol and an HCA enrichment protocol (and should be entered twice to reflect those 2). In terms of differentiation protocol, ipsc induction protocol or other, we should ask Anja or Nancy how they approach that.
-- Each protocol description should be simplified and include less extensive details than the HCA standard. The SCEA team prefer the protocols have general and short descriptions which provide enough information to interpret the data.
-- You need to add the chosen factor values given as an input argument in the idf file in both of these fields: Experimental Factor Name and Experimental Factor Type
-- You should add at least the 'individual', 'sex' and 'age' fields if they are available, using the following field: Comment[EAAdditionalAttributes]
-- Other 'Comment' fields that you think are useful to display in the SCEA browser can be chosen and added to the Comment[EAAdditionalAttributes]. However, they should not be Factor Values. All metadata will be displayed in a table in browser. However, these specific attributes will be displayed as a user hovers over individual cells in their multi-dimensional cell visualisation tool. Some examples are: immunophenotype, treatment, stimulus, if they are not Factor Values.
-- You should add a related project E-HCAD-id if the project was split into separate E-HCAD-ids by adding this field: Comment[RelatedExperiment]
+- Aim to simplify every protocol description to no more than 2 sentences. The SCEA team prefer the protocols have general and short descriptions with less extensive detail
+
+**Additional fields**
+
+Additional fields that are not yet automated by the hca2sceal tool are:
+
+- Comment[EAAdditionalAttributes]
+You should add a tab separated list of key variables of interest which will be displayed in the SCEA visualisation tool.
+Key variables are chosen from the column names in the sdrf file annotated with "Comment[]".
+Key variables should not be factor values.
+If available in the sdrf file, always include at least: 'individual', 'sex' and 'age'.
+Example:
+Comment[EAAdditionalAttributes] individual  sex age
 
 ### sdrf file:
 
