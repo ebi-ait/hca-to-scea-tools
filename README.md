@@ -269,16 +269,20 @@ It is not possible to get this validation tool running globally for all users in
 
 We do not need to send SCEA the raw data files. The file paths should be in the sdrf file. They will use the filepaths to obtain the raw data.
 
-You should ask for access to the SCEA gitlab repo (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata), if you do not already have access.
+**HCA curators**
 
-First, create a new branch from the master branch found here: https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master and name the new branch with the E-HCAD id you have assigned to the dataset. You should create a separate branch and folder for each E-HCAD dataset you upload.
+We now have a within-team secondary review process. Please move the dataset ticket to the new 'secondary review' column in the SCEA Zenhub Board and add a link to your idf and sdrf files. Please assign Ami as the secondary reviewer for now. This helps to highlight further areas for improvement of the hca2scea tool and the SOP.
 
-Then, in the Gitlab HCAD directory in this  new branch (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD) you will need to create a new folder named with the E-HCAD id (e.g. E-HCAD-20) and upload the idf and sdrf files inside this new folder.
+**SCEA curators**
 
-Make sure you delete any .gitignore files that appear in the folder, if any.
+You should ask for access to the SCEA gitlab repo (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata), if you do not already have access. This is where we log in and upload the idf and sdrf files.
 
-Once done, you should create a merge request for the branch, and ensure a reviewer is tagged (default). It is also a good idea to let the SCEA team know on slack that you have created a new branch.
+Once logged in, create a new branch from the master branch found here: https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master and name the new branch with the E-HCAD id you have assigned to the dataset. You should create a separate branch and folder for each E-HCAD dataset you upload.
 
-You will recieve automated emails once you create a merge request. They will probably say that the pipeline has failed. This is ok, you do not need to do anything. The SCEA team will review the files and we will receive an automated email with their comments. Once you have updated the file based on their feedback, a merge request should again be sent.
+Then, in the Gitlab HCAD directory in your new branch (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD) you will need to create a new folder named with the E-HCAD ID (e.g. E-HCAD-20) and upload the idf and sdrf files inside this new folder. Make sure you delete any .gitignore files that appear in the folder, if any.
+
+Once done, you should create a merge request for the branch, and ensure an SCEA reviewer is tagged (default). You will recieve automated emails once you create the merge request. They will likely say that the pipeline has failed. The SCEA team will review the files and get back to us with comments, or if the pipeline passes the merge request will be approved. You will need to update the files in response to their feedback.
+
+**Ticket management**
 
 Once your dataset has been approved in Gitlab, you can close the ticket inside the Zenhub SCEA Review column.
