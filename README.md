@@ -127,8 +127,8 @@ The next accession number would be 33.
 |-r          | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
 |-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
 |-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be 1 of                             | no        |
-|                                         [cs_name, cs_id, sp_name, sp_id, other] where cs indicates "cell suspension" and sp indicates                  |
-|                                            "specimen from organism". Default is cs_name.                                                               |
+|            |                          | [cs_name, cs_id, sp_name, sp_id, other] where cs indicates cell suspension and sp indicates        |           |
+|            |                          |  specimen from organism. Default is cs_name.                                                       |           |
 |--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
 |-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no        |
 
