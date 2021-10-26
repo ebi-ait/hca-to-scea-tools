@@ -1,0 +1,30 @@
+
+MAGE-TAB Version	1.1
+Investigation Title	Single-cell RNA sequencing reveals the heterogeneity of liver-resident immune cells in human.
+Comment[Submitted Name]	HumanLiverImmuneCells_GSE125188
+Experiment Description	The liver plays a critical role in both immune defense and tolerance in the body. The liver-resident immune cells (LrICs) determine the immune properties, but the unique composition and heterogeneity of these cells are incompletely understood. Here, we dissect the diversity of LrICs by a comprehensive transcriptomic profiling using unbiased single-cell RNA-sequencing (scRNA-seq). Overall design: 10x genomics was used to measure CD45+ immune cells in healthy human liver and paired spleen and PBMCs from the same donors.
+Public Release Date	2020-04-01
+Person First Name	Juanjuan	Shuye	Yang	Xiaomeng	Mengmeng	Gang	Hongbo	Man	Jing	Zhenwen	Zhiwei	Lei	Zheng	Ami
+Person Last Name	Zhao	Zhang	Liu	He	Qu	Xu	Wang	Huang	Pan	Liu	Li	Liu	Zhang	Day
+Person Mid Initials														
+Person Email													zhangzheng1975@aliyun.com	ami@ebi.ac.uk
+Person Affiliation	Institute of Hepatology, National Clinical Research Center for Infectious Disease, Shenzhen Third People's Hospital	Shanghai Public Health Clinical Center and Institute of Biomedical Sciences, Fudan University	Institute of Hepatology, National Clinical Research Center for Infectious Disease, Shenzhen Third People's Hospital	Research Center for Clinical & Translational Medicine, Fifth Medical Center for General Hospital of PLA	Research Center for Clinical & Translational Medicine, Fifth Medical Center for General Hospital of PLA	Institute of Hepatology, National Clinical Research Center for Infectious Disease, Shenzhen Third People's Hospital	Research Center for Liver Transplantation, Fifth Medical Center for General Hospital of PLA	Institute of Hepatology, National Clinical Research Center for Infectious Disease, Shenzhen Third People's Hospital	Research Center for Clinical & Translational Medicine, Fifth Medical Center for General Hospital of PLA	Research Center for Liver Transplantation, Fifth Medical Center for General Hospital of PLA	Deparment for Liver Transplantation, Shenzhen Third People's Hospital	Institute of Hepatology, National Clinical Research Center for Infectious Disease, Shenzhen Third People's Hospital	Institute of Hepatology, National Clinical Research Center for Infectious Disease, Shenzhen Third People's Hospital	EMBL-EBI
+Person Address	Shenzhen, Guangdong 518112	Shanghai, 201058	Shenzhen, Guangdong 518112	Beijing, 100039	Beijing, 100039	Shenzhen, Guangdong 518112	Beijing, 100039	Shenzhen, Guangdong 518112	Beijing, 100039	Beijing, 100039	Shenzhen, Guangdong 518112	Shenzhen, Guangdong 518112	Shenzhen, Guangdong 518112	Wellcome Genome Campus, Hinxton
+Person Roles													submitter	human cell atlas wrangler
+Protocol Type	sample collection protocol	sample collection protocol	sample collection protocol	enrichment protocol	enrichment protocol	enrichment protocol	enrichment protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol
+Protocol Name	P-HCAD55-1	P-HCAD55-2	P-HCAD55-3	P-HCAD55-4	P-HCAD55-5	P-HCAD55-6	P-HCAD55-7	P-HCAD55-8	P-HCAD55-9
+Protocol Description	Human peripheral blood (PB) samples used in this study were obtained from three adult donors with liver transplantation with approval from the Institutional Review Board and the Ethics Committee of Shenzhen Third People’s Hospital, Guangdong province and Beijing 302 Hospital, Beijing, China. The written informed consent was obtained from each donor.	Human spleen samples used in this study were obtained from three adult donors with liver transplantation with approval from the Institutional Review Board and the Ethics Committee of Shenzhen Third People’s Hospital, Guangdong province and Beijing 302 Hospital, Beijing, China. The written informed consent was obtained from each donor.	Human liver perfusion (LP) samples used in this study were obtained from three adult donors with liver transplantation with approval from the Institutional Review Board and the Ethics Committee of Shenzhen Third People’s Hospital, Guangdong province and Beijing 302 Hospital, Beijing, China. The written informed consent was obtained from each donor.	PBMCs (n = 26) were isolated by ficoll-hypaque density gradient centrifugation from heparinized blood of enrolled subjects.	Spleen (n = 15) was first ground on ice and the cells were collected and filtered.	Liver perfusion was directly filtered and concentrated by centrifugation (750g, 15 min, 20 °C), and then layered onto Ficoll.	Human CD45+ cells from liver perfusion, spleen cells, and PBMCs were isolated with the anti-CD45 magnetic-activated cell sorting kit.	The scRNA-Seq libraries were prepared with 10X Genomics Single Cell 3' Reagent Kit v2 following the user guide provided.	Single cell RNA sequencing libraries were sequenced on the Illumina Hiseq XTEN platform.
+Protocol Hardware									Illumina HiSeq X
+Term Source Name	EFO	ArrayExpress
+Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
+Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
+Experimental Factor Name	organ
+Experimental Factor Type	organ
+Comment[EAAdditionalAttributes]
+Comment[EACurator]	AD
+Comment[EAExpectedClusters]	
+Comment[ExpressionAtlasAccession]	E-HCAD-55
+Comment[HCALastUpdateDate]	2021-03-01
+Comment[SecondaryAccession]	559bb888-7829-41f2-ace5-2c05c7eb81e9	GSE125188
+Comment[EAExperimentType]	differential
+SDRF File	E-HCAD-55.sdrf.txt
