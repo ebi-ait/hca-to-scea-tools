@@ -178,7 +178,7 @@ scp -i [OPENSSH PRIVATE KEY file path] [username]@tool.archive.data.humancellatl
 
 Alternatively, see [here](https://ebi-ait.github.io/hca-ebi-wrangler-central/tools/handy_snippets.html#transfer-files-between-local-machine-and-ec2-scp-rsync) for tips on how to do this.
 
-## Record assigned E-HCAD ID
+## Record assigned E-HCAD ID ##
 
 At this point you should enter the newly assigned E-HCAD id(s) (e.g. E-HCAD-33) into the [tracker sheet](https://docs.google.com/spreadsheets/d/1rm5NZQjE-9rZ2YmK_HwjW-LgvFTTLs7Q6MzHbhPftRE/edit#gid=0). Please enter in all relevent accession columns to make sure they are visible to other wranglers when they select the next E-HCAD accession number for their dataset.
 
@@ -186,25 +186,40 @@ Please also note the E-HCAD id in the dataset ticket in the HCA Dataset Wranglin
 
 Please also manage the SCEA curation status of your dataset using the SCEA wrangling Zenhub board.
 
-## Further curation of the idf and sdrf files
+## Manually curate the output ##
 
 Some curation is required to be done manually. These steps will be automated as we develop the tool, where possible.
 
-### idf file
+### Update idf file ###
 
-#### Format ####
+Additional fields that are not yet automated by the hca2sceal tool are:
 
-#### tab-separated format ####
+- Comment[EAAdditionalAttributes]
 
-What to separate by a tab:
+You should add a tab separated list of key variables of interest for display in the SCEA visualisation tool.
+Add 'individual', 'sex' and 'age' if these columns are filled in the sdrf file.
+If 'sex' or 'age' are empty columns, add only 'individual'.
 
-- a field name and corresponding value(s)
-- values in a list of values
-- empty values in a list
+Examples:
 
-What to separate by a space:
+Comment[EAAdditionalAttributes] individual  sex age
+Comment[EAAdditionalAttributes] individual
 
-- multiple words within a single string
+- Publication
+
+### Check idf format ###
+
+#### File format ####
+
+The following should be separated by a tab:
+
+ - a field name and corresponding value(s)
+ - values in a list of values
+ - empty values in a list
+
+The following should be separated by a space
+
+ - multiple words within a single string
 
 *Example1*
 
@@ -212,16 +227,16 @@ Protocol[space]Type[space]sample[tab]collection[space]protocol[tab]sample[space]
 
 *Example2:*
 
-Experimental[space]Factor[space]Name[tab]organ[tab]disease
-
-*Example3:*
-
 Person First Name[tab][author1 first name][tab][author2 first name][tab][author3 first name][tab][author4 first name]
 Person Email[tab][author1 email][tab][author2 email][tab][tab][author4 email]
 
+Check that there is no extra white space (empty lines) at the end of the file. This will cause validation errors.
+
 #### Valid Protocol Types ####
 
-Valid protocol types are: sample collection protocol, enrichment protocol, growth protocol, treatment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol
+Valid protocol types are:
+
+sample collection protocol, enrichment protocol, growth protocol, treatment protocol, nucleic acid library construction protocol, nucleic acid sequencing protocol
 
 Hca2scea Protocol type map:
 
@@ -241,101 +256,90 @@ Hca2scea Protocol type map:
 - The protocol Type and Description order must reflect the Name order https://github.com/ebi-gene-expression-group/atlas-fastq-provider
 - Aim to simplify every protocol description to no more than 2 sentences. The SCEA team prefer the protocols have general and short descriptions with less extensive detail
 
-#### Additional fields ####
+### Update sdrf file ###
 
 Additional fields that are not yet automated by the hca2sceal tool are:
 
-- Comment[EAAdditionalAttributes]
-<p>
-You should add a tab separated list of key variables of interest which will be displayed in the SCEA visualisation tool.
-Key variables are chosen from the column names in the sdrf file annotated with "Comment[]".
-Key variables should not be factor values.
-If available in the sdrf file, always include at least: 'individual', 'sex' and 'age'.
-</p>
-Example:
-
-Comment[EAAdditionalAttributes] individual  sex age
-
-### sdrf file ###
-
-#### File paths ####
-
-We do not need to send raw data files to SCEA However, we do need to provide the full paths to either the fastq files, or if not available, the full paths to the SRA object files. These should be filled in the sdrf file.
-
-The latest version of the script automatically searches for and enters the fastq file paths for each given run accession in the sdrf file. If it is not able to obtain the fastq file path, it searches for and enters the SRA Object file paths. If none are available, it will return the sdrf file leaving the file columns empty.
-
-**Download path format**
-
--All download paths should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp." The script accounts for this.
-
--Download paths should not be aws or google cloud paths i.e. file paths with 's3://' and 'gs://'. The script checks for this.
-
-**Column names**
-
-*Valid column names for file names*
-
-"Comment[read1 file]"
-"Comment[read2  file]"
-"Comment[index1  file]"
-
-*Valid column names for file paths*
-
-"Comment[fastq URI]"
-"Comment[SRA URI]"
-
-**Selecting column names (script logic)**
-
-*Fastq paths were found*
-
-The script checks for a minimum of both read1 and read2 file paths.
-
-The script will automatically fill the following columns:
-
-"Comment[read1 file]", "Comment[fastq URI]", "Comment[read2  file]", "Comment[fastq URI]", "Comment[index1  file]", "Comment[fastq URI]".
-
-*Index fastq path was not found*
-
-The script will automatically delete the following columns:
-
-"Comment[index1  file]", "Comment[fastq URI]"
-
-*Fastq paths were not found*
-
-The script checks for a minimum of both read1 and read2 file paths.
-
-The script will automatically delete all instances of the following column:
-
-"Comment[fastq URI]"
-
-*SRA paths were found in place of fastq paths*
-
-The script will automatically fill the following columns:
-
-"Comment[read1 file]", "Comment[read2 file]" "Comment[SRA URI]"
- 
- *fastq paths and SRA paths are not found*
-
-The script will leave the following columns empty:
-
-"Comment[read1 file]", "Comment[read2  file]", "Comment[fastq URI]" and "Comment[SRA URI]"
-
-These columns should be manually filled based on the file type you are able to find. You can search for the file paths in the NCBI SRA database and/or ENA database.
-
-You will need to delete any unused empty columns.
-
-#### Additional fields ####
-
-- Add new factor value columns to the file. These should be the last column(s) in the table. The columns should be filled with the factor value(s) that you selected earlier *(See above for the Definition of "Factor Value")*.
+- Factor Values. You will need to add new factor value columns to the file. These should be the last column(s) in the table. The columns should be filled with the factor value(s) that you selected earlier *(See above for the Definition of "Factor Value")*.
 - The factor value column names should be "Factor Value[column name]", where the column name is the selected Factor value of interest.
 
-*For example:*
+*Example:*
 
 "Factor Value[disease]"
 "Factor Value[sampling site]"
 
-### Important checks ###
+### Check sdrf format ###
 
-- You will need to check that the number and name of the protocol REF ids in the idf file (e.g. P-HCADX-1,P-HCADX-2) matches correctly with the experiment rows in the sdrf files, based on the experimental design. The automatic conversion is correct most of the time, but I have filed a ticket for a couple of exceptions.
+#### File paths ####
+
+We do not need to send raw data files to SCEA. The script will try to automatically enter fastq file paths for each given run accession in the sdrf file. If it is not able to obtain fastq paths, it will try to enter SRA Object file paths. If none are available, it will return the sdrf file leaving the file columns empty. If you find that the file columns are empty, you will need to update the file columns with file names and file paths manually. You could search for the file paths in the NCBI SRA database and/or ENA database. You will need to delete any unused empty columns.
+
+**Download paths**
+
+- All download paths should start with 'http://' or 'ftp://'. If you find an ftp path, it should start with the following: "ftp://ftp." The script accounts for this.
+
+- Download paths should not be aws or google cloud paths i.e. file paths with 's3://' and 'gs://'. The script checks for this.
+
+**Column names**
+
+Below are examples of the file column names which should be included in the sdrf and thier order, given alternative file availability scenarios.
+
+*Fastq paths were found*
+
+*N.B. the script checks for a minimum of both read1 and read2 file paths.*
+
+| Comment[read1 file] | Comment[FASTQ_URI]         | Comment[read2 file] | Comment[FASTQ_URI]         | Comment[index1 file] | Comment[FASTQ_URI]         |
+|---------------------|----------------------------|---------------------|----------------------------|----------------------|----------------------------|
+| example_R1.fastq.gz | [path]/example_R1.fastq.gz | example_R2.fastq.gz | [path]/example_R2.fastq.gz | example_I1.fastq.gz  | [path]/example_I1.fastq.gz |
+
+,Or,
+
+| Comment[read1 file] | Comment[FASTQ_URI]         | Comment[read2 file] | Comment[FASTQ_URI]         |
+|---------------------|----------------------------|---------------------|----------------------------|
+| example_R1.fastq.gz | [path]/example_R1.fastq.gz | example_R2.fastq.gz | [path]/example_R2.fastq.gz |
+
+*Fastq paths were not found*
+
+| Comment[read1 file] | Comment[read2 file]     | Comment[SRA_URI] |
+|---------------------|-------------------------|------------------|
+| SRR8448139_1.fastq  | SRR8448139_2.fastq      | SRR8448139       |
+
+*SRA paths were not found*
+
+* The script will leave the file columns empty. You will need to delete any unused empty columns.*
+
+| Comment[read1 file] | Comment[FASTQ_URI] | Comment[read2 file] | Comment[FASTQ_URI] | Comment[SRA_URI] |
+|---------------------|--------------------|---------------------|--------------------|------------------|
+| PATHS NOT FOUND     | PATHS NOT FOUND    | PATHS NOT FOUND     | PATHS NOT FOUND    | PATHS NOT FOUND  |
+
+#### Protocol Type format ####
+
+- The Protocol Type columns should all have the same column name: Protocol REF
+- All Protocol Type columns should be grouped together in the table, except, the sequencing Protocol REF column should be separate and follow technology type columns
+- The name of the protocol REF ids in the idf file should match the Protocol IDs in the Protocol REF columns in the sdrf
+- The order of the protocol REF ids in the idf file should match the order of the Protocol REF columns in the sdrf
+- Each SCEA Protocol Type should have a single column: multiple protocol ids for the Protocol Type should be included in the same column
+
+**Example**
+
+*Project description*
+
+Single-cell sequencing libraries were generated from 4 samples and sequenced. Samples 1 and 3 were collected from Human Lungs postmortem. Samples 2 and 4 were collected as biopsy samples from the kidneys of living humans during surgery. This resulted in 2 collection protocol ids: P-HCAD54-1 and P-HCAD54-2. All samples were dissociated by enzymatic dissociation: P-HCAD54-3. Samples 1 and 3 were subsequently enriched by cell size selection: P-HCAD54-4. Samples 2 and 4 were not subjected to an enrichment protocol. All samples were used for single cell library generation: P-HCAD54-5 and sequecing: P-HCAD54-6.
+
+*idf Protocol metadata*
+
+Protocol Type sample collection protocol  sample collection protocol  enrichment protocol enrichment protocol nucleic acid library construction protocol	nucleic acid sequencing protocol
+
+Protocol Name P-HCAD54-1  P-HCAD54-2  P-HCAD54-3  P-HCAD54-4  P-HCAD54-5  P-HCAD54-6
+
+*sdrf Protocol metadata*
+
+ | Source Name    | Protocol REF   | Protocol REF  | Protocol REF  | Protocol REF |   [...]    | Protocol REF |
+ |----------------|----------------|---------------|---------------|--------------|            |--------------|
+ | Sample1        | P-HCAD54-1     | P-HCAD54-3    | P-HCAD54-4    | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
+ | Sample2        | P-HCAD54-2     | P-HCAD54-3    |               | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
+ | Sample3        | P-HCAD54-1     | P-HCAD54-3    | P-HCAD54-4    | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
+ | Sample4        | P-HCAD54-2     | P-HCAD54-3    |               | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
 
 ### Saving the files ###
 
