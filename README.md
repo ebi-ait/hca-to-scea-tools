@@ -205,7 +205,7 @@ Examples:
 Comment[EAAdditionalAttributes] individual  sex age
 Comment[EAAdditionalAttributes] individual
 
-- Publication
+- Publication fields (I am working on adding this to the script, ignore this for now)
 
 ### Check idf format ###
 
@@ -253,7 +253,7 @@ Hca2scea Protocol type map:
 #### Protocol Type format ####
 
 - The protocol Name should be ordered by number
-- The protocol Type and Description order must reflect the Name order https://github.com/ebi-gene-expression-group/atlas-fastq-provider
+- The protocol Type and Description order must reflect the Name order
 - Aim to simplify every protocol description to no more than 2 sentences. The SCEA team prefer the protocols have general and short descriptions with less extensive detail
 
 ### Update sdrf file ###
@@ -334,12 +334,12 @@ Protocol Name P-HCAD54-1  P-HCAD54-2  P-HCAD54-3  P-HCAD54-4  P-HCAD54-5  P-HCAD
 
 *sdrf Protocol metadata*
 
- | Source Name    | Protocol REF   | Protocol REF  | Protocol REF  | Protocol REF |   [...]    | Protocol REF |
- |----------------|----------------|---------------|---------------|--------------|            |--------------|
- | Sample1        | P-HCAD54-1     | P-HCAD54-3    | P-HCAD54-4    | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
- | Sample2        | P-HCAD54-2     | P-HCAD54-3    |               | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
- | Sample3        | P-HCAD54-1     | P-HCAD54-3    | P-HCAD54-4    | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
- | Sample4        | P-HCAD54-2     | P-HCAD54-3    |               | P-HCAD54-5   |   [...]    | P-HCAD54-6   |
+ | Source Name    | Protocol REF   | Protocol REF  | Protocol REF  | Protocol REF |       | Protocol REF |
+ |----------------|----------------|---------------|---------------|--------------|-------|--------------|
+ | Sample1        | P-HCAD54-1     | P-HCAD54-3    | P-HCAD54-4    | P-HCAD54-5   |       | P-HCAD54-6   |
+ | Sample2        | P-HCAD54-2     | P-HCAD54-3    |               | P-HCAD54-5   |       | P-HCAD54-6   |
+ | Sample3        | P-HCAD54-1     | P-HCAD54-3    | P-HCAD54-4    | P-HCAD54-5   |       | P-HCAD54-6   |
+ | Sample4        | P-HCAD54-2     | P-HCAD54-3    |               | P-HCAD54-5   |       | P-HCAD54-6   |
 
 ### Saving the files ###
 
@@ -352,25 +352,35 @@ There are 2 validation steps for SCEA: a python validator and perl validator. In
 
 ### Python Validator
 
-It is not possible to get this validation tool running globally for all users in the /data/tools folder on EC2. It is better to install it individually in your home directory or subdirectory. If you follow the install instructions detailed here: https://pypi.org/project/atlas-metadata-validator/ you should be able to get it installed and running.
+#### Installing the tool ####
 
-To run the tool once installed, type this command, indicating the path to the idf file which you wish to validate. The corresponding sdrf file should be in the same folder. The tool will automatically detect the sdrf file given the idf filename prefix:
+It is not possible to get this validation tool set-up globally in the /data/tools folder on EC2. It will need to be installed locally or in your home directory on EC2. If you follow the install instructions detailed here: https://pypi.org/project/atlas-metadata-validator/ you should be able to get it installed and running.
+
+
+#### Running the tool ####
 
 ```
 python atlas_validation.py path/to/test.idf.txt -sc -hca -v
 ```
-*   The script guesses the experiment type (sequencing, microarray or single-cell) from the MAGE-TAB. If this was unsuccessful the experiment type can be set by specifying the respective argument -seq, -ma or -sc.
-*   The data file and URI checks may take a long time. Hence there is an option to skip these checks with -x.
-*   Verbose logging can be activated with -v.
-*   Special validation rules for HCA-imported experiments can be invoked with -hca option. The validator will otherwise guess if the experiment is an HCA import based on the HCAD accession code in the ExpressionAtlasAccession field.
+*N.B. The tool will automatically detect the sdrf file given the idf filename prefix.*
 
-An example of a successful validation looks like this:
+- The experiment type should be set by specifying the optional argument: -sc
+- The data file and URI checks may take a long time. Hence there is an option to skip these checks with -x
+- Verbose logging can be activated with the optional argument: -v
+- Invoke the special validation rules for HCA-imported experiments using the optional -hca argument
+
+#### Error types ####
+
+- An error message(s) will be printed, if an error is encountered
+- An example of a successful validation looks like this:
 
 ![validation](https://github.com/ebi-ait/hca-ebi-wrangler-central/raw/master/assets/images/scea_screenshots/validation.png)
 
 ### Perl validator
 
-It is not possible to get this validation tool running globally for all users in the /data/tools folder on EC2. It is better to install it individually in your home directory or subdirectory. If you follow the below install instructions you should be able to get it installed and running on EC2.
+#### Installing the tool ####
+
+It is not possible to get this validation tool set-up globally in the /data/tools folder on EC2. It will need to be installed locally or in your home directory on EC2.mIf you follow the below install instructions you should be able to get it installed and running on EC2.
 
 1.   Install Anaconda if you don’t have it already and the Anaconda directory to your path
 2.   Configure conda by typing the following at the terminal:
@@ -387,12 +397,21 @@ It is not possible to get this validation tool running globally for all users in
      ```
      conda activate perl-atlas-test
      ```
-5.   Copy the validate_magetab.pl perl script into your home or other directory where you will run the tool, it can be found on EC2 in the /data/tools/scea-perl-atlas-validator folder. The corresponding sdrf file should be in the same folder. The tool will automatically detect the sdrf file given the idf filename prefix.
-6.   Execute the script (with idf and sdrf files in the same directory)
+#### Running the tool ####
+
+1. Copy the validate_magetab.pl perl script into your home or other directory where you will run the tool, it can be found on EC2 in the /data/tools/scea-perl-atlas-validator folder.
+
+3. Ensure your idf file and sdrf file is in the same folder. The tool will automatically detect the sdrf file given the idf filename prefix.
+
+5. Run the script:
      ```
      perl path-to/validate_magetab.pl -i <idf-file>
      ```
-     (You can ignore ArrayExpress errors)
+#### Error types ####
+
+- An error message should appear next to specific error codes, e.g. SC-E03, SC-E04, SC-E02, SC-E05, GEN-E06. If there is no error message, please ask the scea team what this error means on the hca-to-scea slack channel, and record it in this SOP.
+- The tool will return an error message saying that the HCA bundle UUID and HCA bundle version are not specified. You can ignore this error.
+- An error message saying 'Additional attribute " " not found in SDRF' is likely causes by extra white space, tabs or empty lines in the input files.
 
 ## Where to send the files for review?
 
