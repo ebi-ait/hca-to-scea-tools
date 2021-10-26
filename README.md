@@ -117,18 +117,18 @@ The next accession number would be 33.
 |------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
 |-s          | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                                                    | yes       |
 |-id         | HCA project uuid         | This is added to the 'secondary accessions' field in idf file                                      | yes       | 
-|-c          | Curator initials         | HCA Curator initials. Space-separated list.                                                                             | yes       |
+|-c          | Curator initials         | HCA Curator initials. Space-separated list.                                                        | yes       |
 |-ac         | accession number         | Provide an SCEA accession number (integer).                                                        | yes       |
-|-tt         | Technology type          | Must be ['10Xv2_3','10Xv2_5','10Xv3_3','10Xv3_5','drop-seq','smart-seq','seq-well','smart-like']   | yes       |
-|-et         | Experiment type          | Must be 1 of ['differential','baseline']                                                           | yes       |
+|-tt         | Technology type          | Must be [10Xv2_3,10Xv2_5,10Xv3_3,10Xv3_5,drop-seq,smart-seq,seq-well,smart-like]                   | yes       |
+|-et         | Experiment type          | Must be 1 of [differential,baseline]                                                               | yes       |
 |-f          | Factor value             | A space-separated list of user-defined factor values e.g. age disease                              | yes       |
 |-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
 |-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
 |-r          | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
 |-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
 |-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be 1 of                             | no        |
-|            |                          | ['cs_name, cs_id, sp_name, sp_id, other'] where cs indicates "cell suspension" and sp indicates    |           |
-|            |                          |    "specimen from organism". Default is cs_name.                                                   |           |
+|                                         [cs_name, cs_id, sp_name, sp_id, other] where cs indicates "cell suspension" and sp indicates                  |
+|                                            "specimen from organism". Default is cs_name.                                                               |
 |--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
 |-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no        |
 
@@ -429,7 +429,9 @@ Once logged in, create a new branch from the master branch found here: https://g
 
 Then, in the Gitlab HCAD directory in your new branch (https://gitlab.ebi.ac.uk/ebi-gene-expression/scxa-metadata/-/tree/master/HCAD) you will need to create a new folder named with the E-HCAD ID (e.g. E-HCAD-20) and upload the idf and sdrf files inside this new folder. Make sure you delete any .gitignore files that appear in the folder, if any.
 
-Once done, you should create a merge request for the branch, and ensure an SCEA reviewer is tagged (default). You will recieve automated emails once you create the merge request. They will likely say that the pipeline has failed. The SCEA team will review the files and get back to us with comments, or if the pipeline passes the merge request will be approved. You will need to update the files in response to their feedback.
+Once done, you should create a merge request for the branch, and ensure an SCEA reviewer is tagged. It will by default assign an SCEA approver to the merge request, so you do not need to tag 1 of the SCEA curators yourself. For the merge request, adding a message like "Added new idf and sdrf files for accession E-HCAD-[number]" is fine.
+
+You will recieve automated emails once you create the merge request. They will likely say that the pipeline has failed. The SCEA team will review the files and get back to us with comments, or if the pipeline passes the merge request will be approved. You will need to update the files in response to their feedback.
 
 **Ticket management**
 
