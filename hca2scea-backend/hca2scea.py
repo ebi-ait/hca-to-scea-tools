@@ -168,15 +168,26 @@ def add_sequence_paths(sdrf, args):
     run_accessions = list(sdrf['Comment[ENA_RUN]'])
 
     paths_fastq = fetch_fastq_path.get_fastq_path_from_ena(args.study, run_accessions)
+    paths_sra_ena = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
+    paths_sra_sra = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
+
     if paths_fastq:
         paths = fetch_fastq_path.sort_fastq(paths_fastq)
     else:
-        print("Paths to fastq files can not be found in ENA. Searching for paths to SRA object files in SRA.")
-        paths_sra = fetch_fastq_path.get_fastq_path_from_sra(sdrf)
-        if paths_sra:
-            paths = fetch_fastq_path.sort_sra(paths_sra)
-        if not paths_sra:
+        print("Paths to paired fastq files can not be found in ENA. Searching for paths to SRA object files in ENA and SRA.")
+        sra_paths_from_ena = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
+        print(sra_paths_from_ena)
+        sra_paths_from_sra = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
+        print(sra_paths_from_sra)
+        ''' TO DO
+        #paths_sra = fetch_fastq_path.get_fastq_path_from_sra(sdrf)
+        if sra_paths_from_sra:
+            paths = fetch_fastq_path.sort_sra(sra_paths_from_sra)
+        if sra_paths_from_ena:
+            paths = fetch_fastq_path.sort_sra(sra_paths_from_ena)
+        if not sra_paths_from_sra:
             paths = None
+        '''
 
     try:
         sdrf = fetch_fastq_path.filter_paths(sdrf, paths)
