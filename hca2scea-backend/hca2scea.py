@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 import pandas as pd
 
 from helpers import multitab_excel_to_single_txt
@@ -167,40 +168,26 @@ def add_sequence_paths(sdrf, args):
 
     run_accessions = list(sdrf['Comment[ENA_RUN]'])
 
-    paths_fastq = fetch_fastq_path.get_fastq_path_from_ena(args.study, run_accessions)
-    paths_sra_ena = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
-    paths_sra_sra = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
-
-    if paths_fastq:
-        paths = fetch_fastq_path.sort_fastq(paths_fastq)
-    else:
-        print("Paths to paired fastq files can not be found in ENA. Searching for paths to SRA object files in ENA and SRA.")
-        sra_paths_from_ena = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
-        print(sra_paths_from_ena)
-        sra_paths_from_sra = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
-        print(sra_paths_from_sra)
-        ''' TO DO
-        #paths_sra = fetch_fastq_path.get_fastq_path_from_sra(sdrf)
-        if sra_paths_from_sra:
-            paths = fetch_fastq_path.sort_sra(sra_paths_from_sra)
-        if sra_paths_from_ena:
-            paths = fetch_fastq_path.sort_sra(sra_paths_from_ena)
-        if not sra_paths_from_sra:
-            paths = None
-        '''
-
     try:
-        sdrf = fetch_fastq_path.filter_paths(sdrf, paths)
+        sra_paths = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
     except:
+        sra_paths = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
+        if not sra_paths:
+            try:
+                sra_paths = fetch_fastq_path.get_sra_path_from_sra(run_accessions)
+            except:
+                sra_paths = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
+
+    if sra_paths:
+        for key in sra_paths.keys():
+            sdrf['Comment[read1 file]'] = key + "_1.fastq.gz"
+            sdrf['Comment[read2 file]'] = key + "_2.fastq.gz"
+            sdrf['Comment[SRA_URI]'] = sra_paths[key]['files'][0]
+    else:
+        print("Could not find paths to SRA objects.")
         sdrf['Comment[SRA_URI]'] = 'PATH NOT FOUND'
         sdrf['Comment[read1 file]'] = 'PATH NOT FOUND'
         sdrf['Comment[read2 file]'] = 'PATH NOT FOUND'
-        sdrf['Comment[index1 file]'] = ''
-        sdrf['Comment[read1 FASTQ_URI]'] = 'PATH NOT FOUND'
-        sdrf['Comment[read2 FASTQ_URI]'] = 'PATH NOT FOUND'
-        sdrf['Comment[index1 FASTQ_URI]'] = ''
-        print("Could not obtain fastq file paths or SRA file paths. Please record a ticket with the study ID and let"
-                "Ami know. For now you will need to enter the file paths into the sdrf file manually.")
 
     return sdrf
 
@@ -313,8 +300,7 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
     #"Characteristics[stimulus]":"cell_suspension.growth_conditions.drug_treatment","differentiation_protocol.small_molecules",
     sdrf_1['Characteristics[stimulus]'] = '' * sdrf_1.shape[0]
 
-    '''Get the fastq file names and file paths from ENA or alternatively, if not available, get the the SRA
-    Object file names and file paths from the SRA database.'''
+    '''Get the SRA object file names and file paths from SRA or ENA (try both).'''
     sdrf_2 = add_sequence_paths(sdrf_1, args)
 
     '''Check all expected column names are present and reorder columns by SCEA defined order.'''
@@ -367,11 +353,7 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
     'Comment[technical replicate group]',
     'Comment[ENA_RUN]',
     'Comment[read1 file]',
-    'Comment[read1 FASTQ_URI]',
     'Comment[read2 file]',
-    'Comment[read2 FASTQ_URI]',
-    'Comment[index1 file]',
-    'Comment[index1 FASTQ_URI]',
     'Comment[SRA_URI]']
 
     column_check = [col for col in expected_columns_ordered if col not in sdrf_2.columns]
@@ -422,10 +404,8 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
     'Comment[sample barcode size]',
     'Comment[cDNA read]',
     'Comment[cDNA read offset]',
-    'Comment[read1 FASTQ_URI]',
-    'Comment[read2 FASTQ_URI]',
-    'Comment[index1 file]',
-    'Comment[index1 FASTQ_URI]',
+    'Comment[read1 file]',
+    'Comment[read2 file]',
     'Comment[SRA_URI]']
 
     for column_name in optional_columns:
@@ -571,14 +551,11 @@ def main():
     merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict)
 
     '''The merged df consists of a row per read index (read1, read2, index1). To conform to
-    SCEA MAGE-TAB format, the rows should be merged by read pair including any index files.
+    SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
     '''
-    merged_df_by_reads = multitab_excel_to_single_txt.merge_rows_by_read_pair(merged_df)
-    if ('index1' in merged_df['sequence_file.read_index'].values):
-        merged_df_by_index = multitab_excel_to_single_txt.merge_index_reads(merged_df, merged_df_by_reads)
-        clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_by_index)
-    else:
-        clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_by_reads)
+    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict)
+    merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
+    clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
 
     '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
     creates extra columns in the df for each of the ids.'''

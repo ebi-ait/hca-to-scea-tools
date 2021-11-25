@@ -158,23 +158,18 @@ def retrieve_xml_from_sra(run_accessions):
                     sra_status = sra_file.attrib['sratoolkit']
                     if sra_status == '1' or 1:
                         file_name = sra_file.attrib['filename']
-                        if 'fastq' not in file_name:
+                        if 'SRR' in file_name:
                             accession = file_name
                             file_path = sra_file.attrib['url']
                             paths_sra[accession]['files'].append(file_path)
                         else:
                              continue
-                    elif sra_status == '0' or 0:
-                        file_name = sra_file.attrib['filename']                        
-                        if 'fastq' in file_name and 'gs://' not in file_name and 's3://' not in file_name:
-                            print("Fastq files available: please speak to Ami, if this option is available"
-                                  "the code will need updating.")
     except:
         paths_sra = None
     return paths_sra
 
-def get_sra_path_from_sra(sdrf):
-    run_accessions = list(sdrf['Comment[ENA_RUN]'])
+def get_sra_path_from_sra(run_accessions):
+    run_accessions = [x for x in run_accessions if x]
     if len(run_accessions) > 100:
         run_lists = list(run_accessions_to_parts(run_accessions))
         result_list = pool_retrieve_xml_from_sra(run_lists)
