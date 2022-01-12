@@ -45,19 +45,20 @@ Before you start converting your dataset to SCEA format, you will need to decide
 ### Installation
 
 The hca-to-scea tool is installed on EC2. If you're a new team member and you need access to EC2 or permissions to run the tool, please speak with Amnon, our technical coordinator, or another HCA developer.
+The tool is installed automatically after a successful build. See the github actions.
 
 ### Copying your HCA spreadsheet to EC2
 
 In order to use the hca-to-scea tool on EC2, you will need to copy your input HCA spreadsheet there, for example in your home folder. An example command to do this:
 
-```
+```bash
 scp -i [OPENSSH PRIVATE KEY file path] [path to spreadsheet] [username]@tool.archive.data.humancellatlas.org:/home/[username]
 ```
 
 ### Setting the environment on EC2
 
 Go to the hca-to-scea-tools directory and activate the environment.
-```
+```bash
 cd /data/tools/hca-to-scea-tools/hca2scea-backend
 source venv/bin/activate
 ```
@@ -68,14 +69,14 @@ source venv/bin/activate
 
 The easiest way might be to copy the example below, and replace the arguments as necessary whilst referring to this readme.
 
-```
+```bash
 python3 hca2scea.py -s [spreadsheet (xlsx)] -id [hca project uuid] -study [study accession (SRPxxx)] -name {cs_name,cs_id,sp_name,sp_id,other} -ac [accession number] -c [curator initials] -tt [technology type] -et [experiment type] -f [factor values] -pd [dataset publication date] -hd [hca last update date] -r [related scea accession] --facs -o [output dir]
 ```
 
 **Examples**
 
 **Required arguments only**
-```
+```bash
 python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12
 ```
 
