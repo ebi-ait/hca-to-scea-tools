@@ -3,7 +3,7 @@
 This repo contains various tools to help on the task of converting HCA spreadsheets to SCEA magetab files.
 
 ## SCEA eligibility criteria
-See [docs/eligibility.md]
+See [docs/eligibility.md](docs/eligibility.md)
 
 ## Running the hca2scea tool
 
@@ -30,7 +30,6 @@ source venv/bin/activate
 
 ### Running the tool on EC2
 
-#### Command-line ####
 
 The easiest way might be to copy the example below, and replace the arguments as necessary whilst referring to this readme.
 
@@ -38,34 +37,7 @@ The easiest way might be to copy the example below, and replace the arguments as
 python3 hca2scea.py -s [spreadsheet (xlsx)] -id [hca project uuid] -study [study accession (SRPxxx)] -name {cs_name,cs_id,sp_name,sp_id,other} -ac [accession number] -c [curator initials] -tt [technology type] -et [experiment type] -f [factor values] -pd [dataset publication date] -hd [hca last update date] -r [related scea accession] --facs -o [output dir]
 ```
 
-**Examples**
-
-**Required arguments only**
-```bash
-python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12
-```
-
-**Specify optional name argument**
-```
-python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -name cs_name -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12
-```
-
-**Specify optional related scea accession**
-```
-python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -r 51
-```
-
-**Specify that FACS was used**
-```
-python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 --facs
-```
-
-**Specify optional output dir**
-```
-python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir
-```
-
-#### Arguments ####
+### Commandline Arguments 
 
 **How to choose an E-HCAD accession number**
 
@@ -311,7 +283,8 @@ Protocol Name P-HCAD54-1  P-HCAD54-2  P-HCAD54-3  P-HCAD54-4  P-HCAD54-5  P-HCAD
 
 - Make sure you save the idf file and sdrf file as a tab-delimited .txt file
 - Make sure you remove any empty lines/spaces at the end of the file. They will cause validation errors.
-
+### Commandline Examples
+see [examples](docs/cli-examples.md)
 ## Validation
 
 There are 2 validation steps for SCEA: a python validator and perl validator. In Silvie’s words: “the perl script checks the mage-tab format in general (plus some curation checks etc) and the the python script mainly checks for single-cell expression atlas specific fields and requirements”.
