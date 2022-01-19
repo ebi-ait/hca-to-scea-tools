@@ -8,6 +8,6 @@ GSE155468_ontologies.xlsx,07073c12-8006-4710-a00b-23abdb814904,36,AD,10Xv3_3,dif
 210420Combined_ES_review.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,44,WKT,experiment type,factor values,public release date,hca last update date,GSE121638
 # Enrique's datasets
 # cannot find idf/sdrf files in scea's gitlab
-#GSE135893_ontologies_2020_07_15_redone_CellS_ES_MS.xlsx,c1a9a93d-d9de-4e65-9619-a9cec1052eaa,15,ESV,10Xv2_5,experiment type,factor values,public release date,hca last update date,GSE135893
+#GSE135893_ontologies_2020_07_15_redone_CellS_ES_MS.xlsx,c1a9a93d-d9de-4e65-9619-a9cec1052eaa,15,ESV,10Xv2_5,differential,disease,2019-09-05,2021-11-11,SRP218543
 # no spreadsheet found for this one
 #GSE119212,6c040a93-8cf8-4fd5-98de-2297eb07e9f6,43,ESV,10Xv2_3,experiment type,factor values,public release date,hca last update date,GSE119212
