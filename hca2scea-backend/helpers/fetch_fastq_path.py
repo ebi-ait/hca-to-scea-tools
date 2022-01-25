@@ -158,28 +158,43 @@ def retrieve_xml_from_sra(run_accessions):
                     sra_status = sra_file.attrib['sratoolkit']
                     if sra_status == '1' or 1:
                         file_name = sra_file.attrib['filename']
-                        if 'fastq' not in file_name:
+                        if 'SRR' in file_name:
                             accession = file_name
                             file_path = sra_file.attrib['url']
                             paths_sra[accession]['files'].append(file_path)
                         else:
                              continue
-                    elif sra_status == '0' or 0:
-                        file_name = sra_file.attrib['filename']                        
-                        if 'fastq' in file_name and 'gs://' not in file_name and 's3://' not in file_name:
-                            print("Please speak to Ami, she is looking for an example of open, accessible fastq files found via SRA")
     except:
         paths_sra = None
     return paths_sra
 
-def get_fastq_path_from_sra(sdrf):
-    run_accessions = list(sdrf['Comment[ENA_RUN]'])
+def get_sra_path_from_sra(run_accessions):
+    run_accessions = [x for x in run_accessions if x]
     if len(run_accessions) > 100:
         run_lists = list(run_accessions_to_parts(run_accessions))
         result_list = pool_retrieve_xml_from_sra(run_lists)
-        paths = result_list
+        paths_sra = result_list
     else:
         paths_sra = retrieve_xml_from_sra(run_accessions)
+    return paths_sra
+
+def get_sra_path_from_ena(study_accession, run_accessions):
+    paths_sra = {}
+    try:
+        request_url = f'http://www.ebi.ac.uk/ena/portal/api/filereport?accession={study_accession}&result=read_run&fields=run_accession,sra_ftp'
+        sra_results = pd.read_csv(request_url, delimiter='\t')
+        if sra_results.shape[0] > 0:
+            for i in range(0, len(list(sra_results['run_accession']))):
+                accession = list(sra_results['run_accession'])[i]
+                if accession in run_accessions:
+                    paths_sra[accession] = {'files': []}
+                    file_path = str(list(sra_results['sra_ftp'])[i])
+                    file_path = "ftp://" + file_path
+                    paths_sra[accession]['files'].append(file_path)
+        else:
+            paths_sra = {}
+    except:
+        paths_sra = {}
     return paths_sra
 
 def get_fastq_path_from_ena(study_accession, run_accessions):
