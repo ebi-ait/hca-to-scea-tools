@@ -1,8 +1,14 @@
 # Running the tests
 
+## commandline
 ```bash
+cd ./hca2scea-backend
 python -m unittest
 ```
+
+## from IDE
+
+Make sure to set the working directory to `./hca2scea-backend`
 
 # Test data
 Test data consists of HCA spreadsheets and the matching SCEA files (idf, sdrf) that should be generated for them.
