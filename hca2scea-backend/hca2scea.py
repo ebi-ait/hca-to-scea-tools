@@ -179,10 +179,16 @@ def add_sequence_paths(sdrf, args):
                 sra_paths = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
 
     if sra_paths:
+        read1_names = []
+        read2_names = []
+        sra_names = []
         for key in sra_paths.keys():
-            sdrf['Comment[read1 file]'] = key + "_1.fastq.gz"
-            sdrf['Comment[read2 file]'] = key + "_2.fastq.gz"
-            sdrf['Comment[SRA_URI]'] = sra_paths[key]['files'][0]
+            read1_names.append(key + "_1.fastq.gz")
+            read2_names.append(key + "_2.fastq.gz")
+            sra_names.append(sra_paths[key]['files'][0])
+        sdrf['Comment[read1 file]'] = read1_names
+        sdrf['Comment[read2 file]'] = read2_names
+        sdrf['Comment[SRA_URI]'] = sra_names
     else:
         print("Could not find paths to SRA objects.")
         sdrf['Comment[SRA_URI]'] = 'PATH NOT FOUND'
