@@ -1,6 +1,6 @@
 spreadsheet,HCA project uuid,E-HCAD accession,curator initials,technology,experiment type,factor values,public release date,hca last update date,study accession
-TEST01.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,50,AD,10Xv2_3,differential,disease,2009-02-27,2021-04-29,SRP151260
-TEST02.xlsx,07073c12-8006-4710-a00b-23abdb814904,36,AD,10Xv2_3,differential,organ,2021-09-30,2020-11-25,SRP274475
+SRP151260.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,50,AD,10Xv2_3,differential,disease,2009-02-27,2021-04-29,SRP151260
+SRP274475.xlsx,07073c12-8006-4710-a00b-23abdb814904,36,AD,10Xv2_3,differential,organ,2021-09-30,2020-11-25,SRP274475
 # Wei's datasets
 #210420Combined_ES_review.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,44,WKT,experiment type,factor values,public release date,hca last update date,GSE121638
 # Enrique's datasets
