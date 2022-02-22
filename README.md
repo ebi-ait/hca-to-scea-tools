@@ -136,22 +136,24 @@ If accessions E-HCAD1 to E-HCAD32 have already been assigned to datasets, the ne
 
 **Factor values**
 
-- A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. Multiple factor values can be entered and should be chosen from the following list:
+A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. Multiple factor values can be entered and should be chosen from the following list.
 
-Known disease(s)
-Development stage
-Organ
-Organ part
-Selected cell type(s)
-Individual
+- Known disease(s)
+- Development stage
+- Organ
+- Organ part
+- Selected cell type(s)
+- Individual
 
-- There must be at least 1 factor value. If you cannot identify a factor value i.e. all donors and samples share the same metadata with respect to the above list of factor values, then enter 'Individual'.
+There must be at least 1 factor value. If you cannot identify a factor value i.e. all donors and samples share the same metadata with respect to the above list of factor values, then enter 'Individual'.
 
-- Datasets with more than 1 technolgoy type are not eligible for SCEA. Therefore, technology type is not a valid factor value.
+Datasets with more than 1 technolgoy type are not eligible for SCEA. Therefore, technology type is not a valid factor value.
 
 **Experiment type**
 
-An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. The list of possible factor values can be found above. If 1 or more factor values other than 'Individual' is identified, then the experiment type should be 'Differential'. If the only factor value is 'Individual', then the experiment type should be 'Baseline'.
+An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. The list of possible factor values can be found above.
+
+If 1 or more factor values other than 'Individual' is identified, then the experiment type should be 'Differential'. If the only factor value is 'Individual', then the experiment type should be 'Baseline'.
 
 **Related E-HCAD-ID**
 
