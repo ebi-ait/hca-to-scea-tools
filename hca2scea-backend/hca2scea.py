@@ -225,6 +225,24 @@ def get_new_protocol_column_names(sdrf, counter):
 
     return new_column_names, counter
 
+def order_protocols(protocols_sdrf_before_sequencing):
+    collection_protocol_cols = []
+    dissociation_protocol_cols = []
+    enrichment_protocol_cols = []
+    library_preparation_protocol_cols = []
+    for col in list(protocols_sdrf_before_sequencing.columns):
+        if col.split(".protocol_core.protocol_id")[0] == "collection_protocol":
+            collection_protocol_cols.append(col)
+        if col.split(".protocol_core.protocol_id")[0] == "dissociation_protocol":
+            dissociation_protocol_cols.append(col)
+        if col.split(".protocol_core.protocol_id")[0] == "enrichment_protocol":
+            enrichment_protocol_cols.append(col)
+        if col.split(".protocol_core.protocol_id")[0] == "library_preparation_protocol":
+            library_preparation_protocol_cols.append(col)
+    new_columns = [sorted(collection_protocol_cols),sorted(dissociation_protocol_cols),sorted(enrichment_protocol_cols),sorted(library_preparation_protocol_cols)]
+    new_columns = [item for sublist in new_columns for item in sublist]
+    protocols_sdrf_before_sequencing = protocols_sdrf_before_sequencing[new_columns]
+    return protocols_sdrf_before_sequencing
 
 def add_protocol_columns(df, dataset_protocol_map):
 
@@ -239,16 +257,23 @@ def add_protocol_columns(df, dataset_protocol_map):
     protocols_sdrf_before_sequencing = df[[col for (proto_type, cols) in get_protocol_map.map_of_hca_protocol_type_id_keys.items() if proto_type in
                  protocols_list_before_sequencing for col in cols]]
 
+    protocols_sdrf_before_sequencing.fillna("", inplace=True)
+    pd.set_option('display.max_columns', None)
+
     protocols_sdrf_before_sequencing = protocols_sdrf_before_sequencing.apply(convert_row)
+    pd.set_option('display.max_columns', None)
+    #print(protocols_sdrf_before_sequencing) this works
 
-    protocols_sdrf_before_sequencing_list = []
+    protocols_sdrf_before_sequencing = order_protocols(protocols_sdrf_before_sequencing)
 
-    for (_, row) in protocols_sdrf_before_sequencing.iterrows():
-        short_row = list(set([x for x in row.tolist() if x != '']))
-        short_row.sort()
-        protocols_sdrf_before_sequencing_list.append(short_row)
+    #protocols_sdrf_before_sequencing_list = []
 
-    protocols_sdrf_before_sequencing = pd.DataFrame.from_records(protocols_sdrf_before_sequencing_list)
+    #for (_, row) in protocols_sdrf_before_sequencing.iterrows():
+    #    short_row = list(set([x for x in row.tolist() if x != '']))
+    #    short_row.sort()
+    #    protocols_sdrf_before_sequencing_list.append(short_row)
+
+    #protocols_sdrf_before_sequencing = pd.DataFrame.from_records(protocols_sdrf_before_sequencing_list)
 
     counter = 1
     new_column_names, counter = get_new_protocol_column_names(protocols_sdrf_before_sequencing, counter)

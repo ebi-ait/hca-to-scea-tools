@@ -40,8 +40,9 @@ def splitlist(list_):
 
     split_data = []
     try:
-        if list_ != "nan":
+        if list_ != "nan" and list_ != "":
             split_data = list_.split('||')
+            split_data = sorted(split_data)
     except:
         pass
 
@@ -139,7 +140,7 @@ def get_idf_file_protocol_fields(protocol_map):
 
 '''Maps a HCA protocol name to a SCEA ID.'''
 def map_proto_to_id(protocol_name, protocol_map):
-    for proto_type in protocol_map.values():
+    for key,proto_type in protocol_map.items():
         for proto in proto_type.values():
             if protocol_name in proto['hca_ids']:
                 return proto.get('scea_id')
