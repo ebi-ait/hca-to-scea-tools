@@ -262,18 +262,8 @@ def add_protocol_columns(df, dataset_protocol_map):
 
     protocols_sdrf_before_sequencing = protocols_sdrf_before_sequencing.apply(convert_row)
     pd.set_option('display.max_columns', None)
-    #print(protocols_sdrf_before_sequencing) this works
 
     protocols_sdrf_before_sequencing = order_protocols(protocols_sdrf_before_sequencing)
-
-    #protocols_sdrf_before_sequencing_list = []
-
-    #for (_, row) in protocols_sdrf_before_sequencing.iterrows():
-    #    short_row = list(set([x for x in row.tolist() if x != '']))
-    #    short_row.sort()
-    #    protocols_sdrf_before_sequencing_list.append(short_row)
-
-    #protocols_sdrf_before_sequencing = pd.DataFrame.from_records(protocols_sdrf_before_sequencing_list)
 
     counter = 1
     new_column_names, counter = get_new_protocol_column_names(protocols_sdrf_before_sequencing, counter)
