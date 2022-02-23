@@ -44,6 +44,12 @@ def get_person_roles(xlsx_dict):
 
     return person_roles
 
+def get_author_list(xlsx_dict):
+
+    authors = utils.reformat_value(xlsx_dict, "project_publications", "project.publications.authors")[0]
+    author_list = authors.replace("||",", ")
+
+    return author_list
 
 def generate_idf_file(work_dir, args, tracking_sheet, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name):
@@ -52,6 +58,7 @@ def generate_idf_file(work_dir, args, tracking_sheet, dataset_protocol_map, xlsx
     person_roles = get_person_roles(xlsx_dict)
     secondary_accessions = get_secondary_accessions(tracking_sheet, args)
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
+    author_list = get_author_list(xlsx_dict)
 
     if args.related_scea_accession:
 
@@ -87,6 +94,11 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(secondary_accessions or [])}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
+
+Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
+Publication Author List\t{author_list}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
+Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
 """
     else:
 
@@ -121,6 +133,11 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(secondary_accessions or [])}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
+
+Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
+Publication Author List\t{author_list}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
+Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
 """
 
     print(f"saving {work_dir}/{idf_file_name}")
