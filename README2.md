@@ -1,12 +1,13 @@
-## geo_to_hca
-A tool to assist in the automatic conversion of geo metadata to hca metadata standard.
+## hca_to_scea
+A tool to assist in the automatic conversion of an hca metadata spreadsheet to scea metadata MAGE-TAB files.
 
 ## Installation
 
-    pip install geo-to-hca
+    pip install hca-to-scea
     
 ## Description
-The tool takes as input a single GEO accession or list of GEO accessions and a template HCA metadata excel spreadsheet. It returns as output a pre-filled HCA metadata spreadsheet for each accession. Each spreadsheet can then be used as an intermediate file for completion by manual curation. Optionally an output log file can also be generated which lists the availability of an SRA study accession and fastq file names for each GEO accession given as input.
+
+The tool takes as input an HCA metadata spreadsheet and converts the metadata to SCEA MAGE-TAB files which are then saved to an output directory.
 
 ## Usage
 
@@ -14,119 +15,161 @@ To run it as a package, after installing it via pip:
 
 
 ```shell script
-$ geo-to-hca -h                                                            
-usage: geo-to-hca [-h] [--accession ACCESSION]
-                  [--accession_list ACCESSION_LIST] [--input_file INPUT_FILE]
-                  [--nthreads NTHREADS] [--template TEMPLATE]
-                  [--header_row HEADER_ROW] [--input_row1 INPUT_ROW1]
-                  [--output_dir OUTPUT_DIR] [--output_log OUTPUT_LOG]
+$ hca-to-scea -h                                                  
+usage: hca2scea.py [-h] -s SPREADSHEET -id PROJECT_UUID -study STUDY
+                   [-name {cs_name,cs_id,sp_name,sp_id,other}] -ac
+                   ACCESSION_NUMBER -c CURATORS [CURATORS ...] -tt
+                   {10Xv1_3,10Xv2_3,10Xv2_5,10Xv3_3,drop-seq,smart-seq,seq-well,smart-like}
+                   -et {baseline,differential} [--facs] -f
+                   EXPERIMENTAL_FACTORS [EXPERIMENTAL_FACTORS ...] -pd
+                   PUBLIC_RELEASE_DATE -hd HCA_UPDATE_DATE
+                   [-r RELATED_SCEA_ACCESSION [RELATED_SCEA_ACCESSION ...]]
+                   [-o OUTPUT_DIR]
+
+run hca -> scea tool
 
 optional arguments:
   -h, --help            show this help message and exit
-  --accession ACCESSION
-                        accession (str): either GEO or SRA accession
-  --accession_list ACCESSION_LIST
-                        accession list (comma separated)
-  --input_file INPUT_FILE
-                        optional path to tab-delimited input .txt file
-  --nthreads NTHREADS   number of multiprocessing processes to use
-  --template TEMPLATE   path to an HCA spreadsheet template (xlsx)
-  --header_row HEADER_ROW
-                        header row with HCA programmatic names
-  --input_row1 INPUT_ROW1
-                        HCA metadata input start row
-  --output_dir OUTPUT_DIR
-                        path to output directory; if it does not exist, the
-                        directory will be created
-  --output_log OUTPUT_LOG
-                        True/False: should the output result log be created
+  -s SPREADSHEET, --spreadsheet SPREADSHEET
+                        Please provide a path to the HCA project spreadsheet.
+  -id PROJECT_UUID, --project_uuid PROJECT_UUID
+                        Please provide an HCA ingest project submission id.
+  -study STUDY          Please provide the SRA or ENA study accession.
+  -name {cs_name,cs_id,sp_name,sp_id,other}
+                        Please indicate which field to use as the sample name.
+                        cs=cell suspension, sp = specimen.
+  -ac ACCESSION_NUMBER, --accession_number ACCESSION_NUMBER
+                        Provide an E-HCAD accession number. Please find the
+                        next suitable accession number by checking the google
+                        tracker sheet.
+  -c CURATORS [CURATORS ...], --curators CURATORS [CURATORS ...]
+                        space separated names of curators
+  -tt {10Xv1_3,10Xv2_3,10Xv2_5,10Xv3_3,drop-seq,smart-seq,seq-well,smart-like}, --technology_type {10Xv1_3,10Xv2_3,10Xv2_5,10Xv3_3,drop-seq,smart-seq,seq-well,smart-like}
+                        Please indicate which single-cell sequencing
+                        technology was used.
+  -et {baseline,differential}, --experiment_type {baseline,differential}
+                        Please indicate whether this is a baseline or
+                        differential experimental design
+  --facs                Please specify this argument if FACS was used to
+                        isolate single cells
+  -f EXPERIMENTAL_FACTORS [EXPERIMENTAL_FACTORS ...], --experimental_factors EXPERIMENTAL_FACTORS [EXPERIMENTAL_FACTORS ...]
+                        space separated list of experimental factors
+  -pd PUBLIC_RELEASE_DATE, --public_release_date PUBLIC_RELEASE_DATE
+                        Please enter the public release date in this format:
+                        YYYY-MM-DD
+  -hd HCA_UPDATE_DATE, --hca_update_date HCA_UPDATE_DATE
+                        Please enter the last time the HCA prohect submission
+                        was updated in this format: YYYY-MM-DD
+  -r RELATED_SCEA_ACCESSION [RELATED_SCEA_ACCESSION ...], --related_scea_accession RELATED_SCEA_ACCESSION [RELATED_SCEA_ACCESSION ...]
+                        space separated list of related scea accession(s)
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        Provide full path to preferred output dir
 ```
 
 To run it as a python module:
 
 ```shell script 
-cd /path-to/geo_to_hca
-python -m geo_to_hca.geo_to_hca -h
+cd /path-to/hca_to_scea
+python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 ```
 
-### Basic arguments: 1 of these options is required. No more than 1 option can be given.
+### Table
 
-Option (1): Get the HCA metadata for 1 GEO accession
+**Arguments explained**
 
-Example command:
+| Argument   | Argument name            | Description                                                                                        | Required? |
+|------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
+|-s          | HCA spreadsheet          | Path to HCA spreadsheet (.xlsx)                                                                    | yes       |
+|-id         | HCA project uuid         | This is added to the 'secondary accessions' field in idf file                                      | yes       | 
+|-c          | Curator initials         | HCA Curator initials. Space-separated list.                                                        | yes       |
+|-ac         | accession number         | Provide an SCEA accession number (integer).                                                        | yes       |
+|-tt         | Technology type          | Must be [10Xv2_3,10Xv2_5,10Xv3_3,10Xv3_5,drop-seq,smart-seq,seq-well,smart-like]                   | yes       |
+|-et         | Experiment type          | Must be 1 of [differential,baseline]                                                               | yes       |
+|-f          | Factor value             | A space-separated list of user-defined factor values e.g. age disease                              | yes       |
+|-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
+|-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
+|-r          | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
+|-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
+|-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be 1 of                             | no        |
+|            |                          | [cs_name, cs_id, sp_name, sp_id, other] where cs indicates cell suspension and sp indicates        |           |
+|            |                          |  specimen from organism. Default is cs_name.                                                       |           |
+|--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
+|-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no        |
 
-`geo-to-hca --accession GSE97168`
+**Example commands**
 
-Option (2): Get the HCA metadata for a comma-separated list of GEO accessions
+Required arguments only
 
-Example command:
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
 
-`geo-to-hca --accession_list GSE97168,GSE124872,GSE126030`
 
-Option (3): Get the HCA metadata given a file consisting of accessions N.B. should consist of an "accession" column name in the header. For example, an example input file named accessions.txt, should look like
+Specify optional name argument
 
-```
-accession
-GSE97168
-GSE124872
-GSE126030
-```
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -name cs_name -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
 
-Example command:
+Specify optional related scea accession
 
-`geo-to-hca --input_file <path>/accessions.txt`
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -r 51`
 
-### Other optional arguments:
 
-(1)
+Specify that FACS was used
 
---template,default="template/hca_template.xlsx"
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 --facs`
 
-The default template is an empty HCA metadata spreadsheet in excel format, with the relevant HCA metdata headers in rows 1-5. The default header row with programmatic names is row 4; the default start input row is row 6.
-It is not necessary to specify this argument unless the HCA spreadsheet format changes.
 
-(2)
+Specify optional output dir
 
---header_row,type=int,default=4
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir`
 
-The default header row with programmatic names is row 4. It is not necessary to specify this argument unless the HCA spreadsheet format changes.
+#### Definitions ####
 
-(3)
+**Experiment type**
 
---input_row1,type=int,default=6
+An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. Baseline indicates an experiment with no clear grouping or factor value.
 
-The default start input row is row 6.
-It is not necessary to specify this argument unless the HCA spreadsheet format changes.
+*Example differential*
 
-(4)
+normal and disease, multiple developmental stages
 
---output_dir,default='spreadsheets/'
+*Example baseline*
 
-An output directory can be specified by it's path. If the path does not already exist, it will be created. If this argument
-is not given, the default output directory is 'spreadsheets/'
+all primary samples from 1 organ type and same developmental stage and disease status.
 
-(5)
+**Factor values**
 
---output_log,type=bool,default=True
+A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. If there is no obvious factor value, 1 must be given. In this case, you can add 'individual', which indicates the unique donors. The SCEA team's validator tools will fail without this.
 
-An optional arugment to retrieve an output log file stating whether an SRA study id and fastq file names were available for each GEO accession given as input.
+Technology cannot be a factor value.
 
+*Example:*
+
+individual, disease, developmental stage, age
+
+A list of example factor values that could be used has also been provided by the scea team here: https://docs.google.com/spreadsheets/d/1NQ5c7eqaFHnIC7e359ID5jtSawyOcnyv/edit#gid=1742687040
+
+**Related E-HCAD-ID**
+
+If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
+
+*Example*
+
+E-HCAD-34
 
 ## Developer Notes
 
 ### Developing Code in Editable Mode
 
-Using `pip`'s editable mode, projects using geo_to_hca as a dependency can refer to the latest code in this repository 
+Using `pip`'s editable mode, projects using hca-to-scea as a dependency can refer to the latest code in this repository 
 directly without installing it through PyPI. This can be done either by manually cloning the code
 base:
 
-    pip install -e path/to/geo_to_hca
+    pip install -e path/to/hca-to-scea
 
 or by having `pip` do it automatically by providing a reference to this repository:
 
     pip install -e \
-    git+https://github.com/ebi-ait/geo_to_hca.git\
-    #egg=geo-to-hca
+    git+https://github.com/ebi-ait/hca-to-scea-tools.git\
+    #egg=hca-to-scea
     
     
 ### Publish to PyPI
