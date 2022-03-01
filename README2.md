@@ -73,7 +73,7 @@ cd /path-to/hca_to_scea
 python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 ```
 
-### Table
+### Arguments
 
 | Argument   | Argument name            | Description                                                                                        | Required? |
 |------------|--------------------------|----------------------------------------------------------------------------------------------------|-----------|
@@ -96,26 +96,26 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 
 ## Examples
 
-Required arguments only
+**Required arguments only**
 
 `python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
 
 
-Specify optional name argument
+**Specify optional name argument**
 
 `python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -name cs_name -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
 
-Specify optional related scea accession
+**Specify optional related scea accession**
 
 `python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -r 51`
 
 
-Specify that FACS was used
+**Specify that FACS was used**
 
 `python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 --facs`
 
 
-Specify optional output dir
+**Specify optional output dir**
 
 `python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir`
 
