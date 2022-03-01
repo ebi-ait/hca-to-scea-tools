@@ -10,20 +10,11 @@ from helpers import fetch_fastq_path
 from helpers import utils
 
 
-def get_secondary_accessions(tracking_sheet, args):
+#def get_secondary_accessions(tracking_sheet, args):
 
-    accessions = utils.get_accessions_for_project(tracking_sheet, identifier=args.project_uuid)
-    if accessions:
-        accessions_uniq = utils.get_unique_accessions([accessions])
-        [accessions_uniq.remove(accession) for accession in accessions_uniq if 'HCAD' in accession.upper()]
-        if accessions_uniq:
-            secondary_accessions = accessions_uniq
-        else:
-            secondary_accessions = []
-    else:
-        secondary_accessions = []
+    # TBD: get these from ingest.
 
-    return secondary_accessions
+    #return secondary_accessions
 
 
 def get_person_roles(xlsx_dict):
@@ -51,12 +42,12 @@ def get_author_list(xlsx_dict):
 
     return author_list
 
-def generate_idf_file(work_dir, args, tracking_sheet, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
+def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name):
 
     tab = '\t'
     person_roles = get_person_roles(xlsx_dict)
-    secondary_accessions = get_secondary_accessions(tracking_sheet, args)
+    #secondary_accessions = get_secondary_accessions(tracking_sheet, args) TBD from ingest.
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
@@ -91,7 +82,7 @@ Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[RelatedExperiment]\t{args.related_scea_accession}
 Comment[HCALastUpdateDate]\t{args.hca_update_date}
-Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(secondary_accessions or [])}
+Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 
@@ -130,7 +121,7 @@ Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[HCALastUpdateDate]\t{args.hca_update_date}
-Comment[SecondaryAccession]\t{args.project_uuid}\t{tab.join(secondary_accessions or [])}
+Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 
@@ -229,6 +220,7 @@ def order_protocols(protocols_sdrf_before_sequencing):
     collection_protocol_cols = []
     dissociation_protocol_cols = []
     enrichment_protocol_cols = []
+    differentiation_protocol_cols = []
     library_preparation_protocol_cols = []
     for col in list(protocols_sdrf_before_sequencing.columns):
         if col.split(".protocol_core.protocol_id")[0] == "collection_protocol":
@@ -237,9 +229,11 @@ def order_protocols(protocols_sdrf_before_sequencing):
             dissociation_protocol_cols.append(col)
         if col.split(".protocol_core.protocol_id")[0] == "enrichment_protocol":
             enrichment_protocol_cols.append(col)
+        if col.split(".protocol_core.protocol_id")[0] == "differentiation_protocol":
+            differentiation_protocol_cols.append(col)
         if col.split(".protocol_core.protocol_id")[0] == "library_preparation_protocol":
             library_preparation_protocol_cols.append(col)
-    new_columns = [sorted(collection_protocol_cols),sorted(dissociation_protocol_cols),sorted(enrichment_protocol_cols),sorted(library_preparation_protocol_cols)]
+    new_columns = [sorted(collection_protocol_cols),sorted(dissociation_protocol_cols),sorted(enrichment_protocol_cols),sorted(differentiation_protocol_cols),sorted(library_preparation_protocol_cols)]
     new_columns = [item for sublist in new_columns for item in sublist]
     protocols_sdrf_before_sequencing = protocols_sdrf_before_sequencing[new_columns]
     return protocols_sdrf_before_sequencing
@@ -252,7 +246,7 @@ def add_protocol_columns(df, dataset_protocol_map):
     def convert_row(row):
         return row.apply(lambda x: convert_term(x, row.name))
 
-    protocols_list_before_sequencing = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol', 'library_preparation_protocol']
+    protocols_list_before_sequencing = ['collection_protocol', 'dissociation_protocol', 'enrichment_protocol', 'differentiation_protocol', 'library_preparation_protocol']
 
     protocols_sdrf_before_sequencing = df[[col for (proto_type, cols) in get_protocol_map.map_of_hca_protocol_type_id_keys.items() if proto_type in
                  protocols_list_before_sequencing for col in cols]]
@@ -264,6 +258,8 @@ def add_protocol_columns(df, dataset_protocol_map):
     pd.set_option('display.max_columns', None)
 
     protocols_sdrf_before_sequencing = order_protocols(protocols_sdrf_before_sequencing)
+
+    print(protocols_sdrf_before_sequencing)
 
     counter = 1
     new_column_names, counter = get_new_protocol_column_names(protocols_sdrf_before_sequencing, counter)
@@ -456,7 +452,7 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
         sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
 
-def create_magetab(work_dir, tracking_sheet, xlsx_dict, dataset_protocol_map, df, args):
+def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args):
 
     accession_number = args.accession_number
     accession = f"E-HCAD-{accession_number}"
@@ -464,7 +460,7 @@ def create_magetab(work_dir, tracking_sheet, xlsx_dict, dataset_protocol_map, df
     idf_file_name = f"{accession}.idf.txt"
     sdrf_file_name = f"{accession}.sdrf.txt"
 
-    generate_idf_file(work_dir, args, tracking_sheet, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
+    generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name)
     generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
 
@@ -576,30 +572,44 @@ def main():
     else:
         work_dir = args.output_dir
 
-    tracking_sheet = utils.get_tracker_google_sheet()
-
     '''Merge the multitab spreadsheet into a single dataframe, while preserving the relationships
     between HCA biomaterials and protocols.
     '''
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
 
+    '''Run checks to see whether the experimental design is compatibile and save the experimental
+    design type in a variable for later.'''
+
+    ''' Get the experimental design '''
+    experimental_design = utils.get_experimental_design(xlsx_dict)
+
+    ''' Check if samples are pooled '''
+    pooled_samples = utils.check_for_pooled_samples(xlsx_dict)
+    if pooled_samples:
+        print("The hca-to-scea tool does not support pooled donors or pooled samples."
+              "The dataset should be curated manually.")
+        sys.exit()
+
+    '''Remove unused protocol tabs and corresponding protocol id column.'''
+    xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
+
     '''The merged df consists of a row per read index (read1, read2, index1). To conform to
     SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
     '''
-    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict)
+    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
     merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
     clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
 
     '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
     creates extra columns in the df for each of the ids.'''
-    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict)
+    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict, experimental_design)
 
     '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
     key protocol metadata that will be added to the SCEA sdrf file.'''
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
     '''Refactoring of the below TBD.'''
-    create_magetab(work_dir, tracking_sheet, xlsx_dict, dataset_protocol_map, df, args)
+    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args)
 
 if __name__ == '__main__':
     main()

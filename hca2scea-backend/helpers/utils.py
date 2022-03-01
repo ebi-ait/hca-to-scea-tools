@@ -82,35 +82,35 @@ def get_accessions_for_project(tracking_sheet: pd.DataFrame,identifier: str) -> 
         return None
 
 # Protocol mapping.
-protocol_type_map = {
-    'collection_protocol': "sample collection protocol",
-    'dissociation_protocol': "enrichment protocol",
-    '??????????????????????': "nucleic acid extraction protocol",
-    'enrichment_protocol': "enrichment protocol",
-    'library_preparation_protocol': "nucleic acid library construction protocol",
-    'sequencing_protocol': "nucleic acid sequencing protocol",
-}
+#protocol_type_map = {
+#    'collection_protocol': "sample collection protocol",
+#    'dissociation_protocol': "enrichment protocol",
+#    '??????????????????????': "nucleic acid extraction protocol",
+#    'enrichment_protocol': "enrichment protocol",
+#    'library_preparation_protocol': "nucleic acid library construction protocol",
+#    'sequencing_protocol': "nucleic acid sequencing protocol",
+#}
 
 # Order of protocols.
-protocol_order = [
-    'collection_protocol',
-    'dissociation_protocol',
-    'enrichment_protocol',
-    'library_preparation_protocol',
-    'sequencing_protocol',
-]
+#protocol_order = [
+#    'collection_protocol',
+#    'dissociation_protocol',
+#    'enrichment_protocol',
+#    'library_preparation_protocol',
+#    'sequencing_protocol',
+#]
 
 # Columns where protocols are stored in the spreadsheet.
-protocol_columns = {
-    'collection_protocol': ["collection_protocol.protocol_core.protocol_id"],
-    'library_preparation_protocol': ["library_preparation_protocol.protocol_core.protocol_id"],
-    'sequencing_protocol': ["sequencing_protocol.protocol_core.protocol_id"],
-}
+#protocol_columns = {
+#    'collection_protocol': ["collection_protocol.protocol_core.protocol_id"],
+#    'library_preparation_protocol': ["library_preparation_protocol.protocol_core.protocol_id"],
+#    'sequencing_protocol': ["sequencing_protocol.protocol_core.protocol_id"],
+#}
 
-multiprotocols = {
-    'dissociation_protocol': "dissociation_protocol.protocol_core.protocol_id",
-    'enrichment_protocol': "enrichment_protocol.protocol_core.protocol_id",
-}
+#multiprotocols = {
+#    'dissociation_protocol': "dissociation_protocol.protocol_core.protocol_id",
+#    'enrichment_protocol': "enrichment_protocol.protocol_core.protocol_id",
+#}
 
 
 # Convert sheet names to snake case.
@@ -151,53 +151,53 @@ def splitlist(list_):
 
     return split_data
 
-def split_multiprotocols(df, proto_column):
-    proto_series = df[proto_column].apply(splitlist)
-    proto_df = pd.DataFrame(proto_series.values.tolist())
-    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(proto_df.columns))]
-    proto_df.columns = proto_df_columns
-    proto_df[f'{proto_column}_count'] = proto_series.str.len()
-    proto_df[f'{proto_column}_list'] = proto_series
-
-    return (proto_df, proto_df_columns)
+#def split_multiprotocols(df, proto_column):
+#    proto_series = df[proto_column].apply(splitlist)
+#    proto_df = pd.DataFrame(proto_series.values.tolist())
+#    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(proto_df.columns))]
+#    proto_df.columns = proto_df_columns
+#    proto_df[f'{proto_column}_count'] = proto_series.str.len()
+#    proto_df[f'{proto_column}_list'] = proto_series
+#
+#   return (proto_df, proto_df_columns)
 
 
 # Extracts info from the protocols spreadsheets
-def extract_protocol_info(
-    protocol_map,
-    spreadsheets,
-    column_to_extract,
-    to_key,
-    for_protocols = protocol_order
-):
-    for proto_type, proto_list in protocol_map.items():
-        if proto_type in for_protocols:
-            for proto_name, proto in proto_list.items():
-                extracted_data = spreadsheets[proto_type].loc[spreadsheets[proto_type][f'{proto_type}.protocol_core.protocol_id'] == proto_name][f'{proto_type}.{column_to_extract}'].tolist()
-
-                if len(extracted_data):
-                    proto[to_key] = extracted_data[0]
-                else:
-                    proto[to_key] = ''
+#def extract_protocol_info(
+#    protocol_map,
+#    spreadsheets,
+#    column_to_extract,
+#    to_key,
+#    for_protocols = protocol_order
+#):
+#    for proto_type, proto_list in protocol_map.items():
+#        if proto_type in for_protocols:
+#            for proto_name, proto in proto_list.items():
+#                extracted_data = spreadsheets[proto_type].loc[spreadsheets[proto_type][f'{proto_type}.protocol_core.protocol_id'] == proto_name][f'{proto_type}.{column_to_extract}'].tolist()
+#
+#                if len(extracted_data):
+#                    proto[to_key] = extracted_data[0]
+#                else:
+#                    proto[to_key] = ''
 
 
 # Get protocol types from protocol map.
-def get_protocol_idf(protocol_map):
-    proto_types = [protocol_type_map[protocol_type] for (protocol_type, value) in protocol_map.items() for repeats in range(len(value.keys()))]
-    proto_names = [protocol['scea_id'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
-    proto_descs = [protocol['description'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
-    proto_hware = [protocol.get('hardware', '') for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
-
-    return list(zip(proto_types, proto_names, proto_descs, proto_hware))
+#def get_protocol_idf(protocol_map):
+#    proto_types = [protocol_type_map[protocol_type] for (protocol_type, value) in protocol_map.items() for repeats in range(len(value.keys()))]
+#    proto_names = [protocol['scea_id'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
+#    proto_descs = [protocol['description'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
+#    proto_hware = [protocol.get('hardware', '') for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
+#
+#    return list(zip(proto_types, proto_names, proto_descs, proto_hware))
 
 
 # Maps a HCA protocol name to a SCEA ID.
-def map_proto_to_id(protocol_name, protocol_map):
-    for proto_type in protocol_map.values():
-        for proto in proto_type.values():
-            if protocol_name in proto['hca_ids']:
-                return proto.get('scea_id')
-    return ''
+#def map_proto_to_id(protocol_name, protocol_map):
+#    for proto_type in protocol_map.values():
+#        for proto in proto_type.values():
+#            if protocol_name in proto['hca_ids']:
+#                return proto.get('scea_id')
+#    return ''
 
 def get_experimental_design(xlsx_dict: {}):
 
@@ -207,7 +207,7 @@ def get_experimental_design(xlsx_dict: {}):
         else:
             specimen = True
     else:
-        specimen = False
+        specimen = Falseprotocol_type_map
 
     if 'cell_line' in xlsx_dict.keys():
         if xlsx_dict['cell_line'].empty:

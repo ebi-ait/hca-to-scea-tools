@@ -6,6 +6,7 @@ protocol_type_map = {
     'dissociation_protocol': "enrichment protocol",
     '??????????????????????': "nucleic acid extraction protocol",
     'enrichment_protocol': "enrichment protocol",
+    "differentiation_protocol": "growth protocol",
     'library_preparation_protocol': "nucleic acid library construction protocol",
     'sequencing_protocol': "nucleic acid sequencing protocol",
 }
@@ -15,6 +16,7 @@ ordered_hca_protocol_types = [
     'collection_protocol',
     'dissociation_protocol',
     'enrichment_protocol',
+    'differentiation_protocol',
     'library_preparation_protocol',
     'sequencing_protocol',
 ]
@@ -31,6 +33,7 @@ performed on a single specimen. This dict stores such protocol types.'''
 multiprotocols = {
     'dissociation_protocol': "dissociation_protocol.protocol_core.protocol_id",
     'enrichment_protocol': "enrichment_protocol.protocol_core.protocol_id",
+    'differentiation_protocol': "differentiation_protocol.protocol_core.protocol_id",
 }
 
 '''There can be multiple dissociation protocols and/or enrichment protocols

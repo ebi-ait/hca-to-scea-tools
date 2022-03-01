@@ -7,6 +7,24 @@ from helpers import utils
 from helpers import get_protocol_map
 from helpers import cell_lines
 
+def remove_unused_protocols(xlsx_dict):
+
+    '''Delete unused tabs.'''
+    for tab in xlsx_dict.keys():
+        if "protocol" in tab:
+            if xlsx_dict[tab].empty:
+                del xlsx_dict[tab]
+
+    '''Delete unused protocol keys.'''
+    biomaterials_tabs = ["specimen_from_organism","cell_line","organoid","cell_suspension"]
+    for tab in biomaterials_tabs:
+        protocol_ids = [protocol_id for protocol_id in xlsx_dict[tab].columns if ".protocol_core.protocol_id" in protocol_id]
+        for protocol_id in protocol_ids:
+            if xlsx_dict[tab][protocol_id].isna().all():
+                del xlsx_dict[tab][protocol_id]
+
+    return xlsx_dict
+
 def clean_dictionary(xlsx_dict):
 
     for filename in xlsx_dict.keys():
@@ -48,29 +66,17 @@ def multitab_excel_to_dict(work_dir, excel_file):
 
     return xlsx_dict_clean
 
-def merge_dataframes(xlsx_dict: {}) -> pd.DataFrame():
-
-    """Merge the sequence file df with the cell suspension df via the linked
-     cell suspension ids."""
+def merge_sample_types(xlsx_dict: {},experimental_design) -> pd.DataFrame():
 
     '''process.insdc_experiment.insdc_experiment_accession' is present in multiple tabs. Save the cell_suspension experiment accessions with a unique name.'''
-    xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = list(xlsx_dict['cell_suspension']['process.insdc_experiment.insdc_experiment_accession'])
+    xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = list(
+        xlsx_dict['cell_suspension']['process.insdc_experiment.insdc_experiment_accession'])
 
     merged_df = xlsx_dict['cell_suspension'].merge(
         xlsx_dict['sequence_file'],
         how="outer",
         on="cell_suspension.biomaterial_core.biomaterial_id"
     )
-
-    ''' Get the experimental design '''
-    experimental_design = utils.get_experimental_design(xlsx_dict)
-
-    ''' Check if samples are pooled '''
-    pooled_samples = utils.check_for_pooled_samples(xlsx_dict)
-    if pooled_samples:
-        print("The hca-to-scea tool does not support pooled donors or pooled samples."
-              "The dataset should be curated manually.")
-        sys.exit()
 
     if experimental_design != "standard":
 
@@ -93,6 +99,10 @@ def merge_dataframes(xlsx_dict: {}) -> pd.DataFrame():
         on="donor_organism.biomaterial_core.biomaterial_id"
     )
 
+    return merged_df
+
+def merge_protocol_types(xlsx_dict: {}, merged_df: pd.DataFrame(), experimental_design: str) -> pd.DataFrame():
+
     """Merge the merged_df with the library_preperation_protocol df via the linked
      library_preparation_protocol ids."""
     merged_df = xlsx_dict['library_preparation_protocol'].merge(
@@ -111,6 +121,12 @@ def merge_dataframes(xlsx_dict: {}) -> pd.DataFrame():
 
     return merged_df
 
+def merge_dataframes(xlsx_dict: {}, experimental_design: str) -> pd.DataFrame():
+
+    merged_df = merge_sample_types(xlsx_dict, experimental_design)
+    merged_df = merge_protocol_types(xlsx_dict, merged_df, experimental_design)
+
+    return merged_df
 
 def merge_rows_by_read_pair(merged_df):
 
@@ -181,7 +197,7 @@ def clean_df(df):
     return df_clean
 
 
-def create_new_protocol_columns(df, xlsx_dict):
+def create_new_protocol_columns(df, xlsx_dict, experimental_design):
 
     '''This extracts the lists from protocol types which can have more than one instance and creates extra columns in the
     df for each of the items.'''
