@@ -450,10 +450,6 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
         if set(list(sdrf_3[column_name])) == {''}:
             sdrf_3 = sdrf_3.drop([column_name], axis=1)
 
-    '''How to display the dataframe during development.'''
-    #pd.set_option("display.max_rows", None, "display.max_columns", None)
-    #print(sdrf_3)
-
     '''Write the new sdrf file to a file.'''
     if not sdrf_3.empty:
         print(f"saving {work_dir}/{sdrf_file_name}")
@@ -586,7 +582,6 @@ def main():
     between HCA biomaterials and protocols.
     '''
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
-    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict)
 
     '''The merged df consists of a row per read index (read1, read2, index1). To conform to
     SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.

@@ -1,0 +1,23 @@
+Characteristic[cell type]: neural cell 
+Characteristic[growth condition]: organoid culture
+Characteristic[disease]:
+Characteristic[organism status]:
+Characteristic[ethnic group]:
+Characteristic[cell line]: iPS cell line from skin
+Characteristic[organism part]: skin of body
+Characteristic[age]:
+Characteristic[individual]: pool of 4 organoids
+Characteristic[progenitor cell type]: induced pluripotent stem cell
+
+
+Characteristic[cell type]: cell_suspension.selected_cell_types.ontology_label / cell_line.type
+Characteristic[growth condition]: cell_line.growth_conditions.culture_environment,"organoid culture"
+Characteristic[disease]: cell_line.disease.text
+Characteristic[organism status]:
+Characteristic[ethnic group]:
+Characteristic[cell line]: iPS cell line from skin
+Characteristic[organism part]: specimen_from_organism.organ.ontology_label, cell_line.model_organ.ontology_label,organoid.model_organ.ontology_label
+Characteristic[age]: organoid.age, organoid.age_unit,organoid.age_unit.ontology_label
+Characteristic[individual]: cell_line.biomaterial_core.biomaterial_id
+Characteristic[progenitor cell type]: cell_line.cell_type.text
+Characteristic[treatment]: cell_line.growth_conditions.drug_treatment

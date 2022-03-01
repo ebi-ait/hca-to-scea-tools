@@ -1,9 +1,11 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import sys
 
 from helpers import utils
 from helpers import get_protocol_map
+from helpers import cell_lines
 
 def clean_dictionary(xlsx_dict):
 
@@ -46,28 +48,6 @@ def multitab_excel_to_dict(work_dir, excel_file):
 
     return xlsx_dict_clean
 
-
-def get_specimen(xlsx_dict: {}, cell_line_id: str) -> str:
-
-    """If a cell line was derived from a specimen_from_organism,
-    get the id of the specimen_from_organism from which it was derived.
-    """
-    specimen_from_organism_id = xlsx_dict['cell_line'].loc[
-            xlsx_dict['cell_line']['cell_line.biomaterial_core.biomaterial_id'] == cell_line_id][
-            'specimen_from_organism.biomaterial_core.biomaterial_id'].values[0]
-
-    return specimen_from_organism_id
-
-
-def replace_specimen_id_with_cell_line_id(merged_df: pd.DataFrame()) -> pd.DataFrame():
-
-    merged_df['specimen_from_organism.biomaterial_core.biomaterial_id'] = merged_df[
-        'specimen_from_organism.biomaterial_core.biomaterial_id'].fillna(
-        merged_df.loc[merged_df['specimen_from_organism.biomaterial_core.biomaterial_id'].isna()][
-            'cell_line.biomaterial_core.biomaterial_id'].apply(get_specimen))
-
-    return merged_df
-
 def merge_dataframes(xlsx_dict: {}) -> pd.DataFrame():
 
     """Merge the sequence file df with the cell suspension df via the linked
@@ -82,21 +62,28 @@ def merge_dataframes(xlsx_dict: {}) -> pd.DataFrame():
         on="cell_suspension.biomaterial_core.biomaterial_id"
     )
 
-    if 'cell_line' in xlsx_dict.keys():
-        """If a cell_suspension id is derived from a cell_line id, then the
-        specimen_from_organism id column in the merged_df will contain NaN values.
-        These need to be replaced with the specimen_from_organism id from which the
-        cell_line id was derived. 
-        """
-        merged_df = replace_specimen_id_with_cell_line_id(xlsx_dict, merged_df)
+    ''' Get the experimental design '''
+    experimental_design = utils.get_experimental_design(xlsx_dict)
 
-    """Merge the merged_df with the specimen_from_organism df via the linked
-     specimen_from_organism ids."""
-    merged_df = xlsx_dict['specimen_from_organism'].merge(
-        merged_df,
-        how="outer",
-        on="specimen_from_organism.biomaterial_core.biomaterial_id"
-    )
+    ''' Check if samples are pooled '''
+    pooled_samples = utils.check_for_pooled_samples(xlsx_dict)
+    if pooled_samples:
+        print("The hca-to-scea tool does not support pooled donors or pooled samples."
+              "The dataset should be curated manually.")
+        sys.exit()
+
+    if experimental_design != "standard":
+
+        """If a cell_suspension id is derived from a cell_line id or an organoid id, get the specimen id."""
+        merged_df = cell_lines.merge_cell_lines(xlsx_dict, merged_df, experimental_design)
+
+    else:
+
+        merged_df = xlsx_dict['specimen_from_organism'].merge(
+            merged_df,
+            how="outer",
+            on="specimen_from_organism.biomaterial_core.biomaterial_id"
+        )
 
     """Merge the merged_df with the donor_organism df via the linked
      donor_organism ids."""
