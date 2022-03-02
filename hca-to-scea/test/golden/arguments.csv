@@ -1,5 +1,7 @@
-spreadsheet,HCA project uuid,E-HCAD accession,curator initials,technology,experiment type,factor values,public release date,hca last update date,study accession
-Test01.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,50,AD,10Xv2_3,baseline,individual,2009-02-27,2021-04-29,SRP257542
-Test02.xlsx,2086eb05-10b9-432b-b7f0-169ccc49d270,52,AD,10Xv2_3,differential,organ part,2019-08-01,2021-03-01,SRP201293
-Test03.xlsx,d3a4ceac-4d66-4984-9704-2570c0647a56,54,AD,10Xv3_3,differential,organ part,2020-09-02,2021-03-01,SRP279608
-Test04.xlsx,559bb888-7829-41f2-ace5-2c05c7eb81e9,55,AD,10Xv2_3,differential,organ,2020-04-01,2021-03-01,SRP179761
+spreadsheet,HCA project uuid,study accession,E-HCAD accession,curator initials,technology,experiment type,factor values,public release date,hca last update date
+SRP151260.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,SRP151260,50,AD,10Xv2_3,differential,disease,2009-02-27,2021-04-29
+SRP274475.xlsx,07073c12-8006-4710-a00b-23abdb814904,SRP274475,36,AD,10Xv2_3,differential,organ,2021-09-30,2020-11-25
+# Doesn't yet support different length arrays for each protocol type. E.g. a group of samples subjected to 2 dissociation protocols versus another subjected to only 1 dissociation protocol. The protocol ids however do not need to be identical, it is the number that is the issue.
+#SRP166375.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,SRP166375,44,WKT,10Xv2_5,differential,disease organ,2009-02-27,2021-04-29
+# Doesn't yet support datasets where a cell_suspension links to multiple runs (multiple lane indices)
+#SRP218543.xlsx,c1a9a93d-d9de-4e65-9619-a9cec1052eaa,SRP218543,15,ESV,10Xv2_5,differential,disease,2009-02-27,2021-04-29

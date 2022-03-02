@@ -4,7 +4,7 @@ import sys
 import unittest
 import pandas as pd
 import numpy as np
-from pandas._testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 
 class CharacteristicTest(unittest.TestCase):
@@ -18,7 +18,7 @@ class CharacteristicTest(unittest.TestCase):
 
     def test_hca2scea_characteristic(self):
         # run tool
-        arguments_df = pd.read_csv("test/golden/arguments.csv")
+        arguments_df = pd.read_csv("test/golden/arguments.csv", comment='#')
         for i in range(0,arguments_df.shape[0]):
             spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
@@ -77,11 +77,13 @@ class CharacteristicTest(unittest.TestCase):
             output_file = os.path.join(output_dir, golden_file_basename)
             golden_contents = self.get_file_content(os.path.join(golden_output_dir, golden_file_basename))
             output_contents = self.get_file_content(output_file)
-            if isinstance(golden_contents, pd.DataFrame):
-                self.assert_dataframes_equal(golden_contents, output_contents, tag=golden_file_basename)
-            else:
-                self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
-
+            try:
+                if isinstance(golden_contents, pd.DataFrame):
+                    self.assert_dataframes_equal(golden_contents, output_contents, tag=golden_file_basename)
+                else:
+                    self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
+            except Exception as e:
+                raise AssertionError(f'problem with {golden_file}') from e
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
         output_dir = self.output_base + output_name
