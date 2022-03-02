@@ -169,8 +169,7 @@ def get_sample_name_key(args, df):
 
 
 def get_values_from_df(df, column):
-    return df[column] if column in df.columns else df['UNDEFINED_FIELD']
-
+    return df[column] if column in df.columns else ['']*df.shape[0]
 
 def add_sequence_paths(sdrf, args):
 
@@ -276,11 +275,30 @@ def add_protocol_columns(df, dataset_protocol_map):
     return protocols_sdrf_before_sequencing, protocols_sdrf_from_sequencing
 
 
-def add_scea_specimen_columns(args, df):
+def add_scea_specimen_columns(args, df, experimental_design):
 
-    '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-    with open(f"json_files/sdrf_map.json") as sdrf_map_file:
-        sdrf_map = json.load(sdrf_map_file)
+    if experimental_design == "standard":
+
+        '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
+        with open(f"json_files/sdrf_map.json") as sdrf_map_file:
+            sdrf_map = json.load(sdrf_map_file)
+
+    else:
+
+        if experimental_design == "cell_line_only":
+            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
+            with open(f"json_files/sdrf_map_cell_line.json") as sdrf_map_file:
+                sdrf_map = json.load(sdrf_map_file)
+
+        elif experimental_design == "organoid":
+            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
+            with open(f"json_files/sdrf_map_cell_line_organoid.json") as sdrf_map_file:
+                sdrf_map = json.load(sdrf_map_file)
+
+        else:
+            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
+            with open(f"json_files/sdrf_map_organoid.json") as sdrf_map_file:
+                sdrf_map = json.load(sdrf_map_file)
 
     '''Get user-specified HCA sample names key.'''
     sample_name_key = get_sample_name_key(args, df)
@@ -312,11 +330,10 @@ def add_scea_specimen_columns(args, df):
 
     return sdrf
 
-
-def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name):
+def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design):
 
     '''Generate a dataframe with SCEA specimen metadata.'''
-    sdrf_1 = add_scea_specimen_columns(args, df)
+    sdrf_1 = add_scea_specimen_columns(args, df, experimental_design)
 
     '''Get technology-specific SCEA metadata and add to sdrf_1 dataframe.'''
     with open(f"json_files/{args.technology_type}.json") as technology_json_file:
@@ -337,7 +354,8 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
     '''Get the SRA object file names and file paths from SRA or ENA (try both).'''
     sdrf_2 = add_sequence_paths(sdrf_1, args)
 
-    '''Check all expected column names are present and reorder columns by SCEA defined order.'''
+    '''Check all required column names are present and reorder columns by SCEA defined order.'''
+
     expected_columns_ordered = [
     'Source Name',
     'Comment[BioSD_SAMPLE]',
@@ -452,7 +470,7 @@ def generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
         sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
 
-def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args):
+def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design):
 
     accession_number = args.accession_number
     accession = f"E-HCAD-{accession_number}"
@@ -462,7 +480,7 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args):
 
     generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name)
-    generate_sdrf_file(work_dir, args, df, dataset_protocol_map, sdrf_file_name)
+    generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design)
 
 
 def main():
@@ -609,7 +627,7 @@ def main():
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
     '''Refactoring of the below TBD.'''
-    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args)
+    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design)
 
 if __name__ == '__main__':
     main()

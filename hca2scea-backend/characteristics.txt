@@ -1,4 +1,5 @@
-Characteristic[cell type]: neural cell 
+
+Characteristic[cell type]: neural cell
 Characteristic[growth condition]: organoid culture
 Characteristic[disease]:
 Characteristic[organism status]:
