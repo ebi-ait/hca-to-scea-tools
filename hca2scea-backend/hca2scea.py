@@ -9,6 +9,7 @@ from helpers import get_protocol_map
 from helpers import fetch_fastq_path
 from helpers import utils
 
+pd.options.mode.chained_assignment = None
 
 #def get_secondary_accessions(tracking_sheet, args):
 
@@ -258,8 +259,6 @@ def add_protocol_columns(df, dataset_protocol_map):
 
     protocols_sdrf_before_sequencing = order_protocols(protocols_sdrf_before_sequencing)
 
-    print(protocols_sdrf_before_sequencing)
-
     counter = 1
     new_column_names, counter = get_new_protocol_column_names(protocols_sdrf_before_sequencing, counter)
     protocols_sdrf_before_sequencing.columns = new_column_names
@@ -356,10 +355,13 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Check all required column names are present and reorder columns by SCEA defined order.'''
 
-    with open(f"json_files/expected_columns.json") as expected_columns_file:
+    with open(f"json_files/expected_columns.json", "r") as expected_columns_file:
         expected_columns_dict = json.load(expected_columns_file)
+
     if experimental_design == 'standard':
         expected_columns_ordered = expected_columns_dict['standard']
+    elif experimental_design == 'organoid_only':
+        expected_columns_ordered = expected_columns_dict['organoid_only']
     else:
         expected_columns_ordered = expected_columns_dict['cell_line']
 
@@ -367,6 +369,7 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
     if column_check:
         print("Error: one or more expected columns is missing from sdrf.")
         print(column_check)
+        sys.exit()
     else:
         sdrf_3 = sdrf_2[expected_columns_ordered]
 
@@ -391,8 +394,9 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
             sdrf_3 = sdrf_3.rename(columns={col_name: "Material Type"})
 
     '''Remove empty columns if columns are optional.'''
-    with open(f"json_files/optional_columns.json") as optional_columns_file:
+    with open(f"json_files/optional_columns.json", "r") as optional_columns_file:
         optional_columns_dict = json.load(optional_columns_file)
+
     if experimental_design == 'standard':
         optional_columns = optional_columns_dict['standard']
     else:

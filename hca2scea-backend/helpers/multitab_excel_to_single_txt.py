@@ -18,10 +18,11 @@ def remove_unused_protocols(xlsx_dict):
     '''Delete unused protocol keys.'''
     biomaterials_tabs = ["specimen_from_organism","cell_line","organoid","cell_suspension"]
     for tab in biomaterials_tabs:
-        protocol_ids = [protocol_id for protocol_id in xlsx_dict[tab].columns if ".protocol_core.protocol_id" in protocol_id]
-        for protocol_id in protocol_ids:
-            if xlsx_dict[tab][protocol_id].isna().all():
-                del xlsx_dict[tab][protocol_id]
+        if tab in xlsx_dict.keys():
+            protocol_ids = [protocol_id for protocol_id in xlsx_dict[tab].columns if ".protocol_core.protocol_id" in protocol_id]
+            for protocol_id in protocol_ids:
+                if xlsx_dict[tab][protocol_id].isna().all():
+                    del xlsx_dict[tab][protocol_id]
 
     return xlsx_dict
 

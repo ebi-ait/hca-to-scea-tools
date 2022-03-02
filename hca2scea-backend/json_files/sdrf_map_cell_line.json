@@ -5,6 +5,7 @@
 "Unit[time unit]": "donor_organism.organism_age_unit.text",
 "Characteristics[developmental stage]": "donor_organism.development_stage.text",
 "Characteristics[organism part]": "specimen_from_organism.organ.ontology_label",
+"Characteristics[sampling site]": "",
 "Characteristics[cell line]": "",
 "Characteristics[cell type]": "cell_line.model_organ.ontology_label",
 "Characteristic[growth condition]": "",
