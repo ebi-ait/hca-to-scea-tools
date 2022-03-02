@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ## hca_to_scea
 A tool to assist in the automatic conversion of an hca metadata spreadsheet to scea metadata MAGE-TAB files.
 
@@ -95,6 +94,34 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 |--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
 |-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no        |
 
+
+## Definitions
+
+**Factor values**
+
+A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. Multiple factor values can be entered and should be chosen from the following list.
+
+- Known disease(s)
+- Development stage
+- Organ
+- Organ part
+- Selected cell type(s)
+- Individual
+
+There must be at least 1 factor value. If you cannot identify a factor value i.e. all donors and samples share the same metadata with respect to the above list of factor values, then enter 'Individual'.
+
+Datasets with more than 1 technolgoy type are not eligible for SCEA. Therefore, technology type is not a valid factor value.
+
+**Experiment type**
+
+An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. The list of possible factor values can be found above.
+
+If 1 or more factor values other than 'Individual' is identified, then the experiment type should be 'Differential'. If the only factor value is 'Individual', then the experiment type should be 'Baseline'.
+
+**Related E-HCAD-ID**
+
+If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here. Example: E-HCAD-50.
+
 ## Examples
 
 **Required arguments only**
@@ -116,33 +143,6 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 **Specify optional output dir**
 
 `python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir`
-
-## Definitions
-
-### Factor values
-
-A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. Multiple factor values can be entered and should be chosen from the following list.
-
-- Known disease(s)
-- Development stage
-- Organ
-- Organ part
-- Selected cell type(s)
-- Individual
-
-There must be at least 1 factor value. If you cannot identify a factor value i.e. all donors and samples share the same metadata with respect to the above list of factor values, then enter 'Individual'.
-
-Datasets with more than 1 technolgoy type are not eligible for SCEA. Therefore, technology type is not a valid factor value.
-
-### Experiment type
-
-An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. The list of possible factor values can be found above.
-
-If 1 or more factor values other than 'Individual' is identified, then the experiment type should be 'Differential'. If the only factor value is 'Individual', then the experiment type should be 'Baseline'.
-
-### Related E-HCAD-ID
-
-If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here (e.g. E-HCAD-34).
 
 ## Developer Notes
 
@@ -181,6 +181,4 @@ or by having `pip` do it automatically by providing a reference to this reposito
         
     Running `python setup.py sdist` will create a package in the `dist` directory of the project
     base directory. 
-    
-
-
+  
