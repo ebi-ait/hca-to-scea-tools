@@ -356,57 +356,12 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Check all required column names are present and reorder columns by SCEA defined order.'''
 
-    expected_columns_ordered = [
-    'Source Name',
-    'Comment[BioSD_SAMPLE]',
-    'Characteristics[organism]',
-    'Characteristics[individual]',
-    'Characteristics[sex]',
-    'Characteristics[age]',
-    'Unit[time unit]',
-    'Characteristics[developmental stage]',
-    'Characteristics[organism part]',
-    'Characteristics[sampling site]',
-    'Characteristics[cell type]',
-    'Characteristics[immunophenotype]',
-    'Characteristics[stimulus]',
-    'Characteristics[disease]',
-    'Characteristics[organism status]',
-    'Characteristics[cause of death]',
-    'Description',
-    'Material Type_1',
-    'Extract Name',
-    'Material Type_2',
-    'Comment[library construction]',
-    'Comment[single cell isolation]',
-    'Comment[input molecule]',
-    'Comment[primer]',
-    'Comment[end bias]',
-    'Comment[umi barcode read]',
-    'Comment[umi barcode offset]',
-    'Comment[umi barcode size]',
-    'Comment[cell barcode read]',
-    'Comment[cell barcode offset]',
-    'Comment[cell barcode size]',
-    'Comment[sample barcode read]',
-    'Comment[sample barcode offset]',
-    'Comment[sample barcode size]',
-    'Comment[cDNA read]',
-    'Comment[cDNA read offset]',
-    'Comment[LIBRARY_STRAND]',
-    'Comment[LIBRARY_LAYOUT]',
-    'Comment[LIBRARY_SOURCE]',
-    'Comment[LIBRARY_STRATEGY]',
-    'Comment[LIBRARY_SELECTION]',
-    'Assay Name',
-    'Technology Type',
-    'Scan Name',
-    'Comment[ENA_EXPERIMENT]',
-    'Comment[technical replicate group]',
-    'Comment[ENA_RUN]',
-    'Comment[read1 file]',
-    'Comment[read2 file]',
-    'Comment[SRA_URI]']
+    with open(f"json_files/expected_columns.json") as expected_columns_file:
+        expected_columns_dict = json.load(expected_columns_file)
+    if experimental_design == 'standard':
+        expected_columns_ordered = expected_columns_dict['standard']
+    else:
+        expected_columns_ordered = expected_columns_dict['cell_line']
 
     column_check = [col for col in expected_columns_ordered if col not in sdrf_2.columns]
     if column_check:
@@ -436,29 +391,12 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
             sdrf_3 = sdrf_3.rename(columns={col_name: "Material Type"})
 
     '''Remove empty columns if columns are optional.'''
-    optional_columns = [
-    'Characteristics[developmental stage]',
-    'Characteristics[sampling site]',
-    'Characteristics[cell type]',
-    'Characteristics[immunophenotype]',
-    'Characteristics[stimulus]',
-    'Characteristics[disease]',
-    'Characteristics[organism status]',
-    'Characteristics[cause of death]',
-    'Comment[umi barcode read]',
-    'Comment[umi barcode offset]',
-    'Comment[umi barcode size]',
-    'Comment[cell barcode read]',
-    'Comment[cell barcode offset]',
-    'Comment[cell barcode size]',
-    'Comment[sample barcode read]',
-    'Comment[sample barcode offset]',
-    'Comment[sample barcode size]',
-    'Comment[cDNA read]',
-    'Comment[cDNA read offset]',
-    'Comment[read1 file]',
-    'Comment[read2 file]',
-    'Comment[SRA_URI]']
+    with open(f"json_files/optional_columns.json") as optional_columns_file:
+        optional_columns_dict = json.load(optional_columns_file)
+    if experimental_design == 'standard':
+        optional_columns = optional_columns_dict['standard']
+    else:
+        optional_columns = optional_columns_dict['cell_line']
 
     for column_name in optional_columns:
         if set(list(sdrf_3[column_name])) == {''}:
