@@ -4,6 +4,7 @@ SRP274475.xlsx,07073c12-8006-4710-a00b-23abdb814904,SRP274475,36,AD,10Xv2_3,diff
 ERP121676_1.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,10Xv2_3,baseline,individual,2021-09-30,2020-11-25
 ERP121676_2.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,10Xv2_3,baseline,individual,2021-09-30,2020-11-25
 ERP121676_3.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,10Xv2_3,baseline,individual,2021-09-30,2020-11-25
+#ERP123138.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP123138,100,AD,[],differential,organ part,2021-09-30,2020-11-25
 # Doesn't yet support different length arrays for each protocol type. E.g. a group of samples subjected to 2 dissociation protocols versus another subjected to only 1 dissociation protocol. The protocol ids however do not need to be identical, it is the number that is the issue.
 #SRP166375.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,SRP166375,44,WKT,10Xv2_5,differential,disease organ,2009-02-27,2021-04-29
 # Doesn't yet support datasets where a cell_suspension links to multiple runs (multiple lane indices)

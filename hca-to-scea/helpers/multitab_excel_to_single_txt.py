@@ -70,8 +70,12 @@ def multitab_excel_to_dict(work_dir, excel_file):
 def merge_sample_types(xlsx_dict: {},experimental_design) -> pd.DataFrame():
 
     '''process.insdc_experiment.insdc_experiment_accession' is present in multiple tabs. Save the cell_suspension experiment accessions with a unique name.'''
-    xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = list(
-        xlsx_dict['cell_suspension']['process.insdc_experiment.insdc_experiment_accession'])
+    if 'process.insdc_experiment.insdc_experiment_accession' in xlsx_dict['cell_suspension'].columns:
+        xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = list(
+            xlsx_dict['cell_suspension']['process.insdc_experiment.insdc_experiment_accession'])
+    else:
+        xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = ['']*len(list(xlsx_dict['cell_suspension']["cell_suspension.biomaterial_core.biomaterial_id"]))
+
 
     merged_df = xlsx_dict['cell_suspension'].merge(
         xlsx_dict['sequence_file'],

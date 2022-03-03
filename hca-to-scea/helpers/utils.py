@@ -4,9 +4,11 @@
 
 import glob
 import re
+import sys
 
 import requests as rq
 from itertools import chain
+import copy
 
 from os.path import splitext, basename
 
@@ -24,99 +26,6 @@ def get_tab_separated_list(sheet_dict, sheet, col_name, func=lambda x: x):
 
 def get_first_letter(str):
     return str[0] if len(str) else ''
-
-def get_tracker_google_sheet() -> pd.DataFrame:
-    '''
-    Parse the tracker google sheet where we store all our dataset tracking data. Return it as a pd.DataFrame.
-    '''
-    tracking_sheet = rq.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ26K0ZYREykq2kR2HgA3xGol3PfFuwYu"
-                            "qNBQCZgi4L7yqF2GZiNdXfQ19FtjxMvCk8IU6S_v6zih9z/pub?gid=0&single=true&output=tsv",
-                            headers={'Cache-Control': 'no-cache'}).text.splitlines()
-    tracking_sheet = [data.split("\t") for data in tracking_sheet]
-    tracking_sheet = pd.DataFrame(tracking_sheet[1:], columns=tracking_sheet[0])
-    return tracking_sheet
-
-def get_unique_accessions(accessions: []) -> []:
-    '''
-    Get the list of unique project accessions from the google tracker sheet. This includes multiple accession types,
-    and accounts for a list of >1 accession for some projects.
-    '''
-    accessions_uniq = []
-    accessions_uniq.extend([accession for accession in accessions if ',' not in accession and ';' not in accession])
-    accessions_uniq.extend(list(chain(*[accession.split(",") for accession in accessions if ',' in accession])))
-    accessions_uniq.extend(list(chain(*[accession.split(";") for accession in accessions if ';' in accession])))
-    return accessions_uniq
-
-def get_echad_accessions(accessions_uniq: []) -> []:
-    '''
-    Get the list of unique E-HCAD accessions from the google tracker sheet, given the list of all unique accessions types.
-    '''
-    echad_accessions = list(set([accession.strip() for accession in accessions_uniq if 'E-HCAD' in accession]))
-    return echad_accessions
-
-def get_next_echad_accession(ehcad_accessions: []) -> str:
-    '''
-    Order the list of unique E-HCAD accessions found in the tracker google sheet and identify which E-HCAD accession id
-    should be next.
-    '''
-    ehcad_accessions = [ehcad.upper().replace('-','') for ehcad in ehcad_accessions]
-    ehcad_accessions = [ehcad.split("EHCAD")[1] for ehcad in ehcad_accessions]
-    maxi = sorted(ehcad_accessions,key=float)[-1]
-    next_echad_accession = int(maxi) + 1
-    return next_echad_accession
-
-def get_accessions_for_project(tracking_sheet: pd.DataFrame,identifier: str) -> []:
-    '''
-    Get the list of project accessions associated with a particular project from the tracker google sheet, using either
-    the ingest project uuid or the project short name as input. The accessions can be of multiple types.
-    '''
-    idx = None
-    try:
-        idx = tracking_sheet.index[tracking_sheet['ingest_project_uuid'] == identifier].tolist()[0]
-    except:
-        idx = None
-    if idx:
-        accession_list = list(tracking_sheet['data_accession'])[idx]
-        return accession_list
-    else:
-        return None
-
-# Protocol mapping.
-#protocol_type_map = {
-#    'collection_protocol': "sample collection protocol",
-#    'dissociation_protocol': "enrichment protocol",
-#    '??????????????????????': "nucleic acid extraction protocol",
-#    'enrichment_protocol': "enrichment protocol",
-#    'library_preparation_protocol': "nucleic acid library construction protocol",
-#    'sequencing_protocol': "nucleic acid sequencing protocol",
-#}
-
-# Order of protocols.
-#protocol_order = [
-#    'collection_protocol',
-#    'dissociation_protocol',
-#    'enrichment_protocol',
-#    'library_preparation_protocol',
-#    'sequencing_protocol',
-#]
-
-# Columns where protocols are stored in the spreadsheet.
-#protocol_columns = {
-#    'collection_protocol': ["collection_protocol.protocol_core.protocol_id"],
-#    'library_preparation_protocol': ["library_preparation_protocol.protocol_core.protocol_id"],
-#    'sequencing_protocol': ["sequencing_protocol.protocol_core.protocol_id"],
-#}
-
-#multiprotocols = {
-#    'dissociation_protocol': "dissociation_protocol.protocol_core.protocol_id",
-#    'enrichment_protocol': "enrichment_protocol.protocol_core.protocol_id",
-#}
-
-
-# Convert sheet names to snake case.
-def convert_to_snakecase(label):
-    return re.sub(r'(\s-\s)|\s', '_', label).lower()
-
 
 # Fetch all spreadsheet csv in a dir.
 def get_all_spreadsheets(work_dir):
@@ -136,7 +45,6 @@ def get_all_spreadsheets(work_dir):
 
     return spreadsheets
 
-
 # Extract lists of protocols
 # Helpers to convert lists in HCA spreadsheets (items are separated with two
 # pipes `||`) to python lists.
@@ -150,54 +58,6 @@ def splitlist(list_):
         pass
 
     return split_data
-
-#def split_multiprotocols(df, proto_column):
-#    proto_series = df[proto_column].apply(splitlist)
-#    proto_df = pd.DataFrame(proto_series.values.tolist())
-#    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(proto_df.columns))]
-#    proto_df.columns = proto_df_columns
-#    proto_df[f'{proto_column}_count'] = proto_series.str.len()
-#    proto_df[f'{proto_column}_list'] = proto_series
-#
-#   return (proto_df, proto_df_columns)
-
-
-# Extracts info from the protocols spreadsheets
-#def extract_protocol_info(
-#    protocol_map,
-#    spreadsheets,
-#    column_to_extract,
-#    to_key,
-#    for_protocols = protocol_order
-#):
-#    for proto_type, proto_list in protocol_map.items():
-#        if proto_type in for_protocols:
-#            for proto_name, proto in proto_list.items():
-#                extracted_data = spreadsheets[proto_type].loc[spreadsheets[proto_type][f'{proto_type}.protocol_core.protocol_id'] == proto_name][f'{proto_type}.{column_to_extract}'].tolist()
-#
-#                if len(extracted_data):
-#                    proto[to_key] = extracted_data[0]
-#                else:
-#                    proto[to_key] = ''
-
-
-# Get protocol types from protocol map.
-#def get_protocol_idf(protocol_map):
-#    proto_types = [protocol_type_map[protocol_type] for (protocol_type, value) in protocol_map.items() for repeats in range(len(value.keys()))]
-#    proto_names = [protocol['scea_id'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
-#    proto_descs = [protocol['description'] for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
-#    proto_hware = [protocol.get('hardware', '') for (protocol_type, protocols) in protocol_map.items() for (protocol_name, protocol) in protocols.items()]
-#
-#    return list(zip(proto_types, proto_names, proto_descs, proto_hware))
-
-
-# Maps a HCA protocol name to a SCEA ID.
-#def map_proto_to_id(protocol_name, protocol_map):
-#    for proto_type in protocol_map.values():
-#        for proto in proto_type.values():
-#            if protocol_name in proto['hca_ids']:
-#                return proto.get('scea_id')
-#    return ''
 
 def get_experimental_design(xlsx_dict: {}):
 
@@ -268,3 +128,86 @@ def check_for_pooled_samples(xlsx_dict):
         pooled_samples = False
 
     return pooled_samples
+
+def filter_biomaterials(xlsx_dict, xlsx_dict_tmp, library_protocol):
+
+    xlsx_dict_tmp["sequence_file"] = xlsx_dict["sequence_file"].loc[
+        xlsx_dict["sequence_file"]["library_preparation_protocol.protocol_core.protocol_id"] == library_protocol]
+    cell_suspension_ids = xlsx_dict_tmp["sequence_file"]["cell_suspension.biomaterial_core.biomaterial_id"].values
+    xlsx_dict_tmp["cell_suspension"] = xlsx_dict["cell_suspension"][
+        xlsx_dict["cell_suspension"]["cell_suspension.biomaterial_core.biomaterial_id"].isin((cell_suspension_ids))]
+
+    biomaterial_tabs = ["specimen_from_organism", "organoid", "cell_line"]
+    for biomaterial_tab in biomaterial_tabs:
+        if biomaterial_tab in xlsx_dict.keys():
+            id_column = "{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)
+            if id_column in xlsx_dict[biomaterial_tab] and not xlsx_dict[biomaterial_tab].empty:
+                specimen_ids = xlsx_dict_tmp["cell_suspension"][
+                    "{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)].values
+                xlsx_dict_tmp[biomaterial_tab] = xlsx_dict[biomaterial_tab][
+                    xlsx_dict[biomaterial_tab]["{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)].isin(
+                        (specimen_ids))]
+                donor_ids_specimen = xlsx_dict_tmp[biomaterial_tab][
+                    "donor_organism.biomaterial_core.biomaterial_id"].values
+                xlsx_dict_tmp["donor_organism"] = xlsx_dict["donor_organism"][
+                    xlsx_dict["donor_organism"]["donor_organism.biomaterial_core.biomaterial_id"].isin(
+                        (donor_ids_specimen))]
+
+    return xlsx_dict_tmp
+
+def filter_protocols(xlsx_dict_tmp):
+
+    biomaterial_tabs = ["specimen_from_organism", "organoid", "cell_line", "cell_suspension", "sequence_file"]
+    protocol_tabs = ["collection_protocol","dissociation_protocol","enrichment_protocol","differentiation_protocol","library_preparation_protocol","sequencing_protocol"]
+
+    for protocol_tab in protocol_tabs:
+        if protocol_tab in xlsx_dict_tmp.keys():
+            id_column = "{}.protocol_core.protocol_id".format(protocol_tab)
+            protocol_ids = list(xlsx_dict_tmp[protocol_tab][id_column])
+            protocol_id_list = []
+            for biomaterial_tab in biomaterial_tabs:
+                if biomaterial_tab in xlsx_dict_tmp.keys():
+                    if id_column in xlsx_dict_tmp[biomaterial_tab].columns:
+                        protocol_id_list.extend(list(set(list(xlsx_dict_tmp[biomaterial_tab][id_column]))))
+            remove_protocols = [i for i in range(0,len(protocol_ids)) if protocol_ids[i] not in protocol_id_list]
+            xlsx_dict_tmp[protocol_tab].drop(xlsx_dict_tmp[protocol_tab].index[remove_protocols])
+
+    return xlsx_dict_tmp
+
+def split_metadata_by_technology(xlsx_dict):
+
+    library_protocols_uniq = list(set(list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.protocol_core.protocol_id"])))
+
+    if len(library_protocols_uniq) == 1:
+        list_xlsx_dict = [xlsx_dict]
+
+    else:
+
+        list_xlsx_dict = []
+        for i in range(0,len(library_protocols_uniq)):
+
+            xlsx_dict_tmp = copy.deepcopy(xlsx_dict)
+            library_protocol = library_protocols_uniq[i]
+
+            xlsx_dict_tmp = filter_biomaterials(xlsx_dict,xlsx_dict_tmp,library_protocol)
+            xlsx_dict_tmp2 = copy.deepcopy(xlsx_dict_tmp)
+            xlsx_dict_tmp3 = filter_protocols(xlsx_dict_tmp2)
+
+            list_xlsx_dict.append(xlsx_dict_tmp3)
+
+    return list_xlsx_dict
+
+def get_related_scea_accessions(args, accession, related_scea_accessions):
+
+    if args.related_scea_accession:
+        related_scea_accession = args.related_scea_accession
+        related_scea_accession = accession.split("E-HCAD-")[0] + str(related_scea_accession)
+    else:
+        related_scea_accession = None
+    if related_scea_accessions:
+        related_scea_accessions = [str(accession.split("E-HCAD-")[0]) + str(related_scea_acc) for related_scea_acc in related_scea_accessions]
+        if related_scea_accession:
+            related_scea_accessions.extend(related_scea_accession)
+
+    return related_scea_accessions
+
