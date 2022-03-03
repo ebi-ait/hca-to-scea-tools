@@ -25,7 +25,7 @@ ordered_hca_protocol_types = [
 map_of_hca_protocol_type_id_keys = {
     'collection_protocol': ["collection_protocol.protocol_core.protocol_id"],
     'library_preparation_protocol': ["library_preparation_protocol.protocol_core.protocol_id"],
-    'sequencing_protocol': ["sequencing_protocol.protocol_core.protocol_id"],
+    'sequencing_protocol': ["sequencing_protocol.protocol_core.protocol_id"]
 }
 
 '''There can be multiple dissociation protocols and/or enrichment protocols
@@ -33,7 +33,7 @@ performed on a single specimen. This dict stores such protocol types.'''
 multiprotocols = {
     'dissociation_protocol': "dissociation_protocol.protocol_core.protocol_id",
     'enrichment_protocol': "enrichment_protocol.protocol_core.protocol_id",
-    'differentiation_protocol': "differentiation_protocol.protocol_core.protocol_id",
+    'differentiation_protocol': "differentiation_protocol.protocol_core.protocol_id"
 }
 
 '''There can be multiple dissociation protocols and/or enrichment protocols

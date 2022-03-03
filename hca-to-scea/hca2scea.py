@@ -12,13 +12,6 @@ from helpers import utils
 
 pd.options.mode.chained_assignment = None
 
-#def get_secondary_accessions(tracking_sheet, args):
-
-    # TBD: get these from ingest.
-
-    #return secondary_accessions
-
-
 def get_person_roles(xlsx_dict):
 
     person_roles = utils.reformat_value(xlsx_dict, "project_contributors", "project.contributors.project_role.text")
@@ -338,14 +331,21 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
     sdrf_1 = add_scea_specimen_columns(args, df, experimental_design)
 
     '''Get technology-specific SCEA metadata and add to sdrf_1 dataframe.'''
-    with open(f"json_files/{args.technology_type}.json") as technology_json_file:
-        technology_dict = json.load(technology_json_file)
+    technology_type = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"])[0]
+    technology_type = utils.rename_technology_type(technology_type,utils.technology_dict)
+    try:
+        with open(f"json_files/{technology_type}.json") as technology_json_file:
+            technology_dict = json.load(technology_json_file)
+    except:
+        print("Technology type {} is not yet supported. Please ask Ami to add it to the technology type map.".format(technology_type))
+        sys.exit()
     for key in technology_dict.keys():
         sdrf_1[key] = technology_dict[key]
 
     '''Edit single cell isolation method if the user-specified that FACS was used.'''
     if args.facs is True:
         sdrf_1['Comment[single_cell_isolation]'] = 'FACS'*sdrf_1.shape[0]
+    # To do: add 'Comment[single_cell_isolation]' == Fluidigm C1 for Fluidigm C1 experiments.
 
     '''To Do. Get immunophenotype and treatment/stimulus information, if there is any.'''
     #"Characteristics[immunophenotype]":"enrichment_protocol.markers"
@@ -539,14 +539,11 @@ def main():
     '''
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
 
-    '''Run checks to see whether the experimental design is compatibile and save the experimental
-    design type in a variable for later.'''
-
     '''Check whether multiple library preparation protocol technology types or 10X versions were
     used. If so, split xlsx_dict into a list of dicts separated by the technology type. Then,
-    create idf and sdrf files for each of the dicts. These dicts will later be merged if the 10X versions are
-    different. For different technology types, the files will be kept separate.'''
-    list_xlsx_dict = utils.split_metadata_by_technology(xlsx_dict)
+    create idf and sdrf files for each of the dicts.'''
+
+    list_xlsx_dict = utils.split_metadata_by_technology(xlsx_dict,utils.technology_dict)
 
     if len(list_xlsx_dict) > 1:
         accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]
@@ -564,6 +561,9 @@ def main():
         related_scea_accessions_idx = copy.deepcopy(accession_number_idx)
         related_scea_accessions_idx.remove(i)
         related_scea_accessions = [accession_number_list[i] for i in related_scea_accessions_idx]
+
+        '''Run checks to see whether the experimental design is compatibile and save the experimental
+        design type in a variable for later.'''
 
         ''' Get the experimental design '''
         experimental_design = utils.get_experimental_design(xlsx_dict)

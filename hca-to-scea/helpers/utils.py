@@ -163,36 +163,46 @@ def filter_protocols(xlsx_dict_tmp):
     for protocol_tab in protocol_tabs:
         if protocol_tab in xlsx_dict_tmp.keys():
             id_column = "{}.protocol_core.protocol_id".format(protocol_tab)
-            protocol_ids = list(xlsx_dict_tmp[protocol_tab][id_column])
             protocol_id_list = []
             for biomaterial_tab in biomaterial_tabs:
                 if biomaterial_tab in xlsx_dict_tmp.keys():
                     if id_column in xlsx_dict_tmp[biomaterial_tab].columns:
-                        protocol_id_list.extend(list(set(list(xlsx_dict_tmp[biomaterial_tab][id_column]))))
-            remove_protocols = [i for i in range(0,len(protocol_ids)) if protocol_ids[i] not in protocol_id_list]
-            xlsx_dict_tmp[protocol_tab].drop(xlsx_dict_tmp[protocol_tab].index[remove_protocols])
+                        protocol_id_list.extend(xlsx_dict_tmp[biomaterial_tab][id_column])
+            keep_protocols = [protocol_id for protocol_id in xlsx_dict_tmp[protocol_tab][id_column] if protocol_id in protocol_id_list]
+            xlsx_dict_tmp[protocol_tab] = xlsx_dict_tmp[protocol_tab][xlsx_dict_tmp[protocol_tab][id_column].isin((keep_protocols))]
 
     return xlsx_dict_tmp
 
-def split_metadata_by_technology(xlsx_dict):
+def check_technology_eligibility(library_method,technology_dict):
 
-    library_protocols_uniq = list(set(list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.protocol_core.protocol_id"])))
-
-    if len(library_protocols_uniq) == 1:
-        list_xlsx_dict = [xlsx_dict]
-
+    if library_method in technology_dict.keys():
+        eligible = True
     else:
+        eligible = False
 
+    return eligible
+
+def split_metadata_by_technology(xlsx_dict, technology_dict):
+
+    '''Check for ineligible technoloy types and remove them from the library preparation protocol tab.'''
+    for i in range(0,xlsx_dict["library_preparation_protocol"].shape[0]):
+        library_protocol_technology = xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"][i]
+        eligible = check_technology_eligibility(library_protocol_technology,technology_dict)
+        if eligible == "False":
+            xlsx_dict["library_preparation_protocol"].drop(xlsx_dict["library_preparation_protocol"].index[i])
+
+    '''Get the list of eligible unique library preparation protocol types.'''
+    if xlsx_dict["library_preparation_protocol"].empty:
+        print("The library preparation technology type is not compatible. Please speak to Ami.")
+        sys.exit()
+    else:
+        library_protocol_ids = xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.protocol_core.protocol_id"]
         list_xlsx_dict = []
-        for i in range(0,len(library_protocols_uniq)):
-
+        for library_protocol in library_protocol_ids:
             xlsx_dict_tmp = copy.deepcopy(xlsx_dict)
-            library_protocol = library_protocols_uniq[i]
-
             xlsx_dict_tmp = filter_biomaterials(xlsx_dict,xlsx_dict_tmp,library_protocol)
             xlsx_dict_tmp2 = copy.deepcopy(xlsx_dict_tmp)
             xlsx_dict_tmp3 = filter_protocols(xlsx_dict_tmp2)
-
             list_xlsx_dict.append(xlsx_dict_tmp3)
 
     return list_xlsx_dict
@@ -210,4 +220,31 @@ def get_related_scea_accessions(args, accession, related_scea_accessions):
             related_scea_accessions.extend(related_scea_accession)
 
     return related_scea_accessions
+
+technology_dict = {
+    "Fluidigm C1-based library preparation":"smart-like.json",
+    "10X 3' v1": "10Xv1_3",
+    "10X 5' v1": "10Xv1_5",
+    "10X 3' v2": "10Xv2_3",
+    "10X 5' v2": "10Xv2_5",
+    "10X 3' v3": "10Xv3_3",
+    "10X 3' v1 sequencing":"10Xv1_3",
+    "10X 5' v1 sequencing":"10Xv1_5",
+    "10X 3' v2 sequencing":"10Xv2_3",
+    "10X 5' v2 sequencing":"10Xv2_5",
+    "10x 3' v3 sequencing":"10Xv3_3",
+    "Drop-seq":"drop-seq",
+    "inDrop":"drop-seq",
+    "Smart-like":"smart-like",
+    "Smart-seq2":"smart-seq",
+    "Smart-seq":"smart-seq"
+}
+
+def rename_technology_type(technology_type, technology_dict):
+
+    json_file = technology_dict[technology_type]
+
+    return json_file
+
+
 
