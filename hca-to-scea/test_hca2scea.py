@@ -89,7 +89,7 @@ class CharacteristicTest(unittest.TestCase):
         output_dir = self.output_base + output_name
         arguments = arguments.reset_index()
         os.system(
-            f'python3 hca2scea.py -s {spreadsheet} -o {output_dir} -id {arguments["HCA project uuid"][0]} -ac {arguments["E-HCAD accession"][0]} -c {arguments["curator initials"][0]} -tt {arguments["technology"][0]} -et {arguments["experiment type"][0]} -f {arguments["factor values"][0]} -pd {arguments["public release date"][0]} -hd {arguments["hca last update date"][0]} -study {arguments["study accession"][0]}')
+            f'python3 hca2scea.py -s {spreadsheet} -o {output_dir} -id {arguments["HCA project uuid"][0]} -ac {arguments["E-HCAD accession"][0]} -c {arguments["curator initials"][0]} -et {arguments["experiment type"][0]} -f {arguments["factor values"][0]} -pd {arguments["public release date"][0]} -hd {arguments["hca last update date"][0]} -study {arguments["study accession"][0]}')
         return output_dir
 
 if __name__ == '__main__':

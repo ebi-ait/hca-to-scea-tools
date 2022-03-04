@@ -67,7 +67,7 @@ def get_experimental_design(xlsx_dict: {}):
         else:
             specimen = True
     else:
-        specimen = Falseprotocol_type_map
+        specimen = False
 
     if 'cell_line' in xlsx_dict.keys():
         if xlsx_dict['cell_line'].empty:
@@ -140,18 +140,21 @@ def filter_biomaterials(xlsx_dict, xlsx_dict_tmp, library_protocol):
     biomaterial_tabs = ["specimen_from_organism", "organoid", "cell_line"]
     for biomaterial_tab in biomaterial_tabs:
         if biomaterial_tab in xlsx_dict.keys():
-            id_column = "{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)
-            if id_column in xlsx_dict[biomaterial_tab] and not xlsx_dict[biomaterial_tab].empty:
-                specimen_ids = xlsx_dict_tmp["cell_suspension"][
-                    "{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)].values
-                xlsx_dict_tmp[biomaterial_tab] = xlsx_dict[biomaterial_tab][
-                    xlsx_dict[biomaterial_tab]["{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)].isin(
-                        (specimen_ids))]
-                donor_ids_specimen = xlsx_dict_tmp[biomaterial_tab][
-                    "donor_organism.biomaterial_core.biomaterial_id"].values
-                xlsx_dict_tmp["donor_organism"] = xlsx_dict["donor_organism"][
-                    xlsx_dict["donor_organism"]["donor_organism.biomaterial_core.biomaterial_id"].isin(
-                        (donor_ids_specimen))]
+            if not xlsx_dict_tmp[biomaterial_tab].empty:
+                id_column = "{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)
+                if id_column in xlsx_dict_tmp["cell_suspension"].columns:
+                    if not xlsx_dict_tmp["cell_suspension"][id_column].empty and not xlsx_dict_tmp["cell_suspension"][id_column].isna().all():
+                        specimen_ids = xlsx_dict_tmp["cell_suspension"][
+                            "{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)].values
+                        xlsx_dict_tmp[biomaterial_tab] = xlsx_dict[biomaterial_tab][
+                            xlsx_dict[biomaterial_tab]["{}.biomaterial_core.biomaterial_id".format(biomaterial_tab)].isin(
+                                (specimen_ids))]
+                if "donor_organism.biomaterial_core.biomaterial_id" in xlsx_dict_tmp[biomaterial_tab].columns:
+                    donor_ids_specimen = xlsx_dict_tmp[biomaterial_tab][
+                        "donor_organism.biomaterial_core.biomaterial_id"].values
+                    xlsx_dict_tmp["donor_organism"] = xlsx_dict["donor_organism"][
+                        xlsx_dict["donor_organism"]["donor_organism.biomaterial_core.biomaterial_id"].isin(
+                            (donor_ids_specimen))]
 
     return xlsx_dict_tmp
 
@@ -167,8 +170,14 @@ def filter_protocols(xlsx_dict_tmp):
             for biomaterial_tab in biomaterial_tabs:
                 if biomaterial_tab in xlsx_dict_tmp.keys():
                     if id_column in xlsx_dict_tmp[biomaterial_tab].columns:
-                        protocol_id_list.extend(xlsx_dict_tmp[biomaterial_tab][id_column])
-            keep_protocols = [protocol_id for protocol_id in xlsx_dict_tmp[protocol_tab][id_column] if protocol_id in protocol_id_list]
+                        protocol_id_list.extend(list(xlsx_dict_tmp[biomaterial_tab][id_column]))
+            protocol_id_list = list(set(protocol_id_list))
+            protocol_id_split = [protocol_id.split("||") for protocol_id in protocol_id_list if "||" in protocol_id]
+            if protocol_id_split:
+                protocol_id_split = [item for sublist in protocol_id_split for item in sublist]
+                protocol_id_split.extend([protocol_id for protocol_id in protocol_id_list if "||" not in protocol_id])
+                protocol_id_list = protocol_id_split
+            keep_protocols = [protocol_id for protocol_id in list(xlsx_dict_tmp[protocol_tab][id_column]) if protocol_id in protocol_id_list]
             xlsx_dict_tmp[protocol_tab] = xlsx_dict_tmp[protocol_tab][xlsx_dict_tmp[protocol_tab][id_column].isin((keep_protocols))]
 
     return xlsx_dict_tmp
@@ -196,7 +205,7 @@ def split_metadata_by_technology(xlsx_dict, technology_dict):
         print("The library preparation technology type is not compatible. Please speak to Ami.")
         sys.exit()
     else:
-        library_protocol_ids = xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.protocol_core.protocol_id"]
+        library_protocol_ids = xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.protocol_core.protocol_id"].values
         list_xlsx_dict = []
         for library_protocol in library_protocol_ids:
             xlsx_dict_tmp = copy.deepcopy(xlsx_dict)

@@ -472,14 +472,6 @@ def main():
         help="space separated names of curators"
     )
     parser.add_argument(
-        "-tt",
-        "--technology_type",
-        type=str,
-        required=True,
-        choices=['10Xv1_3','10Xv2_3','10Xv2_5','10Xv3_3','drop-seq','smart-seq','seq-well','smart-like'],
-        help="Please indicate which single-cell sequencing technology was used."
-    )
-    parser.add_argument(
         "-et",
         "--experiment_type",
         type=str,
@@ -539,11 +531,14 @@ def main():
     '''
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
 
+    '''Remove unused protocol tabs and corresponding protocol id column.'''
+    xlsx_dict_tmp2 = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
+
     '''Check whether multiple library preparation protocol technology types or 10X versions were
     used. If so, split xlsx_dict into a list of dicts separated by the technology type. Then,
     create idf and sdrf files for each of the dicts.'''
 
-    list_xlsx_dict = utils.split_metadata_by_technology(xlsx_dict,utils.technology_dict)
+    list_xlsx_dict = utils.split_metadata_by_technology(xlsx_dict_tmp2,utils.technology_dict)
 
     if len(list_xlsx_dict) > 1:
         accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]
@@ -574,9 +569,6 @@ def main():
             print("The hca-to-scea tool does not support pooled donors or pooled samples."
                 "The dataset should be curated manually.")
             sys.exit()
-
-        '''Remove unused protocol tabs and corresponding protocol id column.'''
-        xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
 
         '''The merged df consists of a row per read index (read1, read2, index1). To conform to
         SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
