@@ -14,6 +14,8 @@
 "Comment[sample barcode read]": "",
 "Comment[sample barcode offset]":"",
 "Comment[sample barcode size]":"",
+"Comment[cDNA read]":"",
+"Comment[cDNA read offset]":"",
 "Comment[LIBRARY_STRAND]": "first strand",
 "Comment[LIBRARY_LAYOUT]":"PAIRED",
 "Comment[LIBRARY_SOURCE]":"TRANSCRIPTOMIC SINGLE CELL",
