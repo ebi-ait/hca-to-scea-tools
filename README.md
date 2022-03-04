@@ -113,7 +113,7 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 
 ## Definitions
 
-### Factor values
+**Factor values**
 
 A factor value is a chosen experimental characteristic which can be used to group or differentiate samples. Multiple factor values can be entered and should be chosen from the following list.
 
@@ -128,15 +128,15 @@ There must be at least 1 factor value. If you cannot identify a factor value i.e
 
 Datasets with more than 1 technolgoy type are not eligible for SCEA. Therefore, technology type is not a valid factor value.
 
-### Experiment type
+**Experiment type**
 
 An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. The list of possible factor values can be found above.
 
 If 1 or more factor values other than 'Individual' is identified, then the experiment type should be 'Differential'. If the only factor value is 'Individual', then the experiment type should be 'Baseline'.
 
-### Related E-HCAD-ID
+**Related E-HCAD-ID**
 
-If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here (e.g. E-HCAD-34).
+If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here.
 
 ## Developer Notes
 
