@@ -18,9 +18,8 @@ To run it as a package, after installing it via pip:
 $ hca-to-scea -h                                                  
 usage: hca2scea.py [-h] -s SPREADSHEET -id PROJECT_UUID -study STUDY
                    [-name {cs_name,cs_id,sp_name,sp_id,other}] -ac
-                   ACCESSION_NUMBER -c CURATORS [CURATORS ...] -tt
-                   {10Xv1_3,10Xv2_3,10Xv2_5,10Xv3_3,drop-seq,smart-seq,seq-well,smart-like}
-                   -et {baseline,differential} [--facs] -f
+                   ACCESSION_NUMBER -c CURATORS [CURATORS ...] -et
+                   {baseline,differential} [--facs] -f
                    EXPERIMENTAL_FACTORS [EXPERIMENTAL_FACTORS ...] -pd
                    PUBLIC_RELEASE_DATE -hd HCA_UPDATE_DATE
                    [-r RELATED_SCEA_ACCESSION [RELATED_SCEA_ACCESSION ...]]
@@ -44,9 +43,6 @@ optional arguments:
                         tracker sheet.
   -c CURATORS [CURATORS ...], --curators CURATORS [CURATORS ...]
                         space separated names of curators
-  -tt {10Xv1_3,10Xv2_3,10Xv2_5,10Xv3_3,drop-seq,smart-seq,seq-well,smart-like}, --technology_type {10Xv1_3,10Xv2_3,10Xv2_5,10Xv3_3,drop-seq,smart-seq,seq-well,smart-like}
-                        Please indicate which single-cell sequencing
-                        technology was used.
   -et {baseline,differential}, --experiment_type {baseline,differential}
                         Please indicate whether this is a baseline or
                         differential experimental design
@@ -81,7 +77,6 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 |-id         | HCA project uuid         | This is added to the 'secondary accessions' field in idf file                                      | yes       | 
 |-c          | Curator initials         | HCA Curator initials. Space-separated list.                                                        | yes       |
 |-ac         | accession number         | Provide an SCEA accession number (integer).                                                        | yes       |
-|-tt         | Technology type          | Must be [10Xv2_3,10Xv2_5,10Xv3_3,10Xv3_5,drop-seq,smart-seq,seq-well,smart-like]                   | yes       |
 |-et         | Experiment type          | Must be 1 of [differential,baseline]                                                               | yes       |
 |-f          | Factor value             | A space-separated list of user-defined factor values e.g. age disease                              | yes       |
 |-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
