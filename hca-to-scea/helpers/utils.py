@@ -120,7 +120,7 @@ def check_for_pooled_samples(xlsx_dict):
 
     df = xlsx_dict["donor_organism"]
     donor_ids = list(df['donor_organism.biomaterial_core.biomaterial_id'])
-    pooled_samples_donor = [donor_id for donor_id in donor_ids if "||" in donor_id]
+    pooled_samples_donor = [str(donor_id) for donor_id in donor_ids if "||" in str(donor_id)]
 
     if pooled_samples_specimen or pooled_samples_donor or pooled_samples_cell_line or pooled_samples_organoid:
         pooled_samples = True
@@ -172,6 +172,7 @@ def filter_protocols(xlsx_dict_tmp):
                     if id_column in xlsx_dict_tmp[biomaterial_tab].columns:
                         protocol_id_list.extend(list(xlsx_dict_tmp[biomaterial_tab][id_column]))
             protocol_id_list = list(set(protocol_id_list))
+            protocol_id_list = [protocol_id for protocol_id in protocol_id_list if pd.notnull(protocol_id)]
             protocol_id_split = [protocol_id.split("||") for protocol_id in protocol_id_list if "||" in protocol_id]
             if protocol_id_split:
                 protocol_id_split = [item for sublist in protocol_id_split for item in sublist]
@@ -231,7 +232,7 @@ def get_related_scea_accessions(args, accession, related_scea_accessions):
     return related_scea_accessions
 
 technology_dict = {
-    "Fluidigm C1-based library preparation":"smart-like.json",
+    "Fluidigm C1-based library preparation":"smart-like",
     "10X 3' v1": "10Xv1_3",
     "10X 5' v1": "10Xv1_5",
     "10X 3' v2": "10Xv2_3",
