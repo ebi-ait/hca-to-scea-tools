@@ -9,8 +9,16 @@ from helpers import multitab_excel_to_single_txt
 from helpers import get_protocol_map
 from helpers import fetch_fastq_path
 from helpers import utils
+from helpers import check_experimental_design
+from helpers import split_dataset
 
 pd.options.mode.chained_assignment = None
+
+def rename_technology_type(technology_type, technology_dict):
+
+    json_file = technology_dict[technology_type]
+
+    return json_file
 
 def get_person_roles(xlsx_dict):
 
@@ -46,7 +54,7 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
-    related_scea_accessions = utils.get_related_scea_accessions(args, accession, related_scea_accessions)
+    related_scea_accessions = split_dataset.get_related_scea_accessions(args, accession, related_scea_accessions)
 
     if related_scea_accessions:
 
@@ -325,22 +333,22 @@ def add_scea_specimen_columns(args, df, experimental_design):
 
     return sdrf
 
-def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design):
+def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design, technology_dict):
 
     '''Generate a dataframe with SCEA specimen metadata.'''
     sdrf_1 = add_scea_specimen_columns(args, df, experimental_design)
 
     '''Get technology-specific SCEA metadata and add to sdrf_1 dataframe.'''
     technology_type = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"])[0]
-    technology_type = utils.rename_technology_type(technology_type,utils.technology_dict)
+    technology_type = rename_technology_type(technology_type,technology_dict)
     try:
         with open(f"json_files/{technology_type}.json") as technology_json_file:
-            technology_dict = json.load(technology_json_file)
+            technology_type_dict = json.load(technology_json_file)
     except:
         print("Technology type {} is not yet supported. Please ask Ami to add it to the technology type map.".format(technology_type))
         sys.exit()
-    for key in technology_dict.keys():
-        sdrf_1[key] = technology_dict[key]
+    for key in technology_type_dict.keys():
+        sdrf_1[key] = technology_type_dict[key]
 
     '''Edit single cell isolation method if the user-specified that FACS was used.'''
     if args.facs is True:
@@ -414,8 +422,7 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
         print(f"saving {work_dir}/{sdrf_file_name}")
         sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
-
-def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, related_scea_accessions):
+def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, related_scea_accessions, technology_dict):
 
     accession = f"E-HCAD-{accession_number}"
 
@@ -424,7 +431,7 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experime
 
     generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name, related_scea_accessions)
-    generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design)
+    generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design, technology_dict)
 
 
 def main():
@@ -538,7 +545,26 @@ def main():
     used. If so, split xlsx_dict into a list of dicts separated by the technology type. Then,
     create idf and sdrf files for each of the dicts.'''
 
-    list_xlsx_dict = utils.split_metadata_by_technology(xlsx_dict_tmp2,utils.technology_dict)
+    technology_dict = {
+        "Fluidigm C1-based library preparation": "smart-like",
+        "10X 3' v1": "10Xv1_3",
+        "10X 5' v1": "10Xv1_5",
+        "10X 3' v2": "10Xv2_3",
+        "10X 5' v2": "10Xv2_5",
+        "10X 3' v3": "10Xv3_3",
+        "10X 3' v1 sequencing": "10Xv1_3",
+        "10X 5' v1 sequencing": "10Xv1_5",
+        "10X 3' v2 sequencing": "10Xv2_3",
+        "10X 5' v2 sequencing": "10Xv2_5",
+        "10x 3' v3 sequencing": "10Xv3_3",
+        "Drop-seq": "drop-seq",
+        "inDrop": "drop-seq",
+        "Smart-like": "smart-like",
+        "Smart-seq2": "smart-seq",
+        "Smart-seq": "smart-seq"
+    }
+
+    list_xlsx_dict = split_dataset.split_metadata_by_technology(xlsx_dict_tmp2,technology_dict)
 
     if len(list_xlsx_dict) > 1:
         accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]
@@ -561,10 +587,10 @@ def main():
         design type in a variable for later.'''
 
         ''' Get the experimental design '''
-        experimental_design = utils.get_experimental_design(xlsx_dict)
+        experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
 
         ''' Check if samples are pooled '''
-        pooled_samples = utils.check_for_pooled_samples(xlsx_dict)
+        pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
         if pooled_samples:
             print("The hca-to-scea tool does not support pooled donors or pooled samples."
                 "The dataset should be curated manually.")
@@ -586,7 +612,7 @@ def main():
         dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
         '''Refactoring of the below TBD.'''
-        create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions)
+        create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
 
 if __name__ == '__main__':
     main()

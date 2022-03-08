@@ -184,8 +184,7 @@ def get_sra_path_from_ena(study_accession, run_accessions):
         request_url = f'http://www.ebi.ac.uk/ena/portal/api/filereport?accession={study_accession}&result=read_run&fields=run_accession,sra_ftp'
         sra_results = pd.read_csv(request_url, delimiter='\t')
         if sra_results.shape[0] > 0:
-            for i in range(0, len(list(sra_results['run_accession']))):
-                accession = list(sra_results['run_accession'])[i]
+            for i, accession in enumerate(list(sra_results['run_accession'])):
                 if accession in run_accessions:
                     paths_sra[accession] = {'files': []}
                     file_path = str(list(sra_results['sra_ftp'])[i])

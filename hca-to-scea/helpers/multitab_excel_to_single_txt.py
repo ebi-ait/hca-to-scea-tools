@@ -8,19 +8,19 @@ from helpers import utils
 from helpers import get_protocol_map
 from helpers import cell_lines
 
-def remove_unused_protocols(xlsx_dict):
+def delete_unused_tabs(xlsx_dict):
 
     xlsx_dict_tmp = copy.deepcopy(xlsx_dict)
-
-    '''Delete unused tabs.'''
     for tab in xlsx_dict.keys():
         if "protocol" in tab:
             if xlsx_dict[tab].empty:
                 del xlsx_dict_tmp[tab]
+    return xlsx_dict_tmp
 
-    xlsx_dict_tmp2 = copy.deepcopy(xlsx_dict_tmp)
+def delete_unused_protocols(xlsx_dict_tmp):
 
     '''Delete unused protocol keys.'''
+    xlsx_dict_tmp2 = copy.deepcopy(xlsx_dict_tmp)
     biomaterials_tabs = ["specimen_from_organism","cell_line","organoid","cell_suspension"]
     for tab in biomaterials_tabs:
         if tab in xlsx_dict_tmp.keys():
@@ -28,6 +28,15 @@ def remove_unused_protocols(xlsx_dict):
             for protocol_id in protocol_ids:
                 if xlsx_dict_tmp[tab][protocol_id].isna().all():
                     del xlsx_dict_tmp2[tab][protocol_id]
+
+    return xlsx_dict_tmp2
+
+def remove_unused_protocols(xlsx_dict):
+
+    '''Delete unused tabs.'''
+    xlsx_dict_tmp = delete_unused_tabs(xlsx_dict)
+    '''Delete unused protocol keys.'''
+    xlsx_dict_tmp2 = delete_unused_protocols(xlsx_dict_tmp)
 
     return xlsx_dict_tmp2
 
@@ -75,14 +84,15 @@ def multitab_excel_to_dict(work_dir, excel_file):
 def merge_sample_types(xlsx_dict: {},experimental_design) -> pd.DataFrame():
 
     '''process.insdc_experiment.insdc_experiment_accession' is present in multiple tabs. Save the cell_suspension experiment accessions with a unique name.'''
-    if 'process.insdc_experiment.insdc_experiment_accession' in xlsx_dict['cell_suspension'].columns:
-        xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = list(
-            xlsx_dict['cell_suspension']['process.insdc_experiment.insdc_experiment_accession'])
+    cell_suspension_column = xlsx_dict['cell_suspension']
+    if 'process.insdc_experiment.insdc_experiment_accession' in cell_suspension_column.columns:
+        cell_suspension_column["cell_suspension.insdc_experiment.insdc_experiment_accession"] = list(
+            cell_suspension_column['process.insdc_experiment.insdc_experiment_accession'])
     else:
-        xlsx_dict['cell_suspension']["cell_suspension.insdc_experiment.insdc_experiment_accession"] = ['']*len(list(xlsx_dict['cell_suspension']["cell_suspension.biomaterial_core.biomaterial_id"]))
+        cell_suspension_column["cell_suspension.insdc_experiment.insdc_experiment_accession"] = ['']*len(list(cell_suspension_column["cell_suspension.biomaterial_core.biomaterial_id"]))
 
 
-    merged_df = xlsx_dict['cell_suspension'].merge(
+    merged_df = cell_suspension_column.merge(
         xlsx_dict['sequence_file'],
         how="outer",
         on="cell_suspension.biomaterial_core.biomaterial_id"
