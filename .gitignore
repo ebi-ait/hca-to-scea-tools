@@ -1,5 +1,6 @@
 # virtualenv
-venv
+venv/
+.venv/
 
 # jupyter notebook checkpoints
 .ipynb_checkpoints/
@@ -12,14 +13,13 @@ venv
 # ides
 .vscode
 
-# converted spreadsheets
-hca2scea-backend/spreadsheets/
-hca2scea-backend/output/
 
 # frontend cache
 **/.cache
 
 # dists
+.eggs/
+*.egg-info/
 **/dist
 hca2scea-frontend/public
 
