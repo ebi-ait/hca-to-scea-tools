@@ -21,6 +21,8 @@ hca2scea-backend/output/
 **/.cache
 
 # dists
+.eggs/
+*.egg-info/
 **/dist
 hca2scea-frontend/public
 
