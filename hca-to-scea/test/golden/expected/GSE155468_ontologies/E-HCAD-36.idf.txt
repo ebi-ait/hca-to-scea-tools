@@ -1,0 +1,35 @@
+																	
+MAGE-TAB Version	1.1																
+Investigation Title	Single-cell transcriptome analysis reveals dynamic cell populations and differential gene expression patterns in control and aneurysmal human aortic tissue																
+Comment[Submitted Name]	AneurysmalHumanAorticTissue																
+Experiment Description	To improve understanding of Ascending thoracic aortic aneurysm (ATAA) pathogenesis, the authors sought to comprehensively characterise the cellular composition of the ascending aortic wall and to identify molecular alterations in each cell population of human ATAA tissues using single-cell RNA sequencing technology.																
+Public Release Date	2020-07-30																
+Person First Name	Yanming	Pingping	Ashley	Hernan	Waleed	Chen	Wei	Rui	Yumei	Sangbae	Hong	Lisa	Joseph	Alan	Ying	Scott	Ami
+Person Last Name	Li	Ren	Dawson	Vasquez	Ageedi	Zhang	Luo	Chen	Li	Kim	Lu	Cassis	Coselli	Daugherty	Shen	LeMaire	Day
+Person Mid Initials				G							S	A	S		H	A	
+Person Email	Yanming.Li@bcm.edu														hyshen@bcm.edu	slemaire@bcm.edu	ami@ebi.ac.uk
+Person Affiliation	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	Baylor College of Medicine	University of Kentucky	University of Kentucky	Baylor College of Medicine	University of Kentucky	Baylor College of Medicine	Baylor College of Medicine	EMBL-EBI
+Person Address	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Houston, TX	Lexington	Lexington	Houston, TX	Lexington	Houston, TX.	Houston, TX	Wellcome Genome Campus, Hinxton
+Person Roles															submitter	submitter	curator
+Protocol Type	sample collection protocol	enrichment protocol	enrichment protocol	nucleic acid library construction protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol											
+Protocol Name	P-HCAD36-1	P-HCAD36-2	P-HCAD36-3	P-HCAD36-4	P-HCAD36-5	P-HCAD36-6											
+Protocol Description	Control ascending aortic tissue samples were obtained from recipients of heart transplants or lung donors during surgery. Diseased aortic tissue samples were obtained from patients with sporadic ATAA during surgery.	A piece of aortic tissue (1-2 cm2) was separated into thin layers and cut into small pieces in Hanks’ balanced salt solution with 10% fetal bovine serum (FBS). Small pieces of tissue were placed in an enzyme cocktail prepared with 3 mg/ml collagenase type II, 0.15 mg/ml collagenase type XI, 0.25 mg/ml soybean trypsin inhibitor, 0.1875 mg/ml elastase lyophilized, 0.24 mg/ml hyaluronidase type I, and 2.38 mg/ml 4-(2-hydroxyethyl)-1-piperazineethanesulfonic acid in HBSS and were digested in a 37°C water bath for 1 to 2 hours.	Cell suspensions were collected by using a 40-mm cell strainer, centrifuged at 300 g for 10 minutes, and resuspended in HBSS with 5% FBS.	Libraries were constructed following the instructions of Chromium Single Cell 3' v2 Reagent Kits user guide.	Libraries were constructed following the instructions of Chromium Single Cell 3' v3 Reagent Kits user guide.	Single-cell RNA sequencing libraries were sequenced on an Illumina NovaSeq 6000. instrument.											
+Protocol Hardware						Illumina NovaSeq 6000											
+Term Source Name	EFO																
+Term Source File	http://www.ebi.ac.uk/efo/efo.owl																
+Comment[AEExperimentType]	RNA-seq of coding RNA from single cells																
+Experimental Factor Name	disease																
+Experimental Factor Type	disease																
+Comment[EAAdditionalAttributes]	individual	age	sex														
+Comment[EACurator]	AD																
+Comment[EAExpectedClusters]	11																
+Comment[ExpressionAtlasAccession]	E-HCAD-36																
+Comment[HCALastUpdateDate]	2021-03-12																
+Comment[SecondaryAccession]	07073c12-8006-4710-a00b-23abdb814904	GSE155468	SRP274475														
+Comment[EAExperimentType]	differential																
+SDRF File	E-HCAD-36.sdrf.txt																
+																	
+Publication Title	Single-cell transcriptome analysis reveals dynamic cell populations and differential gene expression patterns in control and aneurysmal human aortic tissue																
+Publication Author List	Yanming Li, Pingping Ren, Ashley Dawson, Hernan G. Vasquez, Waleed Ageedi, Chen Zhang, Wei Luo, Rui Chen, Yumei Li, Sangbae Kim, Hong S. Lu, Lisa A. Cassis, Joseph S. Coselli, Alan Daugherty, Ying H. Shen, Scott A. LeMaire																
+PubMed ID	33017217																
+Publication DOI	10.1161/CIRCULATIONAHA.120.046528																
