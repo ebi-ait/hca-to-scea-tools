@@ -13,9 +13,6 @@ venv/
 # ides
 .vscode
 
-# converted spreadsheets
-hca2scea-backend/spreadsheets/
-hca2scea-backend/output/
 
 # frontend cache
 **/.cache

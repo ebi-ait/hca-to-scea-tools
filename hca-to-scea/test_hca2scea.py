@@ -71,7 +71,7 @@ class CharacteristicTest(unittest.TestCase):
         self.assertMultiLineEqual(golden_contents,output_contents, msg)
 
     def check_output(self, output_dir, spreadsheet):
-        golden_output_dir = 'test/golden/output/' + os.path.basename(spreadsheet).split(".xlsx")[0]
+        golden_output_dir = 'test/golden/expected/' + os.path.basename(spreadsheet).split(".xlsx")[0]
         for golden_file in os.listdir(golden_output_dir):
             golden_file_basename = os.path.basename(golden_file)
             output_file = os.path.join(output_dir, golden_file_basename)
