@@ -14,9 +14,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: hca2scea-backend
 
     steps:
     - uses: actions/checkout@v2
@@ -30,6 +27,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with unittest
       run: |
+        cd hca-to-scea
         python -m unittest -v
 
   deploy:
