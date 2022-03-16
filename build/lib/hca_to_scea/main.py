@@ -5,12 +5,12 @@ import sys
 import pandas as pd
 import copy
 
-from hca_to_scea.helpers import multitab_excel_to_single_txt
-from hca_to_scea.helpers import get_protocol_map
-from hca_to_scea.helpers import fetch_fastq_path
-from hca_to_scea.helpers import utils
-from hca_to_scea.helpers import check_experimental_design
-from hca_to_scea.helpers import split_dataset
+from helpers import multitab_excel_to_single_txt
+from helpers import get_protocol_map
+from helpers import fetch_fastq_path
+from helpers import utils
+from helpers import check_experimental_design
+from helpers import split_dataset
 
 pd.options.mode.chained_assignment = None
 
