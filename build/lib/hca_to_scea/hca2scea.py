@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import copy
 
+import hca_to_scea
 from hca_to_scea.helpers import multitab_excel_to_single_txt
 from hca_to_scea.helpers import get_protocol_map
 from hca_to_scea.helpers import fetch_fastq_path
