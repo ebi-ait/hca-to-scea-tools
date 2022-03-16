@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "hca-to-scea=hca-to-scea:main",
+            "hca-to-scea=hca_to_scea:main",
         ]
     },
 )
