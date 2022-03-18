@@ -59,5 +59,28 @@ def splitlist(list_):
 
     return split_data
 
+def save_files(work_dir, idf_file_name, sdrf_file_name, idf_file_contents, sdrf_file_contents):
+
+    print(f"saving {work_dir}/{idf_file_name}")
+    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+        idf_file.write(idf_file_contents)
+
+    '''Write the new sdrf file to a file.'''
+    if not sdrf_file_contents.empty:
+        print(f"saving {work_dir}/{sdrf_file_name}")
+        sdrf_file_contents.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+
+def save_files_zip(zip_file,work_dir,idf_file_contents,sdrf_file_contents,idf_file_name,sdrf_file_name):
+
+    print(f"saving {work_dir}/{idf_file_name}")
+    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+        idf_file.write(idf_file_contents)
+    zip_file.write(f"{work_dir}/{idf_file_name}")
+
+    if not sdrf_file_contents.empty:
+        print(f"saving {work_dir}/{sdrf_file_name}")
+        sdrf_file_contents.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+        zip_file.write(f"{work_dir}/{sdrf_file_name}")
+
 
 
