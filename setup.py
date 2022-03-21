@@ -8,7 +8,7 @@ install_requires = [line.rstrip() for line in (HERE / "requirements.txt").read_t
 
 setup(
     name="hca2scea",
-    version="v0.1.0",
+    version="v0.1.1",
     description="A tool to assist in the automatic conversion of hca metadata to scea metadata MAGE-TAB files.",
     long_description=README,
     long_description_content_type="text/markdown",
