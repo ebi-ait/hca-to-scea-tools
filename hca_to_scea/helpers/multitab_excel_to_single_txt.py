@@ -4,9 +4,9 @@ import pandas as pd
 import sys
 import copy
 
-from helpers import utils
-from helpers import get_protocol_map
-from helpers import cell_lines
+from hca_to_scea.helpers import utils
+from hca_to_scea.helpers import get_protocol_map
+from hca_to_scea.helpers import cell_lines
 
 def delete_unused_tabs(xlsx_dict):
 

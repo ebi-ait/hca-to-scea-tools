@@ -7,8 +7,8 @@ README = (HERE / "README.md").read_text()
 install_requires = [line.rstrip() for line in (HERE / "requirements.txt").read_text().splitlines()]
 
 setup(
-    name="hca-to-scea",
-    version="v0.1.0",
+    name="hca2scea",
+    version="v0.1.1",
     description="A tool to assist in the automatic conversion of hca metadata to scea metadata MAGE-TAB files.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "hca-to-scea=hca2scea:main",
+            "hca2scea=hca_to_scea.hca2scea:main",
         ]
     },
 )
