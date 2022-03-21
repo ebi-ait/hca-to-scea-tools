@@ -1,7 +1,7 @@
 import copy
 import pandas as pd
 
-from helpers import check_experimental_design
+from hca_to_scea.helpers import check_experimental_design
 
 def filter_biomaterials(xlsx_dict, xlsx_dict_tmp, library_protocol):
 
