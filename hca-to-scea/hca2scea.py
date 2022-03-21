@@ -4,6 +4,7 @@ import os
 import sys
 import pandas as pd
 import copy
+import zipfile
 
 from helpers import multitab_excel_to_single_txt
 from helpers import get_protocol_map
@@ -532,7 +533,7 @@ def main():
         work_dir = args.output_dir
 
     if args.zip_format:
-        zip_file = ZipFile('hca-to-scea.zip', 'w')
+        zip_file = zipfile.ZipFile('hca-to-scea.zip', 'w')
     else:
         zip_file = None
 
