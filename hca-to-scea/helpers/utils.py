@@ -18,7 +18,17 @@ def convert_to_snakecase(label):
     return re.sub(r'(\s-\s)|\s', '_', label).lower()
 
 def reformat_value(sheet_dict, sheet, col_name):
-    return list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+
+    if col_name == "project.publications.pmid":
+        values = list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))[0]
+        if isinstance(values,float):
+            values = str(int(values))
+        else:
+            values = values
+    else:
+        values = list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+
+    return values
 
 def get_tab_separated_list(sheet_dict, sheet, col_name, func=lambda x: x):
     tab = '\t'

@@ -93,7 +93,7 @@ SDRF File\t{sdrf_file_name}
 
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
 Publication Author List\t{author_list}
-PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
 """
     else:
@@ -132,7 +132,7 @@ SDRF File\t{sdrf_file_name}
 
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
 Publication Author List\t{author_list}
-PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
 """
 
