@@ -32,3 +32,5 @@ hca2scea-frontend/public
 output/
 
 .idea/
+
+build
