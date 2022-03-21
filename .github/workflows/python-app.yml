@@ -26,5 +26,5 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with unittest
       run: |
-        cd hca-to-scea
+        cd hca_to_scea
         python -m unittest -v
