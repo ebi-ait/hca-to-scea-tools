@@ -82,13 +82,8 @@ def split_metadata_by_technology(xlsx_dict, technology_dict):
 
     return list_xlsx_dict
 
-def get_related_scea_accessions(args, accession, related_scea_accessions):
+def get_related_scea_accessions(accession, related_scea_accessions):
 
-    if args.related_scea_accession:
-        related_scea_accession = args.related_scea_accession
-        related_scea_accession = accession.split("E-HCAD-")[0] + str(related_scea_accession)
-    else:
-        related_scea_accession = None
     if related_scea_accessions:
         related_scea_accessions = [str(accession.split("E-HCAD-")[0]) + str(related_scea_acc) for related_scea_acc in related_scea_accessions]
         if related_scea_accession:

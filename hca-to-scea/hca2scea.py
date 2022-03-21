@@ -54,7 +54,7 @@ def generate_idf_file(args, dataset_protocol_map, xlsx_dict, accession,
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
-    related_scea_accessions = split_dataset.get_related_scea_accessions(args, accession, related_scea_accessions)
+    related_scea_accessions = split_dataset.get_related_scea_accessions(accession, related_scea_accessions)
 
     if related_scea_accessions:
 
@@ -485,8 +485,8 @@ def main():
     )
     parser.add_argument(
         "-facs",
-        required=True,
-        choices=['yes', 'no'],
+        action="store_true",
+        required=False,
         help="Please specify if FACS was used to isolate single cells."
     )
     parser.add_argument(
@@ -509,13 +509,6 @@ def main():
         type=str,
         required=True,
         help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-r",
-        "--related_scea_accession",
-        nargs='+',
-        required=False,
-        help="space separated list of related scea accession(s)"
     )
     parser.add_argument(
         "-o",
