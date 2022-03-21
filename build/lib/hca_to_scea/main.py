@@ -4,6 +4,7 @@ import os
 import sys
 import pandas as pd
 import copy
+import zipfile
 
 from hca_to_scea.helpers import multitab_excel_to_single_txt
 from hca_to_scea.helpers import get_protocol_map
@@ -45,7 +46,7 @@ def get_author_list(xlsx_dict):
 
     return author_list
 
-def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
+def generate_idf_file(args, dataset_protocol_map, xlsx_dict, accession,
                       sdrf_file_name, related_scea_accessions):
 
     tab = '\t'
@@ -54,7 +55,7 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
-    related_scea_accessions = split_dataset.get_related_scea_accessions(args, accession, related_scea_accessions)
+    related_scea_accessions = split_dataset.get_related_scea_accessions(accession, related_scea_accessions)
 
     if related_scea_accessions:
 
@@ -93,7 +94,7 @@ SDRF File\t{sdrf_file_name}
 
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
 Publication Author List\t{author_list}
-PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
 """
     else:
@@ -132,14 +133,11 @@ SDRF File\t{sdrf_file_name}
 
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
 Publication Author List\t{author_list}
-PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
 """
 
-    print(f"saving {work_dir}/{idf_file_name}")
-    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
-        idf_file.write(idf_file_contents)
-
+    return idf_file_contents
 
 def reformat_age(age_list):
 
@@ -333,7 +331,7 @@ def add_scea_specimen_columns(args, df, experimental_design):
 
     return sdrf
 
-def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design, technology_dict):
+def generate_sdrf_file(args, df, xlsx_dict, dataset_protocol_map, experimental_design, technology_dict):
 
     '''Generate a dataframe with SCEA specimen metadata.'''
     sdrf_1 = add_scea_specimen_columns(args, df, experimental_design)
@@ -417,22 +415,22 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
         if set(list(sdrf_3[column_name])) == {''}:
             sdrf_3 = sdrf_3.drop([column_name], axis=1)
 
-    '''Write the new sdrf file to a file.'''
-    if not sdrf_3.empty:
-        print(f"saving {work_dir}/{sdrf_file_name}")
-        sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+    return sdrf_3
 
-def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, related_scea_accessions, technology_dict):
+def create_magetab(xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, related_scea_accessions, technology_dict):
 
     accession = f"E-HCAD-{accession_number}"
 
     idf_file_name = f"{accession}.idf.txt"
     sdrf_file_name = f"{accession}.sdrf.txt"
 
-    generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
-                      sdrf_file_name, related_scea_accessions)
-    generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design, technology_dict)
+    idf_file_contents = generate_idf_file(args, dataset_protocol_map, xlsx_dict, accession,
+                                          sdrf_file_name, related_scea_accessions)
 
+    sdrf_file_contents = generate_sdrf_file(args, df, xlsx_dict, dataset_protocol_map, experimental_design,
+                                            technology_dict)
+
+    return idf_file_contents, sdrf_file_contents, idf_file_name, sdrf_file_name
 
 def main():
     parser = argparse.ArgumentParser(description="run hca -> scea tool")
@@ -487,10 +485,10 @@ def main():
         help="Please indicate whether this is a baseline or differential experimental design"
     )
     parser.add_argument(
-        "--facs",
+        "-facs",
         action="store_true",
-        default=None,
-        help="Please specify this argument if FACS was used to isolate single cells"
+        required=False,
+        help="Please specify if FACS was used to isolate single cells."
     )
     parser.add_argument(
         "-f",
@@ -514,17 +512,18 @@ def main():
         help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
     )
     parser.add_argument(
-        "-r",
-        "--related_scea_accession",
-        nargs='+',
-        required=False,
-        help="space separated list of related scea accession(s)"
-    )
-    parser.add_argument(
         "-o",
         "--output_dir",
         required=False,
         help="Provide full path to preferred output dir"
+    )
+    parser.add_argument(
+        "-zip",
+        "--zip_format",
+        action="store_true",
+        required=False,
+        help="Please indicate whether you would like the script to output all"
+             "txt files separately or together in 1 zip file."
     )
 
     args = parser.parse_args()
@@ -532,6 +531,11 @@ def main():
         work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
     else:
         work_dir = args.output_dir
+
+    if args.zip_format:
+        zip_file = zipfile.ZipFile('hca-to-scea.zip', 'w')
+    else:
+        zip_file = None
 
     '''Merge the multitab spreadsheet into a single dataframe, while preserving the relationships
     between HCA biomaterials and protocols.
@@ -612,7 +616,16 @@ def main():
         dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
         '''Refactoring of the below TBD.'''
-        create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
+        idf_file_contents, sdrf_file_contents, idf_file_name, sdrf_file_name = create_magetab(xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
+
+        if not args.zip_format:
+            utils.save_files(work_dir, idf_file_name, sdrf_file_name, idf_file_contents, sdrf_file_contents)
+        else:
+            utils.save_files_zip(zip_file, work_dir, idf_file_contents, sdrf_file_contents, idf_file_name,
+                                 sdrf_file_name)
+
+    if zip_file:
+        zip_file.close()
 
 if __name__ == '__main__':
     main()
