@@ -17,18 +17,17 @@ import pandas as pd
 def convert_to_snakecase(label):
     return re.sub(r'(\s-\s)|\s', '_', label).lower()
 
-def replace_float64(values):
-    new_values = []
-    for value in values:
-        if isinstance(value,float):
-            new_values.append(str(int(value)))
-        else:
-            new_values.append(value)
-    return new_values
-
 def reformat_value(sheet_dict, sheet, col_name):
-    values = list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
-    values = replace_float64(values)
+
+    if col_name == "project.publications.pmid":
+        values = list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))[0]
+        if isinstance(values,float):
+            values = str(int(values))
+        else:
+            values = values
+    else:
+        values = list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+
     return values
 
 def get_tab_separated_list(sheet_dict, sheet, col_name, func=lambda x: x):
@@ -69,6 +68,29 @@ def splitlist(list_):
         pass
 
     return split_data
+
+def save_files(work_dir, idf_file_name, sdrf_file_name, idf_file_contents, sdrf_file_contents):
+
+    print(f"saving {work_dir}/{idf_file_name}")
+    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+        idf_file.write(idf_file_contents)
+
+    '''Write the new sdrf file to a file.'''
+    if not sdrf_file_contents.empty:
+        print(f"saving {work_dir}/{sdrf_file_name}")
+        sdrf_file_contents.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+
+def save_files_zip(zip_file,work_dir,idf_file_contents,sdrf_file_contents,idf_file_name,sdrf_file_name):
+
+    print(f"saving {work_dir}/{idf_file_name}")
+    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+        idf_file.write(idf_file_contents)
+    zip_file.write(f"{work_dir}/{idf_file_name}")
+
+    if not sdrf_file_contents.empty:
+        print(f"saving {work_dir}/{sdrf_file_name}")
+        sdrf_file_contents.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+        zip_file.write(f"{work_dir}/{sdrf_file_name}")
 
 
 
