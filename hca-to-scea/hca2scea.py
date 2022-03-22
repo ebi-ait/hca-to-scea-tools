@@ -90,8 +90,7 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
-
-Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
+Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
 Publication Author List\t{author_list}
 PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
@@ -129,8 +128,7 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
-
-Investigation Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
+Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
 Publication Author List\t{author_list}
 PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
