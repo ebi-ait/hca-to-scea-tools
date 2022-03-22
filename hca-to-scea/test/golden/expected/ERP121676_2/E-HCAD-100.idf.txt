@@ -28,8 +28,7 @@ Comment[HCALastUpdateDate]	2020-11-25
 Comment[SecondaryAccession]	955dfc2c-a8c6-4d04-aa4d-907610545d11
 Comment[EAExperimentType]	baseline
 SDRF File	E-HCAD-100.sdrf.txt
-
-Investigation Title	Population-scale single-cell RNA-seq profiling across dopaminergic neuron differentiation.
+Publication Title	Population-scale single-cell RNA-seq profiling across dopaminergic neuron differentiation.
 Publication Author List	Jerber J, Seaton DD, Cuomo ASE, Kumasaka N, Haldane J, Steer J, Patel M, Pearce D, Andersson M, Bonder MJ, Mountjoy E, Ghoussaini M, Lancaster MA, Marioni JC, Merkle FT, Stegle O, Gaffney DJ
 PubMed ID	
 Publication DOI	https://doi.org/10.1101/2020.05.21.103820

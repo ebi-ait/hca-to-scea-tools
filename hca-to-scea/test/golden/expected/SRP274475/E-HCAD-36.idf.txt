@@ -28,8 +28,7 @@ Comment[HCALastUpdateDate]	2020-11-25
 Comment[SecondaryAccession]	07073c12-8006-4710-a00b-23abdb814904
 Comment[EAExperimentType]	differential
 SDRF File	E-HCAD-36.sdrf.txt
-
-Investigation Title	Single-Cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue.
+Publication Title	Single-Cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue.
 Publication Author List	Li Y, Ren P, Dawson A, Vasquez HG, Ageedi W, Zhang C, Luo W, Chen R, Li Y, Kim S, Lu HS, Cassis LA, Coselli JS, Daugherty A, Shen YH, LeMaire SA
 PubMed ID	33017217
 Publication DOI	10.1161/CIRCULATIONAHA.120.046528
