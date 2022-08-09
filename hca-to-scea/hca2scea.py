@@ -22,9 +22,9 @@ def rename_technology_type(technology_type, technology_dict):
 
 def get_person_roles(xlsx_dict):
 
-    person_roles = utils.reformat_value(xlsx_dict, "project_contributors", "project.contributors.project_role.text")
+    person_roles = utils.reformat_value(xlsx_dict, "project_contributors", "project.contributors.project_role.text", "str")
     person_roles_submitter = utils.reformat_value(xlsx_dict, "project_contributors",
-                                                  "project.contributors.corresponding_contributor")
+                                                  "project.contributors.corresponding_contributor", "str")
 
     for (i, elem) in enumerate(person_roles_submitter):
         person_roles[i] = person_roles[i].lower()
@@ -40,7 +40,7 @@ def get_person_roles(xlsx_dict):
 
 def get_author_list(xlsx_dict):
 
-    authors = utils.reformat_value(xlsx_dict, "project_publications", "project.publications.authors")[0]
+    authors = utils.reformat_value(xlsx_dict, "project_publications", "project.publications.authors", "str")[0]
     author_list = authors.replace("||",", ")
 
     return author_list
@@ -61,9 +61,9 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
         idf_file_contents = f"""\
 
 MAGE-TAB Version\t1.1
-Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title")[0]}
-Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name")[0]}
-Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description")[0]}
+Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0]}
+Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
+Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
 Public Release Date\t{args.public_release_date}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
@@ -90,19 +90,19 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
-Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
+Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0]}
 Publication Author List\t{author_list}
-PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
-Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid", "str")[0]}
+Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi", "str")[0]}
 """
     else:
 
         idf_file_contents = f"""\
 
 MAGE-TAB Version\t1.1
-Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title")[0]}
-Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name")[0]}
-Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description")[0]}
+Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0]}
+Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
+Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
 Public Release Date\t{args.public_release_date}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
@@ -128,10 +128,10 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
-Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title")[0]}
+Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0]}
 Publication Author List\t{author_list}
-PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid")[0]}
-Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi")[0]}
+PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid", "str")[0]}
+Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi", "str")[0]}
 """
 
     print(f"saving {work_dir}/{idf_file_name}")

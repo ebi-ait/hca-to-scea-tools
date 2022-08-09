@@ -17,12 +17,25 @@ import pandas as pd
 def convert_to_snakecase(label):
     return re.sub(r'(\s-\s)|\s', '_', label).lower()
 
-def reformat_value(sheet_dict, sheet, col_name):
-    return list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+def check_type(item_list, expected_type):
+    new_item_list = []
+    for item in item_list:
+        if expected_type == "str" and isinstance(item, float):
+            new_item_list.append(str(int(item)))
+        elif expected_type == "int" and isinstance(item, str) or isinstance(item, float):
+            new_item_list.append(int(item))
+        else:
+            new_item_list.append(item)
+    return new_item_list
+
+def reformat_value(sheet_dict, sheet, col_name, expected_type):
+    reformatted_list = list(sheet_dict[sheet][col_name].fillna('').replace(r'[\n\r]', ' ', regex=True))
+    new_item_list = check_type(reformatted_list, expected_type)
+    return new_item_list
 
 def get_tab_separated_list(sheet_dict, sheet, col_name, func=lambda x: x):
     tab = '\t'
-    return tab.join([func(p) for p in reformat_value(sheet_dict, sheet, col_name)])
+    return tab.join([func(p) for p in reformat_value(sheet_dict, sheet, col_name, "str")])
 
 def get_first_letter(str):
     return str[0] if len(str) else ''
