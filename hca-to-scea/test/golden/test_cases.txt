@@ -1,0 +1,16 @@
+Test cases
+
+2 technology types that are compatible
+1 technology type that is not compatible - only technology
+2 technology types that are not compatible
+1 technology type that is not compatible - 1 is compatible, the other(s) are not compatible
+2 species types
+cell line and organoid and specimen 1: cell line -> specimen (equal numbers)
+cell line and organoid and specimen 2: cell line -> organoid -> specimen (equal numbers)
+cell line and organoid and specimen 3: some cell line -> organoid, some cell line only (not equal numbers)
+cell line and organoid and specimen 4: some cell line -> organoid, some cell line only, some specimen (not equal numbers)
+pooled samples - 1 donor
+pooled samples - 2 specimen
+pooled samples - 3 cell suspension
+pooled samples - 4 organoids
+pooled samples - 5 cell lines
