@@ -59,7 +59,6 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
     if related_scea_accessions:
 
         idf_file_contents = f"""\
-
 MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0]}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
@@ -98,7 +97,6 @@ Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "proje
     else:
 
         idf_file_contents = f"""\
-
 MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0]}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
