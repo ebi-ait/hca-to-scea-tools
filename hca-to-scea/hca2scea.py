@@ -60,7 +60,7 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
 
         idf_file_contents = f"""\
 MAGE-TAB Version\t1.1
-Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0]}
+Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
 Public Release Date\t{args.public_release_date}
@@ -89,7 +89,7 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
-Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0]}
+Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
 PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid", "str")[0]}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi", "str")[0]}
@@ -98,7 +98,7 @@ Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "proje
 
         idf_file_contents = f"""\
 MAGE-TAB Version\t1.1
-Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0]}
+Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
 Public Release Date\t{args.public_release_date}
@@ -126,7 +126,7 @@ Comment[HCALastUpdateDate]\t{args.hca_update_date}
 Comment[SecondaryAccession]\t{args.project_uuid}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
-Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0]}
+Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
 PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.pmid", "str")[0]}
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi", "str")[0]}

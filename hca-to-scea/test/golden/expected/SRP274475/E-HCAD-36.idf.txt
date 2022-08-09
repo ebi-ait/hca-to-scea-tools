@@ -1,6 +1,5 @@
-
 MAGE-TAB Version	1.1
-Investigation Title	Single-cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue.
+Investigation Title	Single-cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue
 Comment[Submitted Name]	AneurysmalHumanAorticTissue
 Experiment Description	Ascending thoracic aortic aneurysm (ATAA) is caused by the progressive weakening and dilatation of the aortic wall and can lead to aortic dissection, rupture, and other life-threatening complications. To improve understanding of ATAA pathogenesis, the authors sought to comprehensively characterize the cellular composition of the ascending aortic wall and to identify molecular alterations in each cell population of human ATAA tissues using single-cell RNA sequencing technology.
 Public Release Date	2021-09-30
@@ -28,7 +27,7 @@ Comment[HCALastUpdateDate]	2020-11-25
 Comment[SecondaryAccession]	07073c12-8006-4710-a00b-23abdb814904
 Comment[EAExperimentType]	differential
 SDRF File	E-HCAD-36.sdrf.txt
-Publication Title	Single-Cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue.
+Publication Title	Single-Cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue
 Publication Author List	Li Y, Ren P, Dawson A, Vasquez HG, Ageedi W, Zhang C, Luo W, Chen R, Li Y, Kim S, Lu HS, Cassis LA, Coselli JS, Daugherty A, Shen YH, LeMaire SA
 PubMed ID	33017217
 Publication DOI	10.1161/CIRCULATIONAHA.120.046528
