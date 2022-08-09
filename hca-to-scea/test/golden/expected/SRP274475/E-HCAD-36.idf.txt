@@ -24,7 +24,7 @@ Comment[EACurator]	AD
 Comment[EAExpectedClusters]	
 Comment[ExpressionAtlasAccession]	E-HCAD-36
 Comment[HCALastUpdateDate]	2020-11-25
-Comment[SecondaryAccession]	07073c12-8006-4710-a00b-23abdb814904
+Comment[SecondaryAccession]	07073c12-8006-4710-a00b-23abdb814904	GSE155468	SRP274475	PRJNA649846
 Comment[EAExperimentType]	differential
 SDRF File	E-HCAD-36.sdrf.txt
 Publication Title	Single-Cell Transcriptome Analysis Reveals Dynamic Cell Populations and Differential Gene Expression Patterns in Control and Aneurysmal Human Aortic Tissue

@@ -20,6 +20,21 @@ def rename_technology_type(technology_type, technology_dict):
 
     return json_file
 
+def get_secondary_accessions(xlsx_dict, args):
+    secondary_accessions = []
+    secondary_accessions.append(args.project_uuid)
+    keys = ["project.geo_series_accessions","project.insdc_project_accessions","project.insdc_study_accessions","project.biostudies_accessions"]
+    for key in keys:
+        items = xlsx_dict["project"][key].fillna('')
+        items = [item for item in items if item != '']
+        if items:
+            if "||" in items:
+                items = items.split("||")
+            else:
+                items = items
+            secondary_accessions.extend(items)
+    return secondary_accessions
+
 def get_person_roles(xlsx_dict):
 
     person_roles = utils.reformat_value(xlsx_dict, "project_contributors", "project.contributors.project_role.text", "str")
@@ -50,7 +65,7 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
 
     tab = '\t'
     person_roles = get_person_roles(xlsx_dict)
-    #secondary_accessions = get_secondary_accessions(tracking_sheet, args) TBD from ingest.
+    secondary_accessions = get_secondary_accessions(xlsx_dict, args)
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
@@ -86,7 +101,7 @@ Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[RelatedExperiment]\t{tab.join(related_scea_accessions)}
 Comment[HCALastUpdateDate]\t{args.hca_update_date}
-Comment[SecondaryAccession]\t{args.project_uuid}
+Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
@@ -123,7 +138,7 @@ Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[HCALastUpdateDate]\t{args.hca_update_date}
-Comment[SecondaryAccession]\t{args.project_uuid}
+Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}

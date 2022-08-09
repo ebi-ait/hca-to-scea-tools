@@ -24,7 +24,7 @@ Comment[EACurator]	AD
 Comment[EAExpectedClusters]	
 Comment[ExpressionAtlasAccession]	E-HCAD-100
 Comment[HCALastUpdateDate]	2020-11-25
-Comment[SecondaryAccession]	955dfc2c-a8c6-4d04-aa4d-907610545d11
+Comment[SecondaryAccession]	955dfc2c-a8c6-4d04-aa4d-907610545d11	ERP121676	PRJEB38269
 Comment[EAExperimentType]	baseline
 SDRF File	E-HCAD-100.sdrf.txt
 Publication Title	Population-scale single-cell RNA-seq profiling across dopaminergic neuron differentiation
