@@ -550,7 +550,7 @@ def main():
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
 
     '''Remove unused protocol tabs and corresponding protocol id column.'''
-    xlsx_dict_tmp2 = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
+    xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
 
     '''Check whether multiple library preparation protocol technology types or 10X versions were
     used. If so, split xlsx_dict into a list of dicts separated by the technology type. Then,
@@ -585,55 +585,40 @@ def main():
         "Smart-seq": "smart-seq"
     }
 
-    list_xlsx_dict = split_dataset.split_metadata_by_technology(xlsx_dict_tmp2,technology_dict)
+    check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
 
-    if len(list_xlsx_dict) > 1:
-        accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]
-        accession_number_list = [int(args.accession_number) + i for i in accession_number_idx]
+    accession_number = args.accession_number
 
-    else:
-        accession_number_idx = [0]
-        accession_number_list = [args.accession_number]
+    '''Run checks to see whether the experimental design is compatibile and save the experimental
+    design type in a variable for later.'''
 
-    for i in range(0,len(list_xlsx_dict)):
+    ''' Get the experimental design '''
+    experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
 
-        xlsx_dict = list_xlsx_dict[i]
-        accession_number = accession_number_list[i]
+    ''' Check if samples are pooled '''
+    pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
+    if pooled_samples:
+        print("The hca-to-scea tool does not support pooled donors or pooled samples."
+            "The dataset should be curated manually.")
+        sys.exit()
 
-        related_scea_accessions_idx = copy.deepcopy(accession_number_idx)
-        related_scea_accessions_idx.remove(i)
-        related_scea_accessions = [accession_number_list[i] for i in related_scea_accessions_idx]
+    '''The merged df consists of a row per read index (read1, read2, index1). To conform to
+    SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
+    '''
+    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
+    merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
+    clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
 
-        '''Run checks to see whether the experimental design is compatibile and save the experimental
-        design type in a variable for later.'''
+    '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
+    creates extra columns in the df for each of the ids.'''
+    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict, experimental_design)
 
-        ''' Get the experimental design '''
-        experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
+    '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
+    key protocol metadata that will be added to the SCEA sdrf file.'''
+    dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
-        ''' Check if samples are pooled '''
-        pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
-        if pooled_samples:
-            print("The hca-to-scea tool does not support pooled donors or pooled samples."
-                "The dataset should be curated manually.")
-            sys.exit()
-
-        '''The merged df consists of a row per read index (read1, read2, index1). To conform to
-        SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
-        '''
-        merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
-        merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
-        clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
-
-        '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
-        creates extra columns in the df for each of the ids.'''
-        df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict, experimental_design)
-
-        '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
-        key protocol metadata that will be added to the SCEA sdrf file.'''
-        dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
-
-        '''Refactoring of the below TBD.'''
-        create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
+    '''Refactoring of the below TBD.'''
+    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
 
 if __name__ == '__main__':
     main()
