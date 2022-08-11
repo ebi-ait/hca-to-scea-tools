@@ -1,0 +1,34 @@
+MAGE-TAB Version	1.1
+Investigation Title	Mapping the developing human immune system across organs
+Comment[Submitted Name]	hca_to_scea_test_01
+Experiment Description	hca_to_scea test case
+Public Release Date	2022-05-12
+Person First Name	Muzlifah	Menna	Sarah	Ami
+Person Last Name	Haniffa	Clatworthy	Teichmann	Day
+Person Mid Initials		R	A	
+Person Email	m.a.haniffa@newcastle.ac.uk	mrc38@cam.ac.uk	st9@sanger.ac.uk	
+Person Affiliation	Wellcome Sanger Institute, Wellcome Genome Campus, Hinxton, Cambridge	Wellcome Sanger Institute, Wellcome Genome Campus, Hinxton, Cambridge	Wellcome Sanger Institute, Wellcome Genome Campus, Hinxton, Cambridge	EMBL-EBI
+Person Address	Wellcome Sanger Institute, Wellcome Genome Campus. 	Wellcome Sanger Institute, Wellcome Genome Campus. 	Wellcome Sanger Institute, Wellcome Genome Campus. 	Wellcome Sanger Institute, Wellcome Genome Campus. 
+Person Roles	submitter	submitter	submitter	
+Protocol Type	sample collection protocol	enrichment protocol	enrichment protocol	enrichment protocol	enrichment protocol	enrichment protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol
+Protocol Name	P-HCAD1-1	P-HCAD1-2	P-HCAD1-3	P-HCAD1-4	P-HCAD1-5	P-HCAD1-6	P-HCAD1-7	P-HCAD1-8
+Protocol Description	All human developmental tissue samples used for this study were obtained from the MRC– Wellcome Trust-funded Human Developmental Biology Resource.	Tissue was then digested with type IV collagenase (final concentration of 1.6 mg/ml; Worthington) in RPMI (Sigma-Aldrich) supplemented with 10% fetal bovine serum (FBS; Gibco), at 37°C for 30 min with intermittent agitation.	Tissue was first minced in a tissue culture dish using scalpel.	Digested tissue was passed through a 100 µm cell strainer and cells were pelleted by centrifugation at 500 g for 5 min at 4°C. Cells were then resuspended in 5 ml red blood cell lysis buffer (eBioscience) and left for 5-10 min at room temperature.	Dissociated cells were stained with anti-CD45 antibody and DAPI prior to sorting. Sorting by flow cytometry was performed with BD FACSAria Fusion Flow Cytometer. CD45 positive fraction was sorted from DAPI– CD45+ gate. CD45 gating was contiguous so that no live cells were lost in sorting.	Dissociated cells were stained with anti-CD45 antibody and DAPI prior to sorting. Sorting by flow cytometry was performed with BD FACSAria Fusion Flow Cytometer. CD45 negative fraction was sorted from DAPI– CD45– gate. CD45 gating was contiguous so that no live cells were lost in sorting.	SCRB-Seq was used.	Sequencing was performed on the Illumina NextSeq 500 system. The gene expression libraries were sequenced at a target depth of 50,000 reads per cell using the following parameters: Read1: 26 cycles, i7: 8 cycles, i5: 0 cycles; Read2: 91 cycles to generate 75-bp paired-end reads. BCR and TCR libraries were sequenced at a target depth of 5000 reads per cell.
+Protocol Hardware								Illumina  NextSeq 500 system
+Term Source Name	EFO	ArrayExpress
+Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
+Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
+Experimental Factor Name	organ
+Experimental Factor Type	organ
+Comment[EAAdditionalAttributes]	
+Comment[EACurator]	AD
+Comment[EAExpectedClusters]	
+Comment[ExpressionAtlasAccession]	E-HCAD-1
+Comment[RelatedExperiment]	2
+Comment[HCALastUpdateDate]	2021-04-29
+Comment[SecondaryAccession]	c893cb57-5c9f-4f26-9312-21b85be84313	ERP137429	PRJEB52699
+Comment[EAExperimentType]	differential
+SDRF File	E-HCAD-1.sdrf.txt
+Publication Title	Mapping the developing human immune system across organs
+Publication Author List	Haniffa M, Clatworthy M, Teichmann S
+PubMed ID	35549310
+Publication DOI	10.1126/science.abo0510

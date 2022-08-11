@@ -1,5 +1,7 @@
 Test cases
 
+python3 hca2scea.py -s test/golden/hca_to_scea_test_01.xlsx -id c893cb57-5c9f-4f26-9312-21b85be84313 -study ERP1374291 -ac 1 -c AD -et differential -f organ -pd 2022-05-12 -hd 2021-04-29
+
 2 technology types that are compatible
 1 technology type that is not compatible - only technology
 2 technology types that are not compatible
