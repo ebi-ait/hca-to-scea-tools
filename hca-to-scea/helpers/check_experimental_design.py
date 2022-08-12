@@ -46,15 +46,52 @@ def check_for_pooled_samples(xlsx_dict):
                                                               " Please remove the relevant biomaterials from the dataset " \
                                                               " and run again."
 
-def get_experimental_design(xlsx_dict: {}):
+def check_donor_exists(xlsx_dict):
 
-    if 'specimen_from_organism' in xlsx_dict.keys():
-        if xlsx_dict['specimen_from_organism'].empty:
-            specimen = False
-        else:
-            specimen = True
-    else:
-        specimen = False
+    assert 'donor_organism' in xlsx_dict.keys(),"The dataset does not include donor organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+    assert len(list(xlsx_dict['donor_organism']['donor_organism.biomaterial_core.biomaterial_id'])) >= 1,"The dataset does not include donor_organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+def check_specimen_exists(xlsx_dict):
+
+    assert 'specimen_from_organism' in xlsx_dict.keys(),"The dataset does not include specimen_from_organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+    assert len(list(xlsx_dict['specimen_from_organism']['specimen_from_organism.biomaterial_core.biomaterial_id'])) >= 1,"The dataset does not include specimen_from_organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+def check_input_to_cell_suspension(xlsx_dict):
+
+    biomaterials = ["specimen_from_organism","cell_line","organoid"]
+    input_types = []
+    for biomaterial in biomaterials:
+        key = "%s.biomaterial_core.biomaterial_id" % biomaterial
+        if key in xlsx_dict["cell_suspension"].columns:
+            if len(list(xlsx_dict["cell_suspension"][key])) >= 1:
+                input_types.append(biomaterial)
+    input_types = set(input_types)
+    assert input_types == 1,"All inputs to cell suspensions should be of an identical biomaterial type." \
+                           "For example, cell suspensions should all be linked to cell lines only, organoids only" \
+                           "or specimens only. Please split the dataset by the input biomaterial type."
+
+#def check_cell_lines_linked_to_specimen():
+#all cell lines should be linked to a specimen
+
+#def check_input_to_cell_suspension(xlsx_dict)
+# #all organoids should be linked to a specimen or a cell line. The
+# type should be the same for all organoids.
+
+def get_experimental_design(xlsx_dict: {}):
 
     if 'cell_line' in xlsx_dict.keys():
         if xlsx_dict['cell_line'].empty:
@@ -72,15 +109,13 @@ def get_experimental_design(xlsx_dict: {}):
     else:
         organoid = False
 
-    if specimen:
-
-        if cell_line and not organoid:
-            experimental_design = "cell_line_only"
-        elif not cell_line and organoid:
-            experimental_design = "organoid_only"
-        elif cell_line and organoid:
-            experimental_design = "organoid"
-        else:
-            experimental_design = "standard"
+    if cell_line and not organoid:
+        experimental_design = "cell_line_only"
+    elif not cell_line and organoid:
+        experimental_design = "organoid_only"
+    elif cell_line and organoid:
+        experimental_design = "organoid"
+    else:
+        experimental_design = "standard"
 
     return experimental_design

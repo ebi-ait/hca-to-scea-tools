@@ -583,6 +583,9 @@ def main():
         "Smart-seq": "smart-seq"
     }
 
+    check_experimental_design.check_donor_exists(xlsx_dict)
+    check_experimental_design.check_specimen_exists(xlsx_dict)
+    check_experimental_design.check_input_to_cell_suspension(xlsx_dict)
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
 
