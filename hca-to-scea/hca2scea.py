@@ -586,20 +586,8 @@ def main():
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
 
-    accession_number = args.accession_number
-
-    '''Run checks to see whether the experimental design is compatible and save the experimental
-    design type in a variable for later.'''
-
     ''' Get the experimental design '''
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
-
-    ''' Check if samples are pooled '''
-    pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
-    if pooled_samples:
-        print("The hca-to-scea tool does not support pooled donors or pooled samples."
-            "The dataset should be curated manually.")
-        sys.exit()
 
     '''The merged df consists of a row per read index (read1, read2, index1). To conform to
     SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
@@ -617,6 +605,7 @@ def main():
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
     '''Refactoring of the below TBD.'''
+    accession_number = args.accession_number
     create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict)
 
 if __name__ == '__main__':
