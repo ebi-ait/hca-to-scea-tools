@@ -10,7 +10,6 @@ from helpers import get_protocol_map
 from helpers import fetch_fastq_path
 from helpers import utils
 from helpers import check_experimental_design
-from helpers import split_dataset
 
 pd.options.mode.chained_assignment = None
 
@@ -61,7 +60,7 @@ def get_author_list(xlsx_dict):
     return author_list
 
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
-                      sdrf_file_name, related_scea_accessions):
+                      sdrf_file_name):
 
     tab = '\t'
     person_roles = get_person_roles(xlsx_dict)
@@ -69,7 +68,7 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
-    related_scea_accessions = split_dataset.get_related_scea_accessions(args, accession, related_scea_accessions)
+    related_scea_accessions = args.related_scea_accession
 
     if related_scea_accessions:
 
@@ -433,7 +432,7 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
         print(f"saving {work_dir}/{sdrf_file_name}")
         sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
-def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, related_scea_accessions, technology_dict):
+def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict):
 
     accession = f"E-HCAD-{accession_number}"
 
@@ -441,7 +440,7 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experime
     sdrf_file_name = f"{accession}.sdrf.txt"
 
     generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
-                      sdrf_file_name, related_scea_accessions)
+                      sdrf_file_name)
     generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design, technology_dict)
 
 
@@ -618,7 +617,7 @@ def main():
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
     '''Refactoring of the below TBD.'''
-    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
+    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict)
 
 if __name__ == '__main__':
     main()

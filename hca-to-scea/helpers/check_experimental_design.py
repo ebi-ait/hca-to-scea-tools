@@ -70,8 +70,8 @@ def check_for_pooled_samples(xlsx_dict):
 
 def check_technology_eligibility(xlsx_dict,technology_dict):
 
-    technology_types = xlsx_dict["library_preparation_protocol"]
-    assert all(t in technology_dict for t in technology_types),"1 or more technology types are not eligible." \
+    technology_types = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"].values)
+    assert all(t in technology_dict.keys() for t in technology_types),"1 or more technology types are not eligible." \
                                                                " Please remove ineligible technologies and their linked" \
                                                                " samples and try again."
 
