@@ -588,7 +588,7 @@ def main():
 
     accession_number = args.accession_number
 
-    '''Run checks to see whether the experimental design is compatibile and save the experimental
+    '''Run checks to see whether the experimental design is compatible and save the experimental
     design type in a variable for later.'''
 
     ''' Get the experimental design '''

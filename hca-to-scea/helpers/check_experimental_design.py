@@ -41,7 +41,6 @@ def check_for_pooled_samples(xlsx_dict):
                 input_biomaterial_list.extend(list(xlsx_dict[biomaterial][input_biomaterial_key].values))
     input_biomaterial_list = list(set(input_biomaterial_list))
     input_biomaterial_list = [x for x in input_biomaterial_list if str(x) != 'nan']
-    print(input_biomaterial_list)
 
     assert all("||" not in i for i in input_biomaterial_list),"The dataset contains pooled biomaterials. Pooled biomaterials are not eligible." \
                                                               " Please remove the relevant biomaterials from the dataset " \
