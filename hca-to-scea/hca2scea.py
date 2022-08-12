@@ -552,8 +552,7 @@ def main():
     xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
 
     '''Check whether multiple library preparation protocol technology types or 10X versions were
-    used. If so, split xlsx_dict into a list of dicts separated by the technology type. Then,
-    create idf and sdrf files for each of the dicts.'''
+    used. Raise an assertion error if so. The user will need to split their dataset by technology type.'''
 
     technology_dict = {
         "Fluidigm C1-based library preparation": "smart-like",
