@@ -77,12 +77,14 @@ def check_input_to_cell_suspension(xlsx_dict):
     for biomaterial in biomaterials:
         key = "%s.biomaterial_core.biomaterial_id" % biomaterial
         if key in xlsx_dict["cell_suspension"].columns:
-            if len(list(xlsx_dict["cell_suspension"][key])) >= 1:
+            cell_suspension_ids = list(xlsx_dict["cell_suspension"][key])
+            cell_suspension_ids = [x for x in cell_suspension_ids if str(x) != 'nan']
+            if len(cell_suspension_ids) >= 1:
                 input_types.append(biomaterial)
-    input_types = set(input_types)
-    assert input_types == 1,"All inputs to cell suspensions should be of an identical biomaterial type." \
-                           "For example, cell suspensions should all be linked to cell lines only, organoids only" \
-                           "or specimens only. Please split the dataset by the input biomaterial type."
+    input_types = list(set(input_types))
+    assert len(input_types) == 1,"All inputs to cell suspensions should be of an identical biomaterial type." \
+                           " For example, cell suspensions should all be linked to cell lines only, organoids only" \
+                           " or specimens only. Please split the dataset by the input biomaterial type."
 
 def check_cell_lines_linked(xlsx_dict):
 
@@ -90,37 +92,53 @@ def check_cell_lines_linked(xlsx_dict):
     specimen_key = "specimen_from_organism.biomaterial_core.biomaterial_id"
 
     assert specimen_key in xlsx_dict["cell_line"].columns,"Cell_lines are not linked to" \
-                                                 "a specimen id. Please link all cell_lines to an input specimen."
+                                                 " a specimen id. Please link all cell_lines to an input specimen."
+
+    # Check that cell lines are not linked to an input cell line
+    for column in xlsx_dict["cell_line"].columns:
+        if "cell_line.biomaterial_core.biomaterial_id." in column:
+            cell_line_as_input = [x for x in list(xlsx_dict["cell_line"][column]) if str(x) != 'nan']
+            assert len(cell_line_as_input) == 0," Cell line input biomaterial type should be specimen id. Cell line cannot be used" \
+                                                " as input to a cell line."
 
     input_specimen_ids = [x for x in list(xlsx_dict["cell_line"][specimen_key]) if str(x) != 'nan']
     cell_line_ids = list(xlsx_dict["cell_line"][cell_line_key])
     assert len(input_specimen_ids) == len(cell_line_ids),"1 more more cell_lines are not linked to" \
-                                                 "a specimen id. Please link all cell_lines to an input specimen."
+                                                 " a specimen id. Please link all cell_lines to an input specimen."
 
 def check_organoids_linked(xlsx_dict):
 
-    if specimen_key in xlsx_dict["organoid"].columns:
+    if "specimen_from_organism.biomaterial_core.biomaterial_id" in xlsx_dict["organoid"].columns:
         input_specimen_ids = [x for x in list(xlsx_dict["organoid"]["specimen_from_organism.biomaterial_core.biomaterial_id"]) if str(x) != 'nan']
     else:
         input_specimen_ids = []
 
-    if cell_line_key in xlsx_dict["organoid"].columns:
+    if "cell_line.biomaterial_core.biomaterial_id" in xlsx_dict["organoid"].columns:
         input_cell_line_ids = [x for x in list(xlsx_dict["organoid"]["cell_line.biomaterial_core.biomaterial_id"]) if str(x) != 'nan']
     else:
         input_cell_line_ids = []
 
+    # Check that organoids are not linked to an input organoid
+    for column in xlsx_dict["organoid"].columns:
+        if "organoid.biomaterial_core.biomaterial_id." in column:
+            organoid_as_input = [x for x in list(xlsx_dict["organoid"][column]) if str(x) != 'nan']
+            assert len(organoid_as_input) == 0,"Organoid input biomaterial type should be specimen id or cell line id. Organoid cannot be used" \
+                                                " as input to an organoid."
+
     # Check that all organoid ids are linked to the same input biomaterial type; all specimen ids or all cell line ids.
-    assert len(input_specimen_ids) == 0 if len(input_cell_line_ids) > 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
-                                                                        "to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
-                                                                        "if needed."
-    assert len(input_cell_lines) == 0 if len(input_specimen_ids) > 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
-                                                                        "to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
-                                                                        "if needed."
+    if len(input_cell_line_ids) > 0:
+        assert len(input_specimen_ids) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
+                                                                        " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
+                                                                         " if needed."
+    if len(input_specimen_ids) > 0:
+        assert len(input_cell_lines) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
+                                                                        " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
+                                                                        " if needed."
 
     # Check that all organoid ids are linked to a specimen id or a cell line id.
     organoid_ids = list(xlsx_dict["organoid"]["organoid.biomaterial_core.biomaterial_id"])
     assert len(input_specimen_ids) == len(organoid_ids) or len(input_cell_line_ids) == len(organoid_ids),"1 more more organoids are not linked to" \
-                                                 "a specimen id or cell line id. Please link all organoids to an input specimen or cell line."
+                                                 " a specimen id or cell line id. Please link all organoids to an input specimen or cell line."
 
 def get_experimental_design(xlsx_dict: {}):
 
