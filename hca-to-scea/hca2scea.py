@@ -583,14 +583,20 @@ def main():
         "Smart-seq": "smart-seq"
     }
 
+    ''' Check the experimental design is compatible. '''
     check_experimental_design.check_donor_exists(xlsx_dict)
     check_experimental_design.check_specimen_exists(xlsx_dict)
     check_experimental_design.check_input_to_cell_suspension(xlsx_dict)
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
-
-    ''' Get the experimental design '''
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
+    if experimental_design == "cell_line_only" or experimental_design == "organoid":
+        # Check all cell lines are linked to a specimen
+        check_experimental_design.check_cell_lines_linked(xlsx_dict)
+    if experimental_design == "organoid_only" or experimental_design == "organoid":
+        # Check all organoids are linked to a specimen or a cell line.
+        # Check the input biomaterial type linked to organoids is consistent.
+        check_experimental_design.check_organoids_linked(xlsx_dict)
 
     '''The merged df consists of a row per read index (read1, read2, index1). To conform to
     SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
