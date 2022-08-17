@@ -26,7 +26,8 @@ class CharacteristicTest(unittest.TestCase):
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
                 arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
                 tool_output = self.run_tool(spreadsheet, arguments)
-                self.check_output(tool_output.output_dir, spreadsheet)
+                self.check_output(tool_output, spreadsheet)
+
 
     def test_negative(self):
         arguments_df = pd.read_csv("test/negative.examples.csv", comment='#')
@@ -85,11 +86,11 @@ class CharacteristicTest(unittest.TestCase):
     def check_equal_lines(self, golden_contents, output_contents, msg=None):
         self.assertMultiLineEqual(golden_contents,output_contents, msg)
 
-    def check_output(self, output_dir, spreadsheet):
+    def check_output(self, tool_otuput, spreadsheet):
         golden_output_dir = 'test/golden/expected/' + os.path.basename(spreadsheet).split(".xlsx")[0]
         for golden_file in os.listdir(golden_output_dir):
             golden_file_basename = os.path.basename(golden_file)
-            output_file = os.path.join(output_dir, golden_file_basename)
+            output_file = os.path.join(tool_otuput.output_dir, golden_file_basename)
             golden_contents = self.get_file_content(os.path.join(golden_output_dir, golden_file_basename))
             output_contents = self.get_file_content(output_file)
             try:
@@ -98,7 +99,7 @@ class CharacteristicTest(unittest.TestCase):
                 else:
                     self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
             except Exception as e:
-                raise AssertionError(f'problem with {golden_file}') from e
+                raise AssertionError(f'problem with {golden_file}\nstdout:\n{tool_otuput.stdout}\nstderr\n{tool_otuput.stderr}\n') from e
 
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
