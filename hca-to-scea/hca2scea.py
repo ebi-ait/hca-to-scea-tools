@@ -629,11 +629,12 @@ def main():
 
         '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
         creates extra columns in the df for each of the ids.'''
-        df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict, experimental_design)
+        df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict)
 
         '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
         key protocol metadata that will be added to the SCEA sdrf file.'''
         dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
+        print(dataset_protocol_map)
 
         '''Refactoring of the below TBD.'''
         create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)

@@ -55,24 +55,33 @@ def splitlist(list_):
 def split_multiprotocols(df, proto_column):
 
     df_new = pd.DataFrame()
+    proto_columns = [col for col in df.columns if proto_column in col]
+
     count = 0
-    for col in df.columns:
-        if proto_column in col:
+    for col in proto_columns:
+
+        if proto_column in col and len(proto_columns) > 1:
             proto_series = df[col].apply(splitlist)
             proto_df = pd.DataFrame(proto_series.values.tolist())
             proto_df.columns = [str(count)]
             df_new = pd.concat([df_new, proto_df], axis=1)
-    print(df_new)
-    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(df_new.columns))]
-    print(proto_df_columns)
-    sys.exit()
-    df_new.columns = proto_df_columns
-    df_new[f'{proto_column}_count'] = proto_series.str.len()
-    df_new[f'{proto_column}_list'] = proto_series
-    print(df_new)
-    sys.exit()
+            count += 1
 
-    return (df_new, proto_df_columns)
+        elif proto_column in col and len(proto_columns) == 1:
+            proto_series = df[col].apply(splitlist)
+            proto_df = pd.DataFrame(proto_series.values.tolist())
+            df_new = proto_df
+
+    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(df_new.columns))]
+    df_new.columns = proto_df_columns
+    df_new = df_new.loc[:, ~df_new.T.duplicated(keep='first')]
+
+    for col in df_new.columns:
+        proto_series_tmp = df_new[col].apply(splitlist)
+        df_new[f'{col}_count'] = proto_series_tmp.str.len()
+        df_new[f'{col}_list'] = proto_series_tmp
+
+    return (df_new, df_new.columns)
 
 '''Given a list of unique protocol type ids, get the corresponding protocol type id
 in SCEA's protocol accession format.'''
@@ -95,16 +104,19 @@ protocol type ids given the hca protocol type id key (column) for the HCA protoc
 def get_unique_protocol_ids(df, map_of_hca_protocol_type_id_keys, hca_protocol_type):
 
     for (hca_ptype, hca_protocol_type_id_keys) in map_of_hca_protocol_type_id_keys.items():
+
         if hca_ptype == hca_protocol_type:
             hca_protocol_type_ids = []
             for hca_protocol_type_id_key in hca_protocol_type_id_keys:
-                hca_protocol_type_ids = hca_protocol_type_ids + pd.unique(df[hca_protocol_type_id_key]).tolist()
+                if "list" not in hca_protocol_type_id_key and "count" not in hca_protocol_type_id_key:
+                    hca_protocol_type_ids = hca_protocol_type_ids + pd.unique(df[hca_protocol_type_id_key]).tolist()
 
     return hca_protocol_type_ids
 
 '''Create a dataset protocol map (dictionary), containing types of HCA protocols and inside each,
  a map from HCA ids to SCEA ids.'''
 def get_dataset_protocol_map(df, ordered_hca_protocol_types, map_of_hca_protocol_type_id_keys, scea_protocol_accession_prefix):
+
 
     '''First, we prepare an ID minter for the protocols following SCEA MAGE-TAB standards.'''
     protocol_id_counter = 0

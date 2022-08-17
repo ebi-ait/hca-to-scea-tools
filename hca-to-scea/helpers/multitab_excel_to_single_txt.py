@@ -236,19 +236,23 @@ def clean_df(df):
     return df_clean
 
 
-def create_new_protocol_columns(df, xlsx_dict, experimental_design):
+def create_new_protocol_columns(df, xlsx_dict):
 
     '''This extracts the lists from protocol types which can have more than one instance and creates extra columns in the
     df for each of the items.'''
+
     for (protocol_type, protocol_field) in get_protocol_map.multiprotocols.items():
         if xlsx_dict.get(protocol_type) is not None:
             xlsx_dict[protocol_type] = xlsx_dict[protocol_type].fillna('')
+
             proto_df, proto_df_columns = get_protocol_map.split_multiprotocols(df, protocol_field)
+
             for proto_column in proto_df_columns:
                 if get_protocol_map.map_of_hca_protocol_type_id_keys.get(protocol_type) == None:
                     get_protocol_map.map_of_hca_protocol_type_id_keys[protocol_type] = []
                 get_protocol_map.map_of_hca_protocol_type_id_keys[protocol_type].append(proto_column)
 
+            #df = pd.concat([df, proto_df], axis=1)
             df = df.merge(proto_df, left_index=True, right_index=True)
 
     return df
