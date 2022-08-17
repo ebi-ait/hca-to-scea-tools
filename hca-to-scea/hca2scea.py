@@ -61,7 +61,7 @@ def get_author_list(xlsx_dict):
     return author_list
 
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
-                      sdrf_file_name, related_scea_accessions):
+                      sdrf_file_name):
 
     tab = '\t'
     person_roles = get_person_roles(xlsx_dict)
@@ -69,7 +69,9 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
-    related_scea_accessions = split_dataset.get_related_scea_accessions(args, accession, related_scea_accessions)
+    #related_scea_accessions = split_dataset.get_related_scea_accessions(args, accession, related_scea_accessions)
+
+    related_scea_accessions = None
 
     if related_scea_accessions:
 
@@ -433,7 +435,7 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
         print(f"saving {work_dir}/{sdrf_file_name}")
         sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
 
-def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, related_scea_accessions, technology_dict):
+def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict):
 
     accession = f"E-HCAD-{accession_number}"
 
@@ -441,7 +443,7 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experime
     sdrf_file_name = f"{accession}.sdrf.txt"
 
     generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
-                      sdrf_file_name, related_scea_accessions)
+                      sdrf_file_name)
     generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf_file_name, experimental_design, technology_dict)
 
 
@@ -588,56 +590,56 @@ def main():
         "Smart-seq": "smart-seq"
     }
 
-    list_xlsx_dict = split_dataset.split_metadata_by_technology(xlsx_dict,technology_dict)
+    #list_xlsx_dict = split_dataset.split_metadata_by_technology(xlsx_dict,technology_dict)
 
-    if len(list_xlsx_dict) > 1:
-        accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]
-        accession_number_list = [int(args.accession_number) + i for i in accession_number_idx]
+    #if len(list_xlsx_dict) > 1:
+    #    accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]
+    #    accession_number_list = [int(args.accession_number) + i for i in accession_number_idx]
 
-    else:
-        accession_number_idx = [0]
-        accession_number_list = [args.accession_number]
+    #else:
+    #    accession_number_idx = [0]
+    #    accession_number_list = [args.accession_number]
 
-    for i in range(0,len(list_xlsx_dict)):
+    #for i in range(0,len(list_xlsx_dict)):
 
-        xlsx_dict = list_xlsx_dict[i]
-        accession_number = accession_number_list[i]
+        #xlsx_dict = list_xlsx_dict[i]
+        #accession_number = accession_number_list[i]
 
-        related_scea_accessions_idx = copy.deepcopy(accession_number_idx)
-        related_scea_accessions_idx.remove(i)
-        related_scea_accessions = [accession_number_list[i] for i in related_scea_accessions_idx]
+        #related_scea_accessions_idx = copy.deepcopy(accession_number_idx)
+        #related_scea_accessions_idx.remove(i)
+        #related_scea_accessions = [accession_number_list[i] for i in related_scea_accessions_idx]
 
-        '''Run checks to see whether the experimental design is compatibile and save the experimental
-        design type in a variable for later.'''
+    '''Run checks to see whether the experimental design is compatibile and save the experimental
+    design type in a variable for later.'''
 
-        ''' Get the experimental design '''
-        experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
+    ''' Get the experimental design '''
+    experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
 
-        ''' Check if samples are pooled '''
-        pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
-        if pooled_samples:
-            print("The hca-to-scea tool does not support pooled donors or pooled samples."
-                "The dataset should be curated manually.")
-            sys.exit()
+        #''' Check if samples are pooled '''
+        #pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
+        #if pooled_samples:
+        #print("The hca-to-scea tool does not support pooled donors or pooled samples."
+        #        "The dataset should be curated manually.")
+        #    sys.exit()
 
-        '''The merged df consists of a row per read index (read1, read2, index1). To conform to
-        SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
-        '''
-        merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
-        merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
-        clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
+    '''The merged df consists of a row per read index (read1, read2, index1). To conform to
+    SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
+    '''
+    merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
+    merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
+    clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
 
-        '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
-        creates extra columns in the df for each of the ids.'''
-        df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict)
+    '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
+    creates extra columns in the df for each of the ids.'''
+    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict)
 
-        '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
-        key protocol metadata that will be added to the SCEA sdrf file.'''
-        dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
-        print(dataset_protocol_map)
+    '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
+    key protocol metadata that will be added to the SCEA sdrf file.'''
+    print(xlsx_dict)
+    dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
-        '''Refactoring of the below TBD.'''
-        create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number,related_scea_accessions,technology_dict)
+    '''Refactoring of the below TBD.'''
+    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design,args.accession_number,technology_dict)
 
 if __name__ == '__main__':
     main()

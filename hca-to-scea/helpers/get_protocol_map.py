@@ -117,7 +117,6 @@ def get_unique_protocol_ids(df, map_of_hca_protocol_type_id_keys, hca_protocol_t
  a map from HCA ids to SCEA ids.'''
 def get_dataset_protocol_map(df, ordered_hca_protocol_types, map_of_hca_protocol_type_id_keys, scea_protocol_accession_prefix):
 
-
     '''First, we prepare an ID minter for the protocols following SCEA MAGE-TAB standards.'''
     protocol_id_counter = 0
 
