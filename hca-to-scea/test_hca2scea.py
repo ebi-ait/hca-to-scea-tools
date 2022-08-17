@@ -2,9 +2,12 @@ import logging
 import os
 import sys
 import unittest
+from collections import namedtuple
+from subprocess import Popen, PIPE
+
 import pandas as pd
-import numpy as np
-from pandas.testing import assert_frame_equal
+
+HcaToSceaOutput = namedtuple('HcaToSceaOutput', ['output_dir', 'stdout', 'stderr'])
 
 
 class CharacteristicTest(unittest.TestCase):
@@ -16,15 +19,27 @@ class CharacteristicTest(unittest.TestCase):
             import warnings
             warnings.simplefilter("ignore")
 
-    def test_hca2scea_characteristic(self):
-        # run tool
+    def test_positive(self):
         arguments_df = pd.read_csv("test/golden/arguments.csv", comment='#')
         for i in range(0,arguments_df.shape[0]):
             spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
                 arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
-                output_dir = self.run_tool(spreadsheet, arguments)
-                self.check_output(output_dir, spreadsheet)
+                tool_output = self.run_tool(spreadsheet, arguments)
+                self.check_output(tool_output.output_dir, spreadsheet)
+
+    def test_negative(self):
+        arguments_df = pd.read_csv("test/negative.examples.csv", comment='#')
+        for i in range(0,arguments_df.shape[0]):
+            spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
+            with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
+                arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
+                tool_output = self.run_tool(spreadsheet, arguments)
+                self.assertIn(b'AssertionError', tool_output.stderr)
+                self.assertIn(arguments["expected error"][0].encode('ascii'),
+                              tool_output.stderr,
+                              msg='expected assertion error message not found in tool output')
+
 
     def get_file_content(self, file):
         if file.split(".")[-2] == 'sdrf':
@@ -84,13 +99,26 @@ class CharacteristicTest(unittest.TestCase):
                     self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
             except Exception as e:
                 raise AssertionError(f'problem with {golden_file}') from e
+
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
         output_dir = self.output_base + output_name
         arguments = arguments.reset_index()
-        os.system(
-            f'python3 hca2scea.py -s {spreadsheet} -o {output_dir} -id {arguments["HCA project uuid"][0]} -ac {arguments["E-HCAD accession"][0]} -c {arguments["curator initials"][0]} -et {arguments["experiment type"][0]} -f {arguments["factor values"][0]} -pd {arguments["public release date"][0]} -hd {arguments["hca last update date"][0]} -study {arguments["study accession"][0]}')
-        return output_dir
+        p = Popen(["python3", 'hca2scea.py',
+                   '-s', f'{spreadsheet}',
+                   '-o', f'{output_dir}',
+                   '-id', f'{arguments["HCA project uuid"][0]}',
+                   '-ac', f'{arguments["E-HCAD accession"][0]}',
+                   '-c', f'{arguments["curator initials"][0]}',
+                   '-et', f'{arguments["experiment type"][0]}',
+                   '-f', f'{arguments["factor values"][0]}',
+                   '-pd', f'{arguments["public release date"][0]}',
+                   '-hd', f'{arguments["hca last update date"][0]}',
+                   '-study', f'{arguments["study accession"][0]}'],
+                  stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        return HcaToSceaOutput(output_dir, stdout, stderr)
+
 
 if __name__ == '__main__':
     unittest.main()
