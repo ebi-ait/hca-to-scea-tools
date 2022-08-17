@@ -550,7 +550,10 @@ def main():
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
 
     '''Remove unused protocol tabs and corresponding protocol id column.'''
-    xlsx_dict_tmp2 = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
+    xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
+
+    '''Rename linked protocol id column names to reflect the tab name.'''
+    xlsx_dict = multitab_excel_to_single_txt.rename_protocol_columns(xlsx_dict)
 
     '''Check whether multiple library preparation protocol technology types or 10X versions were
     used. If so, split xlsx_dict into a list of dicts separated by the technology type. Then,
@@ -585,7 +588,7 @@ def main():
         "Smart-seq": "smart-seq"
     }
 
-    list_xlsx_dict = split_dataset.split_metadata_by_technology(xlsx_dict_tmp2,technology_dict)
+    list_xlsx_dict = split_dataset.split_metadata_by_technology(xlsx_dict,technology_dict)
 
     if len(list_xlsx_dict) > 1:
         accession_number_idx = [i for i in range(0,len(list_xlsx_dict))]

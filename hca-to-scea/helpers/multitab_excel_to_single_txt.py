@@ -40,6 +40,25 @@ def remove_unused_protocols(xlsx_dict):
 
     return xlsx_dict_tmp2
 
+def rename_protocol_columns(xlsx_dict):
+
+    biomaterials = ["cell_line","organoid","specimen_from_organism","cell_suspension"]
+    protocol_ids = ["dissociation_protocol.protocol_core.protocol_id","enrichment_protocol.protocol_core.protocol_id"]
+
+    for biomaterial in biomaterials:
+        if biomaterial in xlsx_dict.keys():
+            cols = xlsx_dict[biomaterial].columns
+            new_cols = []
+            for i in range(0,len(cols)):
+                if cols[i] in protocol_ids:
+                    new_col = cols[i] + "_" + biomaterial
+                else:
+                    new_col = cols[i]
+                new_cols.append(new_col)
+            xlsx_dict[biomaterial].columns = new_cols
+
+    return xlsx_dict
+
 def clean_dictionary(xlsx_dict):
 
     for filename in xlsx_dict.keys():

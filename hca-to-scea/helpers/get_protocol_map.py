@@ -1,4 +1,5 @@
 import pandas as pd
+import sys
 
 '''Map of HCA protocol type names to SCEA protocol type names.'''
 protocol_type_map = {
@@ -53,14 +54,25 @@ def splitlist(list_):
 
 def split_multiprotocols(df, proto_column):
 
-    proto_series = df[proto_column].apply(splitlist)
-    proto_df = pd.DataFrame(proto_series.values.tolist())
-    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(proto_df.columns))]
-    proto_df.columns = proto_df_columns
-    proto_df[f'{proto_column}_count'] = proto_series.str.len()
-    proto_df[f'{proto_column}_list'] = proto_series
+    df_new = pd.DataFrame()
+    count = 0
+    for col in df.columns:
+        if proto_column in col:
+            proto_series = df[col].apply(splitlist)
+            proto_df = pd.DataFrame(proto_series.values.tolist())
+            proto_df.columns = [str(count)]
+            df_new = pd.concat([df_new, proto_df], axis=1)
+    print(df_new)
+    proto_df_columns = [f'{proto_column}_{y}' for y in range(len(df_new.columns))]
+    print(proto_df_columns)
+    sys.exit()
+    df_new.columns = proto_df_columns
+    df_new[f'{proto_column}_count'] = proto_series.str.len()
+    df_new[f'{proto_column}_list'] = proto_series
+    print(df_new)
+    sys.exit()
 
-    return (proto_df, proto_df_columns)
+    return (df_new, proto_df_columns)
 
 '''Given a list of unique protocol type ids, get the corresponding protocol type id
 in SCEA's protocol accession format.'''
