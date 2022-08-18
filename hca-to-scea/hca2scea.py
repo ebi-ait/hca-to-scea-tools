@@ -589,6 +589,8 @@ def main():
     check_experimental_design.check_input_to_cell_suspension(xlsx_dict)
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
+    check_experimental_design.check_biomaterial_linkings(xlsx_dict)
+    check_experimental_design.check_protocol_linkings(xlsx_dict)
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
     if experimental_design == "cell_line_only" or experimental_design == "organoid":
         # Check all cell lines are linked to a specimen
