@@ -399,6 +399,11 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Add protocol columns with protocol metadata in the pre-defined SCEA column order.'''
     protocols_sdrf_before_sequencing, protocols_sdrf_from_sequencing = add_protocol_columns(df, dataset_protocol_map)
+    # Remove empty Protocol REF columns.
+    nan_value = float("NaN")
+    protocols_sdrf_before_sequencing.replace("", nan_value, inplace=True)
+    protocols_sdrf_before_sequencing.dropna(how='all', axis=1, inplace=True)
+    protocols_sdrf_before_sequencing.replace(nan_value, "", inplace=True)
 
     idx = 18
     for col in protocols_sdrf_before_sequencing.columns:
@@ -635,7 +640,6 @@ def main():
 
     '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
     key protocol metadata that will be added to the SCEA sdrf file.'''
-    print(xlsx_dict)
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
     '''Refactoring of the below TBD.'''

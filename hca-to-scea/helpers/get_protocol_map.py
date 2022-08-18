@@ -57,15 +57,12 @@ def split_multiprotocols(df, proto_column):
     df_new = pd.DataFrame()
     proto_columns = [col for col in df.columns if proto_column in col]
 
-    count = 0
     for col in proto_columns:
 
         if proto_column in col and len(proto_columns) > 1:
             proto_series = df[col].apply(splitlist)
             proto_df = pd.DataFrame(proto_series.values.tolist())
-            proto_df.columns = [str(count)]
             df_new = pd.concat([df_new, proto_df], axis=1)
-            count += 1
 
         elif proto_column in col and len(proto_columns) == 1:
             proto_series = df[col].apply(splitlist)
