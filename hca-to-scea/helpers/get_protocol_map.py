@@ -52,10 +52,28 @@ def splitlist(list_):
 
     return split_data
 
+def reorder_protocols(proto_columns):
+
+    new_protocols = []
+    for protocol in proto_columns:
+        if "cell_line" in protocol:
+            new_protocol = str(1) + "-" + protocol
+        elif "organoid" in protocol:
+            new_protocol = str(2) + "-" + protocol
+        elif "cell_suspension" in protocol:
+            new_protocol = str(3) + "-" + protocol
+        else:
+            new_protocol = str(1) + "-" + protocol
+        new_protocols.append(new_protocol)
+    new_protocols.sort()
+    new_protocols = [protocol.rsplit("-")[1] for protocol in new_protocols]
+    return new_protocols
+
 def split_multiprotocols(df, proto_column):
 
     df_new = pd.DataFrame()
     proto_columns = [col for col in df.columns if proto_column in col]
+    proto_columns = reorder_protocols(proto_columns)
 
     for col in proto_columns:
 
