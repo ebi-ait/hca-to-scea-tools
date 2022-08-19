@@ -19,7 +19,7 @@ def check_species_eligibility(xlsx_dict):
     species_list = list(set(species_list))
     species_list = [x for x in species_list if str(x) != 'nan']
 
-    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be elgiible for SCEA, each biomaterial must be" \
+    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be elgiible for SCEA each biomaterial must be" \
                                                     " linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset" \
                                                     " and run again."
 
@@ -31,7 +31,7 @@ def check_species_eligibility(xlsx_dict):
 
 def check_for_pooled_samples(xlsx_dict):
 
-    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension"]
+    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension","sequence_file"]
 
     input_biomaterial_list = []
     for biomaterial in biomaterial_tab:
@@ -43,7 +43,7 @@ def check_for_pooled_samples(xlsx_dict):
     input_biomaterial_list = [x for x in input_biomaterial_list if str(x) != 'nan']
 
     assert all("||" not in i for i in input_biomaterial_list),"The dataset contains pooled biomaterials. Pooled biomaterials are not eligible." \
-                                                              " Please remove the relevant biomaterials from the dataset " \
+                                                              " Please remove the relevant biomaterials from the dataset" \
                                                               " and run again."
 
 def get_experimental_design(xlsx_dict: {}):

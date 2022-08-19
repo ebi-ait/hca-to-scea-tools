@@ -585,6 +585,7 @@ def main():
 
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
+    check_experimental_design.check_for_pooled_samples(xlsx_dict)
 
     ''' Get the experimental design '''
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
