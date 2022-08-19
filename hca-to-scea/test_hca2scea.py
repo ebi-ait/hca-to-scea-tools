@@ -36,6 +36,7 @@ class CharacteristicTest(unittest.TestCase):
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
                 arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
                 tool_output = self.run_tool(spreadsheet, arguments)
+                arguments = arguments.reset_index()
                 self.assertIn(b'AssertionError', tool_output.stderr)
                 self.assertIn(arguments["expected error"][0].encode('ascii'),
                               tool_output.stderr,

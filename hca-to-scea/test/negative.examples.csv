@@ -2,3 +2,7 @@
 # new column: expected error
 spreadsheet,HCA project uuid,study accession,E-HCAD accession,curator initials,experiment type,factor values,public release date,hca last update date,expected error
 hca_to_scea_test_02.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: Only 1 technology type is allowed per SCEA E-HCAD id. Please split the dataset by the technology type and run them separately.
+hca_to_scea_test_03.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: Only 1 technology type is allowed per SCEA E-HCAD id. Please split the dataset by the technology type and run them separately.
+hca_to_scea_test_04.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: 1 or more technology types are not eligible. Please remove ineligible technologies and their linked samples and try again.
+hca_to_scea_test_05.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: 1 or more technology types are not eligible. Please remove ineligible technologies and their linked samples and try again.
+hca_to_scea_test_06.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: 1 or more technology types are not eligible. Please remove ineligible technologies and their linked samples and try again.
