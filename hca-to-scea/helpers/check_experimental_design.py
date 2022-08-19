@@ -82,9 +82,7 @@ def check_input_to_cell_suspension(xlsx_dict):
             if len(cell_suspension_ids) >= 1:
                 input_types.append(biomaterial)
     input_types = list(set(input_types))
-    assert len(input_types) == 1,"All inputs to cell suspensions should be of an identical biomaterial type." \
-                           " For example, cell suspensions should all be linked to cell lines only, organoids only" \
-                           " or specimens only. Please split the dataset by the input biomaterial type."
+    assert len(input_types) == 1,"All inputs to cell suspensions should be of an identical biomaterial type. For example cell suspensions should all be linked to cell lines only organoids only or specimens only. Please split the dataset by the input biomaterial type."
 
 def check_cell_lines_linked(xlsx_dict):
 
@@ -98,7 +96,7 @@ def check_cell_lines_linked(xlsx_dict):
     for column in xlsx_dict["cell_line"].columns:
         if "cell_line.biomaterial_core.biomaterial_id." in column:
             cell_line_as_input = [x for x in list(xlsx_dict["cell_line"][column]) if str(x) != 'nan']
-            assert len(cell_line_as_input) == 0," Cell line input biomaterial type should be specimen id. Cell line cannot be used" \
+            assert len(cell_line_as_input) == 0,"Cell line input biomaterial type should be specimen id. Cell line cannot be used" \
                                                 " as input to a cell line."
 
     input_specimen_ids = [x for x in list(xlsx_dict["cell_line"][specimen_key]) if str(x) != 'nan']
