@@ -68,8 +68,12 @@ def check_for_pooled_samples(xlsx_dict):
 
     return pooled_samples
 
-def check_technology_eligibility(library_method,technology_dict):
+def check_technology_eligibility(xlsx_dict,technology_dict):
 
-    eligible = library_method in technology_dict.keys()
+    technology_types = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"].values)
+    assert all(t in technology_dict.keys() for t in technology_types),"1 or more technology types are not eligible." \
+                                                               " Please remove ineligible technologies and their linked" \
+                                                               " samples and try again."
 
-    return eligible
+    assert len(technology_types) == 1,"Only 1 technology type is allowed per SCEA E-HCAD id. " \
+                                      "Please split the dataset by the technology type and run them separately."
