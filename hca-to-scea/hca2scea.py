@@ -543,16 +543,9 @@ def main():
     else:
         work_dir = args.output_dir
 
-    '''Merge the multitab spreadsheet into a single dataframe, while preserving the relationships
-    between HCA biomaterials and protocols.
-    '''
     xlsx_dict = multitab_excel_to_single_txt.multitab_excel_to_dict(work_dir, args.spreadsheet)
 
-    '''Remove unused protocol tabs and corresponding protocol id column.'''
     xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
-
-    '''Check whether multiple library preparation protocol technology types or 10X versions were
-    used. Raise an assertion error if so. The user will need to split their dataset by technology type.'''
 
     technology_dict = {
         "Fluidigm C1-based library preparation": "smart-like",
@@ -587,35 +580,16 @@ def main():
 
     accession_number = args.accession_number
 
-    '''Run checks to see whether the experimental design is compatibile and save the experimental
-    design type in a variable for later.'''
-
-    ''' Get the experimental design '''
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
 
-    ''' Check if samples are pooled '''
-    pooled_samples = check_experimental_design.check_for_pooled_samples(xlsx_dict)
-    if pooled_samples:
-        print("The hca-to-scea tool does not support pooled donors or pooled samples."
-            "The dataset should be curated manually.")
-        sys.exit()
-
-    '''The merged df consists of a row per read index (read1, read2, index1). To conform to
-    SCEA MAGE-TAB format, the rows should be merged so that there is 1 row per unique run accession.
-    '''
     merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
     merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
     clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
 
-    '''Extract the list of unique protocol ids from protocol types which can have more than one instance and
-    creates extra columns in the df for each of the ids.'''
     df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict, experimental_design)
 
-    '''Create a map between the HCA protocol id and a new assigned SCEA protocol id. Use it to store the
-    key protocol metadata that will be added to the SCEA sdrf file.'''
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
-    '''Refactoring of the below TBD.'''
     create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict)
 
 if __name__ == '__main__':
