@@ -1,0 +1,3 @@
+# all columns as in arguments.csv
+# new column: expected error
+spreadsheet,HCA project uuid,study accession,E-HCAD accession,curator initials,experiment type,factor values,public release date,hca last update date,expected error
