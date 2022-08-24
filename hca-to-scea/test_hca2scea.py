@@ -34,7 +34,7 @@ class CharacteristicTest(unittest.TestCase):
         for i in range(0,arguments_df.shape[0]):
             spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
             with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
-                arguments = arguments_df.loc[arguments_df['spreadsheet'] == os.path.basename(spreadsheet)]
+                arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("test/golden/")[1]]
                 tool_output = self.run_tool(spreadsheet, arguments)
                 arguments = arguments.reset_index()
                 self.assertIn(b'AssertionError', tool_output.stderr)
