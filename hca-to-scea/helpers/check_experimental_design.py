@@ -88,9 +88,7 @@ def check_species_eligibility(xlsx_dict):
         species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
     species_list = list(set(species_list))
 
-    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be elgiible for SCEA, each biomaterial must be" \
-                                                    " linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset" \
-                                                    " and run again."
+    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be eliible for SCEA each biomaterial must be linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset and run again."
 
     assert all(s in ["Homo sapiens","Mus musculus"] for s in species_list),"1 or more species are not eligible. Species must be" \
                                                                            " either Homo sapiens or Mus musculus."
