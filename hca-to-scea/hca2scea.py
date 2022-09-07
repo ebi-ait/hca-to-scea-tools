@@ -577,6 +577,7 @@ def main():
     }
 
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
+    check_experimental_design.check_species_eligibility(xlsx_dict)
 
     accession_number = args.accession_number
 
