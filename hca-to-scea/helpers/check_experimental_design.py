@@ -32,25 +32,24 @@ def check_species_eligibility(xlsx_dict):
 def check_biomaterial_linkings(xlsx_dict):
 
     biomaterial_tabs = ["donor_organism", "specimen_from_organism", "cell_line", "organoid", "cell_suspension"]
+    biomaterial_tabs = [tab for tab in biomaterial_tabs if tab in xlsx_dict.keys()]
 
     biomaterial_id_dict = {}
     for biomaterial_tab in biomaterial_tabs:
 
-        if biomaterial_tab in xlsx_dict.keys():
+        biomaterial_id_dict[biomaterial_tab] = {"ids":[],"input_tabs":[],"input_ids":[]}
+        biomaterial_id_dict[biomaterial_tab]["ids"] = list(xlsx_dict[biomaterial_tab]["%s.biomaterial_core.biomaterial_id" % (biomaterial_tab)])
+        biomaterial_id_key = "%s.biomaterial_core.biomaterial_id" % (biomaterial_tab)
+        biomaterial_id_dict[biomaterial_tab]["input_tabs"] = [tab for tab in biomaterial_tabs if biomaterial_id_key in xlsx_dict[tab].columns]
+        biomaterial_id_dict[biomaterial_tab]["input_tabs"].remove(biomaterial_tab)
+        for tab in biomaterial_id_dict[biomaterial_tab]["input_tabs"]:
+            biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(xlsx_dict[tab][biomaterial_id_key])
+        if biomaterial_id_key in xlsx_dict["sequence_file"].columns:
+            biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(list(xlsx_dict["sequence_file"][biomaterial_id_key]))
 
-            biomaterial_id_dict[biomaterial_tab] = {"ids":[],"input_tabs":[],"input_ids":[]}
-            biomaterial_id_dict[biomaterial_tab]["ids"] = list(xlsx_dict[biomaterial_tab]["%s.biomaterial_core.biomaterial_id" % (biomaterial_tab)])
-            biomaterial_id_key = "%s.biomaterial_core.biomaterial_id" % (biomaterial_tab)
-            biomaterial_id_dict[biomaterial_tab]["input_tabs"] = [tab for tab in biomaterial_tabs if biomaterial_id_key in xlsx_dict[tab].columns]
-            biomaterial_id_dict[biomaterial_tab]["input_tabs"].remove(biomaterial_tab)
-            for tab in biomaterial_id_dict[biomaterial_tab]["input_tabs"]:
-                biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(xlsx_dict[tab][biomaterial_id_key])
-            if biomaterial_id_key in xlsx_dict["sequence_file"].columns:
-                biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(list(xlsx_dict["sequence_file"][biomaterial_id_key]))
-
-            for id in biomaterial_id_dict[biomaterial_tab]["ids"]:
-                assert id in biomaterial_id_dict[biomaterial_tab]["input_ids"],"Biomaterial id %s is an orphan biomaterial. Please fix the linking" \
-                                                                            " and run again." % (id)
+        for id in biomaterial_id_dict[biomaterial_tab]["ids"]:
+            assert id in biomaterial_id_dict[biomaterial_tab]["input_ids"],"Biomaterial id %s is an orphan biomaterial. Please fix the linking" \
+                                                                           " and run again." % (id)
 
 def check_protocol_linkings(xlsx_dict):
 

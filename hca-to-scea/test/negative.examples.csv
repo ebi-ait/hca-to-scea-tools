@@ -1,5 +1,6 @@
 # all columns as in arguments.csv
 # new column: expected error
 spreadsheet,HCA project uuid,study accession,E-HCAD accession,curator initials,experiment type,factor values,public release date,hca last update date,expected error
-check_linking/check_biomaterials_linked.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: Biomaterial id F30_liver is an orphan biomaterial. Please fix the linking and run again.
+check_linking/check_biomaterials_linked_01.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: Biomaterial id F30_liver is an orphan biomaterial. Please fix the linking and run again.
+check_linking/check_biomaterials_linked_02.xlsx,c1a9a93d-d9de-4e65-9619-a9cec1052eaa,SRP218543,50,AD,differential,disease,2021-11-11,2019-09-05,AssertionError: Biomaterial id SAMN12587373 is an orphan biomaterial. Please fix the linking and run again.
 check_linking/check_protocols_linked.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29,AssertionError: Protocol id enrichment_protocol_orphan is an orphan protocol. Please fix the linking and run again.
