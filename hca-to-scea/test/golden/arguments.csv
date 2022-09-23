@@ -1,12 +1,7 @@
 spreadsheet,HCA project uuid,study accession,E-HCAD accession,curator initials,experiment type,factor values,public release date,hca last update date
-#SRP151260.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,SRP151260,50,AD,differential,disease,2009-02-27,2021-04-29
-#SRP274475.xlsx,07073c12-8006-4710-a00b-23abdb814904,SRP274475,36,AD,differential,organ,2021-09-30,2020-11-25
-#ERP121676_1.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,baseline,individual,2021-09-30,2020-11-25
-#ERP121676_2.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,baseline,individual,2021-09-30,2020-11-25
-#ERP121676_3.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,baseline,individual,2021-09-30,2020-11-25
+SRP151260.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,SRP151260,50,AD,differential,disease,2009-02-27,2021-04-29
+SRP274475.xlsx,07073c12-8006-4710-a00b-23abdb814904,SRP274475,36,AD,differential,organ,2021-09-30,2020-11-25
+ERP121676_1.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,baseline,individual,2021-09-30,2020-11-25
+ERP121676_2.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,baseline,individual,2021-09-30,2020-11-25
+ERP121676_3.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP121676,100,AD,baseline,individual,2021-09-30,2020-11-25
 eligible_experiment_design_01.xlsx,c893cb57-5c9f-4f26-9312-21b85be84313,ERP1374291,1,AD,differential,organ,2022-05-12,2021-04-29
-#ERP123138.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,ERP123138,100,AD,differential,organ part,2021-09-30,2020-11-25
-# Doesn't yet support different length arrays for each protocol type. E.g. a group of samples subjected to 2 dissociation protocols versus another subjected to only 1 dissociation protocol. The protocol ids however do not need to be identical, it is the number that is the issue.
-#SRP166375.xlsx,955dfc2c-a8c6-4d04-aa4d-907610545d11,SRP166375,44,WKT,10Xv2_5,differential,disease organ,2009-02-27,2021-04-29
-# Doesn't yet support datasets where a cell_suspension links to multiple runs (multiple lane indices)
-#SRP218543.xlsx,c1a9a93d-d9de-4e65-9619-a9cec1052eaa,SRP218543,15,ESV,10Xv2_5,differential,disease,2009-02-27,2021-04-29
