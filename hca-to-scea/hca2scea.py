@@ -584,6 +584,9 @@ def main():
         "Smart-seq": "smart-seq"
     }
 
+    check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
+    check_experimental_design.check_species_eligibility(xlsx_dict)
+
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
 
     merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
