@@ -84,8 +84,10 @@ def check_species_eligibility(xlsx_dict):
 
     species_list = []
     for biomaterial in biomaterial_tab:
-        species_key = "%s.genus_species.ontology_label" % (biomaterial)
-        species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
+        if biomaterial in xlsx_dict.keys():
+            species_key = "%s.genus_species.ontology_label" % (biomaterial)
+            if species_key in xlsx_dict[biomaterial].keys():
+                species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
     species_list = list(set(species_list))
 
     assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be eliible for SCEA each biomaterial must be linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset and run again."
