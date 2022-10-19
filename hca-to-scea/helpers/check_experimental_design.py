@@ -129,7 +129,7 @@ def check_organoids_linked(xlsx_dict):
                                                                         " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
                                                                          " if needed."
     if len(input_specimen_ids) > 0:
-        assert len(input_cell_lines) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
+        assert len(input_cell_line_ids) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
                                                                         " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
                                                                         " if needed."
 
