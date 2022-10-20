@@ -14,12 +14,13 @@ def check_species_eligibility(xlsx_dict):
 
     species_list = []
     for biomaterial in biomaterial_tab:
-        species_key = "%s.genus_species.ontology_label" % (biomaterial)
-        species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
+        if biomaterial in xlsx_dict.keys():
+            species_key = "%s.genus_species.ontology_label" % (biomaterial)
+            species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
     species_list = list(set(species_list))
     species_list = [x for x in species_list if str(x) != 'nan']
 
-    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be elgiible for SCEA, each biomaterial must be" \
+    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be eligible for SCEA each biomaterial must be" \
                                                     " linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset" \
                                                     " and run again."
 
@@ -67,7 +68,8 @@ def check_protocol_linkings(xlsx_dict):
                     if protocol_id_key in xlsx_dict[biomaterial_tab].columns:
                         protocol_id_dict[protocol_tab]["input_ids"].extend(list(xlsx_dict[biomaterial_tab][protocol_id_key]))
 
-            for input_id in protocol_id_dict[protocol_tab]["input_ids"]:
+            input_ids = [item for item in protocol_id_dict[protocol_tab]["input_ids"] if str(item) != 'nan']
+            for input_id in input_ids:
                 if "||" in input_id:
                     new_input_ids = input_id.split("||")
                     protocol_id_dict[protocol_tab]["input_ids"].extend(new_input_ids)
@@ -180,7 +182,7 @@ def check_organoids_linked(xlsx_dict):
                                                                         " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
                                                                          " if needed."
     if len(input_specimen_ids) > 0:
-        assert len(input_cell_lines) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
+        assert len(input_cell_line_ids) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
                                                                         " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
                                                                         " if needed."
 
