@@ -2,7 +2,7 @@ MAGE-TAB Version	1.1
 Investigation Title	Colonic single epithelial cell census reveals goblet cell drivers of barrier breakdown in inflammatory bowel disease
 Comment[Submitted Name]	EpithelialDiversityHealthInflammation
 Experiment Description	Three single cell RNA-sequencing (10x, Chromium) experiments were performed on healthy and inflamed human colonic samples, including from patients with Ulcerative Colitis. The authors characterised the composition of the intestinal epithelial cells in these samples.
-Public Release Date	2021-04-29
+Public Release Date	2009-02-27
 Person First Name	Kaushal	Agne	David	Marta	Anna	Christoffer	Simon	James	Hannah	Nasullah Khalid	Neil	Errin	Philip	Leyuan	Joanna	Rajinder Singh	Elisabet	Benedikt	Roman	Robert	Hashem	Alison	Ami
 Person Last Name	Parikh	Antanaviciute	Fawkner-Corbett	Jagielowicz	Aulicino	Lagerholm	Davis	Kinchen	Chen	Alham	Ashley	Johnson	Hublitz	Bao	Lukomska	Andev	Björklund	Kessler	Fischer	Goldin	Koohy	Simmons	Day
 Person Mid Initials									H									M					
@@ -23,7 +23,7 @@ Comment[EAAdditionalAttributes]
 Comment[EACurator]	AD
 Comment[EAExpectedClusters]	
 Comment[ExpressionAtlasAccession]	E-HCAD-50
-Comment[HCALastUpdateDate]	2009-02-27
+Comment[HCALastUpdateDate]	2021-04-29
 Comment[SecondaryAccession]	c893cb57-5c9f-4f26-9312-21b85be84313	GSE116222	SRP151260	PRJNA477814
 Comment[EAExperimentType]	differential
 SDRF File	E-HCAD-50.sdrf.txt
