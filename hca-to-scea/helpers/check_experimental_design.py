@@ -1,12 +1,144 @@
-def get_experimental_design(xlsx_dict: {}):
+def check_technology_eligibility(xlsx_dict,technology_dict):
 
-    if 'specimen_from_organism' in xlsx_dict.keys():
-        if xlsx_dict['specimen_from_organism'].empty:
-            specimen = False
-        else:
-            specimen = True
+    technology_types = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"].values)
+    assert all(t in technology_dict.keys() for t in technology_types),"1 or more technology types are not eligible." \
+                                                               " Please remove ineligible technologies and their linked" \
+                                                               " samples and try again."
+
+    assert len(technology_types) == 1,"Only 1 technology type is allowed per SCEA E-HCAD id. " \
+                                      "Please split the dataset by the technology type and run them separately."
+
+def check_species_eligibility(xlsx_dict):
+
+    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension"]
+
+    species_list = []
+    for biomaterial in biomaterial_tab:
+        species_key = "%s.genus_species.ontology_label" % (biomaterial)
+        species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
+    species_list = list(set(species_list))
+    species_list = [x for x in species_list if str(x) != 'nan']
+
+    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be elgiible for SCEA, each biomaterial must be" \
+                                                    " linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset" \
+                                                    " and run again."
+
+    assert all(s in ["Homo sapiens","Mus musculus"] for s in species_list),"1 or more species are not eligible. Species must be" \
+                                                                           " either Homo sapiens or Mus musculus."
+
+    assert len(species_list) == 1,"Only 1 species is allowed per SCEA E-HCAD id. " \
+                                      "Please split the dataset by species and run them separately."
+
+def check_for_pooled_samples(xlsx_dict):
+
+    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension"]
+
+    input_biomaterial_list = []
+    for biomaterial in biomaterial_tab:
+        for key in biomaterial_tab:
+            input_biomaterial_key = "%s.biomaterial_core.biomaterial_id" % (key)
+            if input_biomaterial_key in xlsx_dict[biomaterial].keys():
+                input_biomaterial_list.extend(list(xlsx_dict[biomaterial][input_biomaterial_key].values))
+    input_biomaterial_list = list(set(input_biomaterial_list))
+    input_biomaterial_list = [x for x in input_biomaterial_list if str(x) != 'nan']
+
+    assert all("||" not in i for i in input_biomaterial_list),"The dataset contains pooled biomaterials. Pooled biomaterials are not eligible." \
+                                                              " Please remove the relevant biomaterials from the dataset " \
+                                                              " and run again."
+
+def check_donor_exists(xlsx_dict):
+
+    assert 'donor_organism' in xlsx_dict.keys(),"The dataset does not include donor organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+    assert len(list(xlsx_dict['donor_organism']['donor_organism.biomaterial_core.biomaterial_id'])) >= 1,"The dataset does not include donor_organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+def check_specimen_exists(xlsx_dict):
+
+    assert 'specimen_from_organism' in xlsx_dict.keys(),"The dataset does not include specimen_from_organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+    assert len(list(xlsx_dict['specimen_from_organism']['specimen_from_organism.biomaterial_core.biomaterial_id'])) >= 1,"The dataset does not include specimen_from_organism biomaterials." \
+                                                        " Cell lines, organoids and cell suspensions must be derived from a specimen linked" \
+                                                        " to a donor." \
+                                                        ""
+
+def check_input_to_cell_suspension(xlsx_dict):
+
+    biomaterials = ["specimen_from_organism","cell_line","organoid"]
+    input_types = []
+    for biomaterial in biomaterials:
+        key = "%s.biomaterial_core.biomaterial_id" % biomaterial
+        if key in xlsx_dict["cell_suspension"].columns:
+            cell_suspension_ids = list(xlsx_dict["cell_suspension"][key])
+            cell_suspension_ids = [x for x in cell_suspension_ids if str(x) != 'nan']
+            if len(cell_suspension_ids) >= 1:
+                input_types.append(biomaterial)
+    input_types = list(set(input_types))
+    assert len(input_types) == 1,"All inputs to cell suspensions should be of an identical biomaterial type. For example cell suspensions should all be linked to cell lines only organoids only or specimens only. Please split the dataset by the input biomaterial type."
+
+def check_cell_lines_linked(xlsx_dict):
+
+    cell_line_key = "cell_line.biomaterial_core.biomaterial_id"
+    specimen_key = "specimen_from_organism.biomaterial_core.biomaterial_id"
+
+    assert specimen_key in xlsx_dict["cell_line"].columns,"Cell_lines are not linked to" \
+                                                 " a specimen id. Please link all cell_lines to an input specimen."
+
+    # Check that cell lines are not linked to an input cell line
+    for column in xlsx_dict["cell_line"].columns:
+        if "cell_line.biomaterial_core.biomaterial_id." in column:
+            cell_line_as_input = [x for x in list(xlsx_dict["cell_line"][column]) if str(x) != 'nan']
+            assert len(cell_line_as_input) == 0,"Cell line input biomaterial type should be specimen id. Cell line cannot be used" \
+                                                " as input to a cell line."
+
+    input_specimen_ids = [x for x in list(xlsx_dict["cell_line"][specimen_key]) if str(x) != 'nan']
+    cell_line_ids = list(xlsx_dict["cell_line"][cell_line_key])
+    assert len(input_specimen_ids) == len(cell_line_ids),"1 more more cell_lines are not linked to" \
+                                                 " a specimen id. Please link all cell_lines to an input specimen."
+
+def check_organoids_linked(xlsx_dict):
+
+    if "specimen_from_organism.biomaterial_core.biomaterial_id" in xlsx_dict["organoid"].columns:
+        input_specimen_ids = [x for x in list(xlsx_dict["organoid"]["specimen_from_organism.biomaterial_core.biomaterial_id"]) if str(x) != 'nan']
     else:
-        specimen = False
+        input_specimen_ids = []
+
+    if "cell_line.biomaterial_core.biomaterial_id" in xlsx_dict["organoid"].columns:
+        input_cell_line_ids = [x for x in list(xlsx_dict["organoid"]["cell_line.biomaterial_core.biomaterial_id"]) if str(x) != 'nan']
+    else:
+        input_cell_line_ids = []
+
+    # Check that organoids are not linked to an input organoid
+    for column in xlsx_dict["organoid"].columns:
+        if "organoid.biomaterial_core.biomaterial_id." in column:
+            organoid_as_input = [x for x in list(xlsx_dict["organoid"][column]) if str(x) != 'nan']
+            assert len(organoid_as_input) == 0,"Organoid input biomaterial type should be specimen id or cell line id. Organoid cannot be used" \
+                                                " as input to an organoid."
+
+    # Check that all organoid ids are linked to the same input biomaterial type; all specimen ids or all cell line ids.
+    if len(input_cell_line_ids) > 0:
+        assert len(input_specimen_ids) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
+                                                                        " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
+                                                                         " if needed."
+    if len(input_specimen_ids) > 0:
+        assert len(input_cell_line_ids) == 0,"Organoids are linked to more than 1 input biomaterial type. Please link all organoids" \
+                                                                        " to 1 input biomaterial type (specimen or cell line). The dataset cen be split by biomaterial type" \
+                                                                        " if needed."
+
+    # Check that all organoid ids are linked to a specimen id or a cell line id.
+    organoid_ids = list(xlsx_dict["organoid"]["organoid.biomaterial_core.biomaterial_id"])
+    assert len(input_specimen_ids) == len(organoid_ids) or len(input_cell_line_ids) == len(organoid_ids),"1 more more organoids are not linked to" \
+                                                 " a specimen id or cell line id. Please link all organoids to an input specimen or cell line."
+
+def get_experimental_design(xlsx_dict: {}):
 
     if 'cell_line' in xlsx_dict.keys():
         if xlsx_dict['cell_line'].empty:
@@ -24,49 +156,16 @@ def get_experimental_design(xlsx_dict: {}):
     else:
         organoid = False
 
-    if specimen:
-
-        if cell_line and not organoid:
-            experimental_design = "cell_line_only"
-        elif not cell_line and organoid:
-            experimental_design = "organoid_only"
-        elif cell_line and organoid:
-            experimental_design = "organoid"
-        else:
-            experimental_design = "standard"
+    if cell_line and not organoid:
+        experimental_design = "cell_line_only"
+    elif not cell_line and organoid:
+        experimental_design = "organoid_only"
+    elif cell_line and organoid:
+        experimental_design = "organoid"
+    else:
+        experimental_design = "standard"
 
     return experimental_design
-
-def check_for_pooled_samples(xlsx_dict):
-
-    specimen_metadata = xlsx_dict["specimen_from_organism"]
-    specimen_ids = list(specimen_metadata['specimen_from_organism.biomaterial_core.biomaterial_id'])
-    pooled_samples_specimen = [specimen_id for specimen_id in specimen_ids if "||" in specimen_id]
-
-    pooled_samples_cell_line = []
-    if "cell_line" in xlsx_dict.keys() and not xlsx_dict["cell_line"].empty:
-        cell_line_metadata = xlsx_dict["cell_line"]
-        if 'cell_line.biomaterial_core.biomaterial_id' in cell_line_metadata.columns:
-            cell_line_ids = list(cell_line_metadata['cell_line.biomaterial_core.biomaterial_id'])
-            pooled_samples_cell_line = [cell_line_id for cell_line_id in cell_line_ids if "||" in cell_line_id]
-
-    pooled_samples_organoid = []
-    if "organoid" in xlsx_dict.keys() and not xlsx_dict["organoid"].empty:
-        organoid_metadata = xlsx_dict["organoid"]
-        if 'organoid.biomaterial_core.biomaterial_id' in organoid_metadata.columns:
-            organoid_ids = list(organoid_metadata['organoid.biomaterial_core.biomaterial_id'])
-            pooled_samples_organoid = [organoid_id for organoid_id in organoid_ids if "||" in organoid_id]
-
-    donor_metadata = xlsx_dict["donor_organism"]
-    donor_ids = list(donor_metadata['donor_organism.biomaterial_core.biomaterial_id'])
-    pooled_samples_donor = [str(donor_id) for donor_id in donor_ids if "||" in str(donor_id)]
-
-    if pooled_samples_specimen or pooled_samples_donor or pooled_samples_cell_line or pooled_samples_organoid:
-        pooled_samples = True
-    else:
-        pooled_samples = False
-
-    return pooled_samples
 
 def check_technology_eligibility(xlsx_dict,technology_dict):
 
