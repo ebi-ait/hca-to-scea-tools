@@ -68,6 +68,7 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
     protocol_fields = get_protocol_map.get_idf_file_protocol_fields(dataset_protocol_map)
     author_list = get_author_list(xlsx_dict)
 
+    related_scea_accessions = None
     related_scea_accessions = args.related_scea_accession
 
     if related_scea_accessions:
@@ -396,6 +397,11 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Add protocol columns with protocol metadata in the pre-defined SCEA column order.'''
     protocols_sdrf_before_sequencing, protocols_sdrf_from_sequencing = add_protocol_columns(df, dataset_protocol_map)
+    # Remove empty Protocol REF columns.
+    nan_value = float("NaN")
+    protocols_sdrf_before_sequencing.replace("", nan_value, inplace=True)
+    protocols_sdrf_before_sequencing.dropna(how='all', axis=1, inplace=True)
+    protocols_sdrf_before_sequencing.replace(nan_value, "", inplace=True)
 
     idx = 18
     for col in protocols_sdrf_before_sequencing.columns:
@@ -547,6 +553,8 @@ def main():
 
     xlsx_dict = multitab_excel_to_single_txt.remove_unused_protocols(xlsx_dict)
 
+    xlsx_dict = multitab_excel_to_single_txt.rename_protocol_columns(xlsx_dict)
+
     technology_dict = {
         "Fluidigm C1-based library preparation": "smart-like",
         "10X 3' v1": "10Xv1_3",
@@ -584,20 +592,21 @@ def main():
     if experimental_design == "organoid_only" or experimental_design == "organoid":
         check_experimental_design.check_organoids_linked(xlsx_dict)
 
+    check_experimental_design.check_donor_exists(xlsx_dict)
+    check_experimental_design.check_specimen_exists(xlsx_dict)
+    check_experimental_design.check_input_to_cell_suspension(xlsx_dict)
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
-
-    accession_number = args.accession_number
 
     merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
     merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
     clean_merged_df = multitab_excel_to_single_txt.clean_df(merged_df_unique_runs)
 
-    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict, experimental_design)
+    df = multitab_excel_to_single_txt.create_new_protocol_columns(clean_merged_df, xlsx_dict)
 
     dataset_protocol_map = get_protocol_map.prepare_protocol_map(xlsx_dict, df, args)
 
-    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict)
+    create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, args.accession_number, technology_dict)
 
 if __name__ == '__main__':
     main()

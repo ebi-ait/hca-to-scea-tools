@@ -5,11 +5,19 @@ A tool to assist in the automatic conversion of an hca metadata spreadsheet to s
 
     pip install hca-to-scea
     
-## Description
+## Eligibility criteria
+
+Please see the SCEA eligibility criteria described [here](https://github.com/ebi-ait/hca-ebi-wrangler-central/blob/master/docs/SOPs/hca_to_scea_tools_SOP.md)
+
+## Curation process
+
+Please see [here](https://github.com/ebi-ait/hca-ebi-wrangler-central/blob/master/docs/SOPs/hca_to_scea_tools_SOP.md) for a overview of the hca2scea curation process.
+    
+## Description of hca2scea tool
 
 The tool takes as input an HCA metadata spreadsheet and converts the metadata to SCEA MAGE-TAB files which are then saved to an output directory.
 
-## Usage
+## Usage of hca2scea tool
 
 To run it as a package, after installing it via pip:
 
