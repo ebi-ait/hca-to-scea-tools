@@ -15,7 +15,8 @@ def check_species_eligibility(xlsx_dict):
     species_list = []
     for biomaterial in biomaterial_tab:
         species_key = "%s.genus_species.ontology_label" % (biomaterial)
-        species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
+        if biomaterial in xlsx_dict.keys():
+            species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
     species_list = list(set(species_list))
     species_list = [x for x in species_list if str(x) != 'nan']
 
@@ -173,6 +174,13 @@ def check_protocol_linkings(xlsx_dict):
             protocol_id_dict[protocol_tab]["ids"] = list(xlsx_dict[protocol_tab][protocol_id_key])
             for biomaterial_tab in biomaterial_tabs:
                 if biomaterial_tab in xlsx_dict.keys():
+                    new_cols = []
+                    for col in xlsx_dict[biomaterial_tab].columns:
+                        if "protocol_id" in col:
+                            new_cols.append(col.split("protocol_id")[0] + "protocol_id")
+                        else:
+                            new_cols.append(col)
+                    xlsx_dict[biomaterial_tab].columns = new_cols
                     if protocol_id_key in xlsx_dict[biomaterial_tab].columns:
                         protocol_id_dict[protocol_tab]["input_ids"].extend(list(xlsx_dict[biomaterial_tab][protocol_id_key]))
 
