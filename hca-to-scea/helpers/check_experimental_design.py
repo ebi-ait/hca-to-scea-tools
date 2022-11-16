@@ -158,6 +158,15 @@ def check_biomaterial_linkings(xlsx_dict):
             biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(xlsx_dict[tab][biomaterial_id_key])
         if biomaterial_id_key in xlsx_dict["sequence_file"].columns:
             biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(list(xlsx_dict["sequence_file"][biomaterial_id_key]))
+        biomaterial_id_dict[biomaterial_tab]["input_ids"] = [x for x in biomaterial_id_dict[biomaterial_tab]["input_ids"] if str(x) != 'nan']
+
+        new_input_ids = []
+        for input_id in biomaterial_id_dict[biomaterial_tab]["input_ids"]:
+            if "||" in input_id:
+                new_input_ids.extend(input_id.split("||"))
+            else:
+                new_input_ids.append(input_id)
+        biomaterial_id_dict[biomaterial_tab]["input_ids"] = new_input_ids
 
         for id in biomaterial_id_dict[biomaterial_tab]["ids"]:
             assert id in biomaterial_id_dict[biomaterial_tab]["input_ids"],"Biomaterial id %s is an orphan biomaterial. Please fix the linking" \
@@ -216,15 +225,13 @@ def get_experimental_design(xlsx_dict: {}):
     else:
         organoid = False
 
-    if specimen:
+    if cell_line and not organoid:
+        experimental_design = "cell_line_only"
+    elif not cell_line and organoid:
+        experimental_design = "organoid_only"
+    elif cell_line and organoid:
+        experimental_design = "organoid"
+    else:
+        experimental_design = "standard"
 
-        if cell_line and not organoid:
-            experimental_design = "cell_line_only"
-        elif not cell_line and organoid:
-            experimental_design = "organoid_only"
-        elif cell_line and organoid:
-            experimental_design = "organoid"
-        else:
-            experimental_design = "standard"
-
-    return experimental_design
+    return
