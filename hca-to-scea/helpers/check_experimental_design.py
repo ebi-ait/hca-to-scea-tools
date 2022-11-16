@@ -15,11 +15,12 @@ def check_species_eligibility(xlsx_dict):
     species_list = []
     for biomaterial in biomaterial_tab:
         species_key = "%s.genus_species.ontology_label" % (biomaterial)
-        species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
+        if biomaterial in xlsx_dict.keys():
+            species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
     species_list = list(set(species_list))
     species_list = [x for x in species_list if str(x) != 'nan']
 
-    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be elgiible for SCEA, each biomaterial must be" \
+    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be eligible for SCEA each biomaterial must be" \
                                                     " linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset" \
                                                     " and run again."
 
@@ -138,6 +139,63 @@ def check_organoids_linked(xlsx_dict):
     assert len(input_specimen_ids) == len(organoid_ids) or len(input_cell_line_ids) == len(organoid_ids),"1 more more organoids are not linked to" \
                                                  " a specimen id or cell line id. Please link all organoids to an input specimen or cell line."
 
+def check_biomaterial_linkings(xlsx_dict):
+
+    biomaterial_tabs = ["donor_organism", "specimen_from_organism", "cell_line", "organoid", "cell_suspension"]
+    biomaterial_tabs = [tab for tab in biomaterial_tabs if tab in xlsx_dict.keys()]
+
+    biomaterial_id_dict = {}
+    for biomaterial_tab in biomaterial_tabs:
+
+        biomaterial_id_dict[biomaterial_tab] = {"ids":[],"input_tabs":[],"input_ids":[]}
+        biomaterial_id_dict[biomaterial_tab]["ids"] = list(xlsx_dict[biomaterial_tab]["%s.biomaterial_core.biomaterial_id" % (biomaterial_tab)])
+        biomaterial_id_key = "%s.biomaterial_core.biomaterial_id" % (biomaterial_tab)
+        biomaterial_id_dict[biomaterial_tab]["input_tabs"] = [tab for tab in biomaterial_tabs if biomaterial_id_key in xlsx_dict[tab].columns]
+        biomaterial_id_dict[biomaterial_tab]["input_tabs"].remove(biomaterial_tab)
+        for tab in biomaterial_id_dict[biomaterial_tab]["input_tabs"]:
+            biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(xlsx_dict[tab][biomaterial_id_key])
+        if biomaterial_id_key in xlsx_dict["sequence_file"].columns:
+            biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(list(xlsx_dict["sequence_file"][biomaterial_id_key]))
+
+        for id in biomaterial_id_dict[biomaterial_tab]["ids"]:
+            assert id in biomaterial_id_dict[biomaterial_tab]["input_ids"],"Biomaterial id %s is an orphan biomaterial. Please fix the linking" \
+                                                                           " and run again." % (id)
+
+def check_protocol_linkings(xlsx_dict):
+
+    protocol_tabs = ["collection_protocol", "dissociation_protocol", "enrichment_protocol", "differentiation_protocol", "library_preparation_protocol", "sequencing_protocol"]
+    biomaterial_tabs = ["donor_organism", "specimen_from_organism", "cell_line", "organoid", "cell_suspension", "sequence_file"]
+
+    protocol_id_dict = {}
+    for protocol_tab in protocol_tabs:
+        if protocol_tab in xlsx_dict.keys():
+            protocol_id_key = "%s.protocol_core.protocol_id" % (protocol_tab)
+            protocol_id_dict[protocol_tab] = {"ids":[],"input_ids":[]}
+            protocol_id_dict[protocol_tab]["ids"] = list(xlsx_dict[protocol_tab][protocol_id_key])
+            for biomaterial_tab in biomaterial_tabs:
+                if biomaterial_tab in xlsx_dict.keys():
+                    new_cols = []
+                    for col in xlsx_dict[biomaterial_tab].columns:
+                        if "protocol_id" in col:
+                            new_cols.append(col.split("protocol_id")[0] + "protocol_id")
+                        else:
+                            new_cols.append(col)
+                    xlsx_dict[biomaterial_tab].columns = new_cols
+                    if protocol_id_key in xlsx_dict[biomaterial_tab].columns:
+                        protocol_id_dict[protocol_tab]["input_ids"].extend(list(xlsx_dict[biomaterial_tab][protocol_id_key]))
+
+            input_ids = [item for item in protocol_id_dict[protocol_tab]["input_ids"] if str(item) != 'nan']
+            for input_id in input_ids:
+                if "||" in input_id:
+                    new_input_ids = input_id.split("||")
+                    protocol_id_dict[protocol_tab]["input_ids"].extend(new_input_ids)
+
+            protocol_id_dict[protocol_tab]["input_ids"] = set(protocol_id_dict[protocol_tab]["input_ids"])
+
+            for id in protocol_id_dict[protocol_tab]["ids"]:
+                assert id in protocol_id_dict[protocol_tab]["input_ids"], "Protocol id %s is an orphan protocol. Please fix the linking" \
+                          " and run again." % (id)
+
 def get_experimental_design(xlsx_dict: {}):
 
     if 'cell_line' in xlsx_dict.keys():
@@ -166,33 +224,3 @@ def get_experimental_design(xlsx_dict: {}):
         experimental_design = "standard"
 
     return experimental_design
-
-def check_technology_eligibility(xlsx_dict,technology_dict):
-
-    technology_types = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"].values)
-    assert all(t in technology_dict.keys() for t in technology_types),"1 or more technology types are not eligible." \
-                                                               " Please remove ineligible technologies and their linked" \
-                                                               " samples and try again."
-
-    assert len(technology_types) == 1,"Only 1 technology type is allowed per SCEA E-HCAD id. " \
-                                      "Please split the dataset by the technology type and run them separately."
-
-def check_species_eligibility(xlsx_dict):
-
-    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension"]
-
-    species_list = []
-    for biomaterial in biomaterial_tab:
-        if biomaterial in xlsx_dict.keys():
-            species_key = "%s.genus_species.ontology_label" % (biomaterial)
-            if species_key in xlsx_dict[biomaterial].keys():
-                species_list.extend(xlsx_dict[biomaterial][species_key].dropna().unique())
-    species_list = list(set(species_list))
-
-    assert all("||" not in s for s in species_list),"The dataset contains biomaterials linked to >1 species (pooled). To be eliible for SCEA each biomaterial must be linked to 1 species only (Human or Mouse). Please remove the relevant biomaterials from the dataset and run again."
-
-    assert all(s in ["Homo sapiens","Mus musculus"] for s in species_list),"1 or more species are not eligible. Species must be" \
-                                                                           " either Homo sapiens or Mus musculus."
-
-    assert len(species_list) == 1,"Only 1 species is allowed per SCEA E-HCAD id. " \
-                                      "Please split the dataset by species and run them separately."
