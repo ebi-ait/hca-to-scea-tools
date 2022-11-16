@@ -587,6 +587,7 @@ def main():
     check_experimental_design.check_biomaterial_linkings(xlsx_dict)
     check_experimental_design.check_protocol_linkings(xlsx_dict)
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
+
     if experimental_design == "cell_line_only" or experimental_design == "organoid":
         check_experimental_design.check_cell_lines_linked(xlsx_dict)
     if experimental_design == "organoid_only" or experimental_design == "organoid":

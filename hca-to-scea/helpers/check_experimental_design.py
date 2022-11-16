@@ -234,4 +234,4 @@ def get_experimental_design(xlsx_dict: {}):
     else:
         experimental_design = "standard"
 
-    return
+    return experimental_design
