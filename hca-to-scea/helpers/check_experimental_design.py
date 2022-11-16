@@ -14,8 +14,8 @@ def check_species_eligibility(xlsx_dict):
 
     species_list = []
     for biomaterial in biomaterial_tab:
-        species_key = "%s.genus_species.ontology_label" % (biomaterial)
         if biomaterial in xlsx_dict.keys():
+            species_key = "%s.genus_species.ontology_label" % (biomaterial)
             species_list.extend(list(xlsx_dict[biomaterial][species_key].values))
     species_list = list(set(species_list))
     species_list = [x for x in species_list if str(x) != 'nan']
@@ -32,19 +32,21 @@ def check_species_eligibility(xlsx_dict):
 
 def check_for_pooled_samples(xlsx_dict):
 
-    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension"]
+    biomaterial_tab = ["donor_organism","specimen_from_organism","cell_line","organoid","cell_suspension","sequence_file"]
 
     input_biomaterial_list = []
     for biomaterial in biomaterial_tab:
-        for key in biomaterial_tab:
-            input_biomaterial_key = "%s.biomaterial_core.biomaterial_id" % (key)
-            if input_biomaterial_key in xlsx_dict[biomaterial].keys():
-                input_biomaterial_list.extend(list(xlsx_dict[biomaterial][input_biomaterial_key].values))
+        if biomaterial in xlsx_dict.keys():
+            for key in biomaterial_tab:
+                input_biomaterial_key = "%s.biomaterial_core.biomaterial_id" % (key)
+                if input_biomaterial_key in xlsx_dict[biomaterial].keys():
+                    input_biomaterial_list.extend(list(xlsx_dict[biomaterial][input_biomaterial_key].values))
+
     input_biomaterial_list = list(set(input_biomaterial_list))
     input_biomaterial_list = [x for x in input_biomaterial_list if str(x) != 'nan']
 
     assert all("||" not in i for i in input_biomaterial_list),"The dataset contains pooled biomaterials. Pooled biomaterials are not eligible." \
-                                                              " Please remove the relevant biomaterials from the dataset " \
+                                                              " Please remove the relevant biomaterials from the dataset" \
                                                               " and run again."
 
 def check_donor_exists(xlsx_dict):
@@ -156,6 +158,15 @@ def check_biomaterial_linkings(xlsx_dict):
             biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(xlsx_dict[tab][biomaterial_id_key])
         if biomaterial_id_key in xlsx_dict["sequence_file"].columns:
             biomaterial_id_dict[biomaterial_tab]["input_ids"].extend(list(xlsx_dict["sequence_file"][biomaterial_id_key]))
+        biomaterial_id_dict[biomaterial_tab]["input_ids"] = [x for x in biomaterial_id_dict[biomaterial_tab]["input_ids"] if str(x) != 'nan']
+
+        new_input_ids = []
+        for input_id in biomaterial_id_dict[biomaterial_tab]["input_ids"]:
+            if "||" in input_id:
+                new_input_ids.extend(input_id.split("||"))
+            else:
+                new_input_ids.append(input_id)
+        biomaterial_id_dict[biomaterial_tab]["input_ids"] = new_input_ids
 
         for id in biomaterial_id_dict[biomaterial_tab]["ids"]:
             assert id in biomaterial_id_dict[biomaterial_tab]["input_ids"],"Biomaterial id %s is an orphan biomaterial. Please fix the linking" \

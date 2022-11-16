@@ -587,6 +587,7 @@ def main():
     check_experimental_design.check_biomaterial_linkings(xlsx_dict)
     check_experimental_design.check_protocol_linkings(xlsx_dict)
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
+
     if experimental_design == "cell_line_only" or experimental_design == "organoid":
         check_experimental_design.check_cell_lines_linked(xlsx_dict)
     if experimental_design == "organoid_only" or experimental_design == "organoid":
@@ -597,6 +598,7 @@ def main():
     check_experimental_design.check_input_to_cell_suspension(xlsx_dict)
     check_experimental_design.check_technology_eligibility(xlsx_dict, technology_dict)
     check_experimental_design.check_species_eligibility(xlsx_dict)
+    check_experimental_design.check_for_pooled_samples(xlsx_dict)
 
     merged_df = multitab_excel_to_single_txt.merge_dataframes(xlsx_dict,experimental_design)
     merged_df_unique_runs = merged_df.drop_duplicates(subset=['sequence_file.insdc_run_accessions'])
