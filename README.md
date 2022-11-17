@@ -54,8 +54,6 @@ optional arguments:
   -et {baseline,differential}, --experiment_type {baseline,differential}
                         Please indicate whether this is a baseline or
                         differential experimental design
-  --facs                Please specify this argument if FACS was used to
-                        isolate single cells
   -f EXPERIMENTAL_FACTORS [EXPERIMENTAL_FACTORS ...], --experimental_factors EXPERIMENTAL_FACTORS [EXPERIMENTAL_FACTORS ...]
                         space separated list of experimental factors
   -pd PUBLIC_RELEASE_DATE, --public_release_date PUBLIC_RELEASE_DATE
@@ -64,8 +62,6 @@ optional arguments:
   -hd HCA_UPDATE_DATE, --hca_update_date HCA_UPDATE_DATE
                         Please enter the last time the HCA prohect submission
                         was updated in this format: YYYY-MM-DD
-  -r RELATED_SCEA_ACCESSION [RELATED_SCEA_ACCESSION ...], --related_scea_accession RELATED_SCEA_ACCESSION [RELATED_SCEA_ACCESSION ...]
-                        space separated list of related scea accession(s)
   -o OUTPUT_DIR, --output_dir OUTPUT_DIR
                         Provide full path to preferred output dir
 ```
@@ -89,12 +85,10 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 |-f          | Factor value             | A space-separated list of user-defined factor values e.g. age disease                              | yes       |
 |-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
 |-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
-|-r          | Related E-HCAD-id        | If there is a related project, you should enter the related E-HCAD-id here e.g.['E-HCAD-39']       | no        |
 |-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
 |-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be 1 of                             | no        |
 |            |                          | [cs_name, cs_id, sp_name, sp_id, other] where cs indicates cell suspension and sp indicates        |           |
 |            |                          |  specimen from organism. Default is cs_name.                                                       |           |
-|--facs      | optional argument        | If FACS was used as a single cell isolation method, indicate this by adding the --facs argument.   | no        |
 |-o          | optional argument        | An output dir path can optionally be provided. If it does not exist, it will be created.           | no        |
 
 ## Definitions
@@ -105,6 +99,7 @@ A factor value is a chosen experimental characteristic which can be used to grou
 
 - Known disease(s)
 - Development stage
+- Sampling time point
 - Organ
 - Organ part
 - Selected cell type(s)
@@ -112,39 +107,25 @@ A factor value is a chosen experimental characteristic which can be used to grou
 
 There must be at least 1 factor value. If you cannot identify a factor value i.e. all donors and samples share the same metadata with respect to the above list of factor values, then enter 'Individual'.
 
-Datasets with more than 1 technolgoy type are not eligible for SCEA. Therefore, technology type is not a valid factor value.
-
 **Experiment type**
 
 An experiment with samples which can be grouped or differentiatied by a factor value is classified as 'differential'. The list of possible factor values can be found above.
 
 If 1 or more factor values other than 'Individual' is identified, then the experiment type should be 'Differential'. If the only factor value is 'Individual', then the experiment type should be 'Baseline'.
 
-**Related E-HCAD-ID**
-
-If the project has been split into two separate E-HCAD datasets, due to different technologies being used in the same project, or any other reason, then enter the E-HCAD-ID for the other dataset here. Example: E-HCAD-50.
-
 ## Examples
 
 **Required arguments only**
 
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
 
 **Specify optional name argument**
 
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -name cs_name -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
-
-**Specify optional related scea accession**
-
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -r 51`
-
-**Specify that FACS was used**
-
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 --facs`
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -name cs_name -ac 50 -c AD -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
 
 **Specify optional output dir**
 
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -tt 10Xv3_3 -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir`
+`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir`
 
 ## Developer Notes
 
