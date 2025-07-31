@@ -32,3 +32,8 @@ hca2scea-frontend/public
 output/
 
 .idea/
+
+# collect-dcp-info
+collect-dcp-info/.venv
+collect-dcp-info/hca_submissions_summary.csv
+collect-dcp-info/hca_spreadsheets/*
