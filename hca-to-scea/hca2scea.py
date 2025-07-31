@@ -24,6 +24,8 @@ def get_secondary_accessions(xlsx_dict, args):
     secondary_accessions.append(args.project_uuid)
     keys = ["project.geo_series_accessions","project.insdc_project_accessions","project.insdc_study_accessions","project.biostudies_accessions"]
     for key in keys:
+        if key not in xlsx_dict["project"]:
+            continue
         items = xlsx_dict["project"][key].fillna('')
         items = [item for item in items if item != '']
         if items:
@@ -469,7 +471,7 @@ def main():
     parser.add_argument(
         "-study",
         type=str,
-        required=True,
+        required=False,
         help="Please provide the SRA or ENA study accession."
     )
     parser.add_argument(
