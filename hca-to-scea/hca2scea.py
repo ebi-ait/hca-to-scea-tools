@@ -471,7 +471,7 @@ def main():
     parser.add_argument(
         "-study",
         type=str,
-        required=True,
+        required=False,
         help="Please provide the SRA or ENA study accession."
     )
     parser.add_argument(
