@@ -1,12 +1,13 @@
 import time
 import requests
+
 import pandas as pd
 from hca_ingest.api.ingestapi import IngestApi
 from tqdm import tqdm
-from datetime import datetime
 
 # Setup
 INGEST_API_URL = "https://api.ingest.archive.data.humancellatlas.org/"
+CELLXGENE_API_URL = "https://api.cellxgene.cziscience.com/curation/v1/collections"
 token = "<token>"
 
 def get_valid_api(token=None):
@@ -37,11 +38,12 @@ def get_project_metadata(api, subm):
             'short_name': project['content']['project_core'].get('project_short_name', None),
             'wranglingState': project['wranglingState'] if project['wranglingState'] in ['Published in DCP', 'Submitted'] else subm.get('submissionState', None),
             'geo_series_accessions': project['content'].get('geo_series_accessions', []),
-            'doi': [pub.get('doi') for pub in project['content'].get('publications', []) if pub.get('doi')]
+            'doi': [pub.get('doi') for pub in project['content'].get('publications', []) if pub.get('doi')],
+            'cxg_link': any('cellxgene' in l for l in project['content'].get('supplementary_links', []))
         }
     except Exception as e:
         print(f"⚠️ Error fetching project metadata for submission {subm['uuid']['uuid']}: {e}")
-        return {'project_uuid': None, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': []}
+        return {'project_uuid': None, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
 
 def library_methods(api, project_id):
     try:
@@ -132,7 +134,7 @@ def analysis_types(api, project_id):
             }
         ]
         analysis_response = api.post(f"{INGEST_API_URL}/files/query?operator=AND", json=analysis_query)
-
+        
         files = []
         analysis_descriptions = set()
         if analysis_response.ok and analysis_response.json()['page']['totalElements'] > 0:
@@ -147,7 +149,49 @@ def analysis_types(api, project_id):
     except Exception as e:
         print(f"\n⚠️ File query error in project {row['project_uuid']}: {e}")
         return ""
-    
+
+def get_cellxgene_data():
+    try:
+        response = requests.get(CELLXGENE_API_URL, timeout=30)
+        response.raise_for_status()
+        collections = response.json()
+        
+        # Build both DataFrame and lookup dictionaries
+        cxg_data = []
+        doi_to_id = {}
+        gse_to_id = {}
+        
+        for c in collections:
+            collection_id = c['collection_id']
+            doi = c['doi'].lower() if isinstance(c.get('doi'), str) else None
+            gse_list = [l['link_name'] for l in c.get('links', [])
+                        if l.get('link_name', '').startswith('GSE')]
+            
+            cxg_data.append({
+                'collection_id': collection_id,
+                'doi': doi,
+                'gse': gse_list
+            })
+            
+            if doi:
+                doi_to_id[doi] = collection_id
+            for gse in gse_list:
+                gse_to_id[gse] = collection_id
+        
+        return pd.DataFrame(cxg_data)
+    except Exception as e:
+        print(f"⚠️ Cellxgene API error: {str(e)}")
+        return None
+
+def match_cxg_identifier(cxg_df, identifier, id_type='doi'):
+    if id_type not in ['doi', 'gse']:
+        raise ValueError("id_type must be 'doi' or 'gse'")
+    if id_type == 'doi':
+        identifier = identifier.lower()
+        return cxg_df.loc[cxg_df['doi'] == identifier, 'collection_id'].values[0]
+    elif id_type == 'gse':
+        return cxg_df.loc[cxg_df['gse'].apply(lambda x: identifier in x), 'collection_id'].values[0]
+    return None
 
 def main():
     # NCBI Taxon IDs of interest
@@ -159,7 +203,9 @@ def main():
         'project_uuid': [],
         'project_id': [],
         'project_short_name': [],
-        'cxg': [],
+        'cxg_link': False,
+        'cxg_doi': None,
+        'cxg_geo': None,
         'wranglingState': [],
         'doi': [],
         'geo_series_accessions': [],
@@ -180,7 +226,7 @@ def main():
     print(f"🔢 Total submissions: {len(submissions)}\n")
 
     overall_time = time.time()
-    for subm in tqdm(submissions, desc="Processing submissions", unit="submission"):
+    for subm in tqdm(submissions[0:2], desc="Processing submissions", unit="submission"):
         row = {}
         sub_start = time.time()
         sub_uuid = subm['uuid']['uuid']
@@ -230,6 +276,19 @@ def main():
 
         sub_elapsed = time.time() - sub_start
         tqdm.write(f"⏱️ {sub_uuid} processed in {sub_elapsed:.1f}s")
+
+    # --- Cellxgene data ---
+    t0 = time.time()
+    print("🔍 Fetching Cellxgene collections...")
+    cxg_df = get_cellxgene_data()
+    cxg_df.to_csv("all_cellxgene_collections.csv", index=False)
+    print(f"🔢 Recovered {len(cxg_df)} collections!")
+    print("🔸 Matching Cellxgene data...", flush=True)
+    df['cxg_doi'] = df['doi'].apply(lambda x: [match_cxg_identifier(cxg_df, doi, 'doi') for doi in x if doi in cxg_df['doi'].values])
+    df['cxg_doi'] = df['cxg_doi'].apply(lambda x: x[0] if x else False)
+    df['cxg_geo'] = df['geo_series_accessions'].apply(lambda x: [match_cxg_identifier(cxg_df, gse, 'gse') for gse in x if gse in cxg_df['gse'].values])
+    df['cxg_geo'] = df['cxg_geo'].apply(lambda x: x[0] if x else False)
+    print(f"🔹 Cellxgene matching done in {time.time() - t0:.2f}s")
 
     # --- Save and report ---
     filename = "hca_submissions_summary.csv"
