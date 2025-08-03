@@ -226,7 +226,7 @@ def main():
     print(f"🔢 Total submissions: {len(submissions)}\n")
 
     overall_time = time.time()
-    for subm in tqdm(submissions[0:2], desc="Processing submissions", unit="submission"):
+    for subm in tqdm(submissions, desc="Processing submissions", unit="submission"):
         row = {}
         sub_start = time.time()
         sub_uuid = subm['uuid']['uuid']
