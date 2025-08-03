@@ -2,6 +2,7 @@ import os
 import argparse
 import requests
 import pandas as pd
+from tqdm import tqdm
 import xml.etree.ElementTree as ET
 from openpyxl import load_workbook
 from hca_ingest.api.ingestapi import IngestApi
@@ -164,7 +165,7 @@ def main():
     submission_df = pd.read_csv(uuid_csv)
     submission_uuids = submission_df['subm_uuid'].dropna().unique()
 
-    for subm_uuid in submission_uuids:
+    for subm_uuid in tqdm(submission_uuids, desc="Processing submissions", unit="submission"):
         print(f"Getting submission {subm_uuid}")
         # subm_uuid = get_valid_submission_uuid(subm_uuid, api)
         wb = download_workbook(api, subm_uuid)
