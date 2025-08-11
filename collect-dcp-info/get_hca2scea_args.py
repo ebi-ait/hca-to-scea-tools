@@ -1,4 +1,5 @@
 import os
+import signal
 import argparse
 import requests
 import pandas as pd
@@ -16,12 +17,37 @@ SCEA_ARGS_TEMPLATE = {
     "--facs": False, "-name": None, "-o": None
 }
 
+pd.set_option('display.max_colwidth', None)  
+
+# Timeout handler
+class InputTimedOut(Exception):
+    pass
+
+def inputTimeOutHandler(signum, frame):
+    # called when read times out
+    print('time\'s up!')
+    raise InputTimedOut
+
+signal.signal(signal.SIGALRM, inputTimeOutHandler)
+
+def input_with_timeout(prompt_string, timeout=0, default_value=None):
+    foo = default_value
+    try:
+        print(prompt_string, end=' ')
+        if timeout > 0:
+            signal.alarm(timeout)
+        foo = input()
+        signal.alarm(0)    #disable alarm
+    except InputTimedOut:
+            pass
+    return foo
+
 def get_valid_api(token=None):
     api = IngestApi(INGEST_API_URL)
     api.set_token(f"Bearer {token}")
     response = requests.get(f"{INGEST_API_URL}/submissionEnvelopes/", headers=api.get_headers())
     while response.status_code != 200:
-        token = input("Please provide a valid token:").strip()
+        token = input_with_timeout("Please provide a valid token:", timeout=10, default_value=token).strip()
         api.set_token(f"Bearer {token}")
         response = requests.get(f"{INGEST_API_URL}/submissionEnvelopes/", headers=api.get_headers())
         print("Invalid token.")
@@ -30,7 +56,7 @@ def get_valid_api(token=None):
 def get_valid_submission_uuid(api: IngestApi):
     resp = requests.get(f"{INGEST_API_URL}/submissionEnvelopes/search/findByUuidUuid?uuid={uuid}", headers=api.get_headers())
     while True:
-        uuid = input("Please provide a valid submission uuid:").strip()
+        uuid = input_with_timeout("Please provide a valid submission uuid:", timeout=10, default_value=uuid).strip()
         resp = requests.get(f"{INGEST_API_URL}/submissionEnvelopes/search/findByUuidUuid?uuid={uuid}", headers=api.get_headers())
         if resp.status_code == 200:
             return uuid
@@ -71,7 +97,7 @@ def extract_project_metadata(xl: pd.ExcelFile, scea_args: dict):
             acc_list = acc_str.split('||')
             print("Multiple INSDC accessions found:", flush=True)
             print(pd.DataFrame(acc_list), flush=True)
-            index = int(input("Select index: ").strip())
+            index = int(input_with_timeout("Select an accession: ", timeout=10, default_value=0))
             scea_args['-study'] = acc_list[index]
         elif acc_str.startswith(('ERP', 'DRP', 'SRP')):
             scea_args['-study'] = acc_str
