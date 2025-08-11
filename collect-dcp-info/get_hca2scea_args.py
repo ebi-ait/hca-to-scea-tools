@@ -36,11 +36,11 @@ def get_valid_submission_uuid(api: IngestApi):
             return uuid
         print("Invalid submission UUID.")
 
-def download_workbook(api: IngestApi, subm_uuid: str):
+def download_workbook(api: IngestApi, sub_uuid: str):
     print("Downloading workbook...", flush=True, end=' ')
     wd = WorkbookDownloader(api)
     print("done!", flush=True)
-    return wd.get_workbook_from_submission(subm_uuid)
+    return wd.get_workbook_from_submission(sub_uuid)
 
 def save_workbook(wb, proj_sheet='Project'):
     proj_name_cell = [col[3].column_letter + "6" for col in wb[proj_sheet].iter_cols()
@@ -157,18 +157,17 @@ def main():
         submission_uuids = [args.uuid.strip()]
     else:
         submission_df = pd.read_csv(args.csv)
-        submission_uuids = submission_df['subm_uuid'].dropna().unique()
+        submission_uuids = submission_df['sub_uuid'].dropna().unique()
 
     csv_path = "scea_arguments.csv"
     uuid_csv = "hca_submissions_summary.csv"
 
     submission_df = pd.read_csv(uuid_csv)
-    submission_uuids = submission_df['subm_uuid'].dropna().unique()
+    submission_uuids = submission_df['sub_uuid'].dropna().unique()
 
-    for subm_uuid in tqdm(submission_uuids, desc="Processing submissions", unit="submission"):
-        print(f"Getting submission {subm_uuid}")
-        # subm_uuid = get_valid_submission_uuid(subm_uuid, api)
-        wb = download_workbook(api, subm_uuid)
+    for sub_uuid in tqdm(submission_uuids, desc="Processing submissions", unit="submission"):
+        print(f"Getting submission {sub_uuid}")
+        wb = download_workbook(api, sub_uuid)
         file_name, proj_name = save_workbook(wb)
         xl = pd.ExcelFile(f"hca_spreadsheets/{file_name}")
 
@@ -194,7 +193,7 @@ def main():
         scea_args['-name'] = choose_name_field(xl)
         scea_args['--facs'] = check_facs_used(xl)
 
-        append_args_to_csv(scea_args, subm_uuid, csv_path)
+        append_args_to_csv(scea_args, sub_uuid, csv_path)
 
         print("\n🎯Submission processed.")
         print(f"📄 Output written to: {csv_path}\n")

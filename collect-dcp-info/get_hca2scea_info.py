@@ -248,10 +248,10 @@ def main():
 
         # --- Azul validation ---
         t0 = time.time()
-        print("🔸 Check Azul...", flush=True)
+        print("🔸 Check Azul...", flush=True, end="")
         azul_resp = requests.get(f"https://service.azul.data.humancellatlas.org/index/projects/{row['project_uuid']}")
         row.update({'azul_valid': azul_resp.ok})
-        print(f"🔹 Azul check done in {time.time() - t0:.2f}s", end="", flush=True)
+        print(f"🔹 Azul check done in {time.time() - t0:.2f}s", flush=True)
 
         # --- Protocols (library methods) ---
         t0 = time.time()
