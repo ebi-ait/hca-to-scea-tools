@@ -39,7 +39,6 @@ def get_valid_submission_uuid(api: IngestApi):
 def download_workbook(api: IngestApi, sub_uuid: str):
     print("Downloading workbook...", flush=True, end=' ')
     wd = WorkbookDownloader(api)
-    print("done!", flush=True)
     return wd.get_workbook_from_submission(sub_uuid)
 
 def save_workbook(wb, proj_sheet='Project'):
@@ -154,16 +153,14 @@ def main():
     api = get_valid_api(args.token)
 
     if args.uuid:
+        print(f"Processing single submission UUID: {args.uuid.strip()}")
         submission_uuids = [args.uuid.strip()]
     else:
+        if not os.path.exists(args.csv):
+            raise FileNotFoundError(f"CSV file {args.csv} not found.")
+        print(f"Processing multiple submissions from CSV file: {args.csv}")
         submission_df = pd.read_csv(args.csv)
         submission_uuids = submission_df['sub_uuid'].dropna().unique()
-
-    csv_path = "scea_arguments.csv"
-    uuid_csv = "hca_submissions_summary.csv"
-
-    submission_df = pd.read_csv(uuid_csv)
-    submission_uuids = submission_df['sub_uuid'].dropna().unique()
 
     for sub_uuid in tqdm(submission_uuids, desc="Processing submissions", unit="submission"):
         print(f"Getting submission {sub_uuid}")
@@ -193,10 +190,10 @@ def main():
         scea_args['-name'] = choose_name_field(xl)
         scea_args['--facs'] = check_facs_used(xl)
 
-        append_args_to_csv(scea_args, sub_uuid, csv_path)
+        append_args_to_csv(scea_args, sub_uuid, args.csv)
 
         print("\n🎯Submission processed.")
-        print(f"📄 Output written to: {csv_path}\n")
+        print(f"📄 Output written to: {args.csv}\n")
 
 if __name__ == "__main__":
     main()
