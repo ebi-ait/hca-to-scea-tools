@@ -1,6 +1,6 @@
 import time
 import requests
-
+import argparse
 import pandas as pd
 from hca_ingest.api.ingestapi import IngestApi
 from tqdm import tqdm
@@ -197,6 +197,11 @@ def match_cxg_identifier(cxg_df, identifier, id_type='doi'):
     return None
 
 def main():
+
+    parser = argparse.ArgumentParser(description="Process HCA submissions for SCEA.")
+    parser.add_argument("-t", "--token", type=str, help="Bearer token for HCA ingest API.")
+    args = parser.parse_args()
+
     # NCBI Taxon IDs of interest
     taxon_ids = [9606, 10900, 9607, 9060, 9615]
 
@@ -220,7 +225,7 @@ def main():
     }
     df = pd.DataFrame(ing_dict)
 
-    api = get_valid_api(token)
+    api = get_valid_api(args.token)
 
     # Get all submission envelopes
     print("🔍 Fetching all submission envelopes...")
