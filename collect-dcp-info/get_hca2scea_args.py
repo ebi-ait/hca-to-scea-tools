@@ -37,6 +37,13 @@ def get_valid_submission_uuid(api: IngestApi):
         print("Invalid submission UUID.")
 
 def download_workbook(api: IngestApi, sub_uuid: str):
+    submission = api.get_submission_by_uuid(sub_uuid)
+    project = api.get_related_project(submission['_links']['self']['href'].split('/')[-1])
+    if project:
+        project_title = project['content']['project_core']['project_short_name']
+        if os.path.exists(f"hca_spreadsheets/{project_title}.xlsx"):
+            print(f"Workbook for {project_title} already exists. Skipping download.", flush=True)
+            return load_workbook(f"hca_spreadsheets/{project_title}.xlsx")
     print("Downloading workbook...", flush=True, end=' ')
     wd = WorkbookDownloader(api)
     return wd.get_workbook_from_submission(sub_uuid)
