@@ -95,8 +95,10 @@ def extract_project_metadata(xl: pd.ExcelFile, scea_args: dict):
         acc_str = insdc_vals.values[0]
         if '||' in acc_str:
             acc_list = acc_str.split('||')
-            print("Multiple INSDC accessions found:", flush=True)
-            print(pd.DataFrame(acc_list), flush=True)
+            print("\nMultiple INSDC accessions found:", flush=True)
+            acc_list_df = pd.DataFrame({'accession': acc_list})
+            acc_list_df['study_name'] = acc_list_df['accession'].apply(fetch_ena_study_name)
+            print(acc_list_df, flush=True)
             index = int(input_with_timeout("Select an accession: ", timeout=10, default_value=0))
             scea_args['-study'] = acc_list[index]
         elif acc_str.startswith(('ERP', 'DRP', 'SRP')):
@@ -114,6 +116,14 @@ def fetch_ena_publication_date(study_accession: str):
     for attr in root.findall('.//STUDY_ATTRIBUTE'):
         if attr.find('TAG').text == 'ENA-FIRST-PUBLIC':
             return attr.find('VALUE').text
+    return None
+
+def fetch_ena_study_name(study_accession: str):
+    url = f"https://www.ebi.ac.uk/ena/browser/api/xml/{study_accession}"
+    root = ET.fromstring(requests.get(url).text)
+    for attr in root.findall('.//DESCRIPTOR'):
+        if attr.find('STUDY_TITLE') is not None:
+            return attr.find('STUDY_TITLE').text
     return None
 
 def detect_experiment_type_and_factor(xl, factors_map):
