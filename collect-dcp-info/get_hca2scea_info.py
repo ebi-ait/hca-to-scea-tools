@@ -217,7 +217,7 @@ def main():
         'wranglingState': [],
         'doi': [],
         'geo_series_accessions': [],
-        'azul_valid': [],
+        'azul_valid': False,
         'lib_prots': [],
         'organisms': [],
         'insdc_fastqs': [],
