@@ -30,8 +30,12 @@ def get_all(post_response, query):
     return all_files
 
 def get_project_metadata(api, subm):
+    project_get = api.get(subm['_links']['projects']['href']).json()
+    if not '_embedded' in project_get:
+        print(f"⚠️ No project linked with submission {subm['uuid']['uuid']}")
+        return {'project_uuid': None, 'project_id': False, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
     try:
-        project = api.get(subm['_links']['projects']['href']).json()['_embedded']['projects'][0]
+        project = project_get['_embedded']['projects'][0]
         return {
             'project_uuid': project['uuid']['uuid'],
             'project_id': project['_links']['self']['href'].rstrip('/').split('/')[-1],
@@ -43,7 +47,7 @@ def get_project_metadata(api, subm):
         }
     except Exception as e:
         print(f"⚠️ Error fetching project metadata for submission {subm['uuid']['uuid']}: {e}")
-        return {'project_uuid': None, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
+        return {'project_uuid': None, 'project_id': False, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
 
 def library_methods(api, project_id):
     try:
@@ -236,40 +240,40 @@ def main():
         t0 = time.time()
         print("🔸 Get project...", flush=True)
         row.update(get_project_metadata(api, subm))
-        print(f"🔹 Project fetched in {time.time() - t0:.2f}s")
+        print(f"🔹 Project fetched in {time.time() - t0:.2f}s", end="", flush=True)
 
         # --- Azul validation ---
         t0 = time.time()
         print("🔸 Check Azul...", flush=True)
         azul_resp = requests.get(f"https://service.azul.data.humancellatlas.org/index/projects/{row['project_uuid']}")
         row.update({'azul_valid': azul_resp.ok})
-        print(f"🔹 Azul check done in {time.time() - t0:.2f}s")
+        print(f"🔹 Azul check done in {time.time() - t0:.2f}s", end="", flush=True)
 
         # --- Protocols (library methods) ---
         t0 = time.time()
         print("🔸 Get library methods...", flush=True)
         lib_methods = library_methods(api, row['project_id'])
         row.update({'lib_prots': "||".join(sorted(lib_methods))})
-        print(f"🔹 Library methods fetched in {time.time() - t0:.2f}s")
+        print(f"🔹 Library methods fetched in {time.time() - t0:.2f}s", end="", flush=True)
 
         # --- Biomaterials (organisms) ---
         t0 = time.time()
         print("🔸 Get taxa...", flush=True)
         found_taxa = taxa_ids(api, row['project_id'], taxon_ids)
         row.update({'organisms': "||".join(sorted(found_taxa))})
-        print(f"🔹 Taxa fetched in {time.time() - t0:.2f}s")
+        print(f"🔹 Taxa fetched in {time.time() - t0:.2f}s", end="", flush=True)
 
         # --- Sequence files ---
         t0 = time.time()
         print("🔸 Get files...", flush=True)
         row.update({'insdc_fastqs': fastq_counter(api, row['project_id'])})
-        print(f"🔹 Files fetched in {time.time() - t0:.2f}s")
+        print(f"🔹 Files fetched in {time.time() - t0:.2f}s", end="", flush=True)
 
         # --- Analysis files ---
         t0 = time.time()
         print("🔸 Get analysis files...", flush=True)
         row.update({'analysis_types': analysis_types(api, row['project_id'])})
-        print(f"🔹 Analysis files fetched in {time.time() - t0:.2f}s")
+        print(f"🔹 Analysis files fetched in {time.time() - t0:.2f}s", end="", flush=True)
 
         # --- Append results ---
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
@@ -279,16 +283,16 @@ def main():
 
     # --- Cellxgene data ---
     t0 = time.time()
-    print("🔍 Fetching Cellxgene collections...")
+    print("🔍 Fetching Cellxgene collections...", end="", flush=True)
     cxg_df = get_cellxgene_data()
     cxg_df.to_csv("all_cellxgene_collections.csv", index=False)
     print(f"🔢 Recovered {len(cxg_df)} collections!")
-    print("🔸 Matching Cellxgene data...", flush=True)
+    print("🔸 Matching Cellxgene data...", end="", flush=True)
     df['cxg_doi'] = df['doi'].apply(lambda x: [match_cxg_identifier(cxg_df, doi, 'doi') for doi in x if doi in cxg_df['doi'].values])
     df['cxg_doi'] = df['cxg_doi'].apply(lambda x: x[0] if x else False)
     df['cxg_geo'] = df['geo_series_accessions'].apply(lambda x: [match_cxg_identifier(cxg_df, gse, 'gse') for gse in x if gse in cxg_df['gse'].values])
     df['cxg_geo'] = df['cxg_geo'].apply(lambda x: x[0] if x else False)
-    print(f"🔹 Cellxgene matching done in {time.time() - t0:.2f}s")
+    print(f"🔹 Cellxgene matching done in {time.time() - t0:.2f}s", end="", flush=True)
 
     # --- Save and report ---
     filename = "hca_submissions_summary.csv"
