@@ -50,7 +50,6 @@ def get_valid_api(token=None):
         token = input_with_timeout("Please provide a valid token:", timeout=10, default_value=token).strip()
         api.set_token(f"Bearer {token}")
         response = requests.get(f"{INGEST_API_URL}/submissionEnvelopes/", headers=api.get_headers())
-        print("Invalid token.")
     return api
 
 def get_valid_submission_uuid(api: IngestApi):
@@ -200,7 +199,10 @@ def main():
         submission_uuids = [args.uuid.strip()]
     else:
         if not os.path.exists(args.csv):
-            raise FileNotFoundError(f"CSV file {args.csv} not found.")
+            if not os.path.exists(os.path.join("collect-dcp-info", args.csv)):
+                raise FileNotFoundError(f"CSV file {args.csv} not found.")
+            else:
+                args.csv = os.path.join("collect-dcp-info", args.csv)
         print(f"Processing multiple submissions from CSV file: {args.csv}")
         submission_df = pd.read_csv(args.csv)
         submission_uuids = submission_df['sub_uuid'].dropna().unique()
@@ -233,10 +235,10 @@ def main():
         scea_args['-name'] = choose_name_field(xl)
         scea_args['--facs'] = check_facs_used(xl)
 
-        append_args_to_csv(scea_args, sub_uuid, args.csv)
+        append_args_to_csv(scea_args, sub_uuid, 'scea_arguments.csv')
 
         print("\n🎯Submission processed.")
-        print(f"📄 Output written to: {args.csv}\n")
+        print("📄 Output written to: scea_arguments.csv")
 
 if __name__ == "__main__":
     main()
