@@ -33,12 +33,11 @@ def get_project_metadata(api, subm):
     project_get = api.get(subm['_links']['projects']['href']).json()
     if not '_embedded' in project_get:
         print(f"⚠️ No project linked with submission {subm['uuid']['uuid']}")
-        return {'project_uuid': None, 'project_id': False, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
+        return {'project_uuid': None, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
     try:
         project = project_get['_embedded']['projects'][0]
         return {
             'project_uuid': project['uuid']['uuid'],
-            'project_id': project['_links']['self']['href'].rstrip('/').split('/')[-1],
             'short_name': project['content']['project_core'].get('project_short_name', None),
             'wranglingState': project['wranglingState'] if project['wranglingState'] in ['Published in DCP', 'Submitted'] else subm.get('submissionState', None),
             'geo_series_accessions': project['content'].get('geo_series_accessions', []),
@@ -47,9 +46,9 @@ def get_project_metadata(api, subm):
         }
     except Exception as e:
         print(f"⚠️ Error fetching project metadata for submission {subm['uuid']['uuid']}: {e}")
-        return {'project_uuid': None, 'project_id': False, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
+        return {'project_uuid': None, 'short_name': None, 'wranglingState': 'UNKNOWN', 'geo_series_accessions': [], 'doi': [], 'cxg_link': False}
 
-def library_methods(api, project_id):
+def library_methods(api, sub_id):
     try:
         prot_query = [
             {
@@ -58,19 +57,19 @@ def library_methods(api, project_id):
                 "value": ".*"
             },
             {
-                "field": "project.id",
+                "field": "submissionEnvelope.id",
                 "operator": "IS",
-                "value": project_id
+                "value": sub_id
             }
         ]
         response = api.post(f"{INGEST_API_URL}/protocols/query?operator=AND", json=prot_query)
         protocols = response.json().get('_embedded', {}).get('protocols', []) if response.ok else []
         return set(p.get("content", {}).get("library_construction_method", {}).get("ontology_label", "text but no label!") for p in protocols)
     except Exception as e:
-        print(f"⚠️ Error fetching library methods for project {project_id}: {e}")
+        print(f"⚠️ Error fetching library methods for submission {sub_id}: {e}")
         return set()
     
-def taxa_ids(api, project_id, taxon_ids):
+def taxa_ids(api, sub_id, taxon_ids):
     found_taxa = set()
     try:
         for taxon in taxon_ids:
@@ -81,19 +80,19 @@ def taxa_ids(api, project_id, taxon_ids):
                     "value": taxon
                 },
                 {
-                    "field": "project.id",
+                    "field": "submissionEnvelope.id",
                     "operator": "IS",
-                    "value": project_id
+                    "value": sub_id
                 }
             ]
             bm_response = api.post(f"{INGEST_API_URL}/biomaterials/query?operator=AND", json=bm_query)
             if bm_response.ok and bm_response.json().get('_embedded', {}).get('biomaterials'):
                 found_taxa.add(str(taxon))
     except Exception as e:
-        print(f"⚠️ Error fetching taxa for project {project_id}: {e}")
+        print(f"⚠️ Error fetching taxa for submission {sub_id}: {e}")
     return found_taxa
 
-def fastq_counter(api, project_id):
+def fastq_counter(api, sub_id):
     try:
         seq_query = [
             {
@@ -107,18 +106,18 @@ def fastq_counter(api, project_id):
                 "value": ".*/sequence_file$"
             },
             {
-                "field": "project.id",
+                "field": "submissionEnvelope.id",
                 "operator": "IS",
-                "value": project_id
+                "value": sub_id
             }
         ]
         seq_response = api.post(f"{INGEST_API_URL}/files/query?operator=AND", json=seq_query)
         return seq_response.json()['page']['totalElements'] if seq_response.ok else 0
     except Exception as e:
-        print(f"⚠️ Error fetching FASTQ count for project {project_id}: {e}")
+        print(f"⚠️ Error fetching FASTQ count for submission {sub_id}: {e}")
         return 0
     
-def analysis_types(api, project_id):
+def analysis_types(api, sub_id):
     try:
         analysis_query = [
             {
@@ -132,9 +131,9 @@ def analysis_types(api, project_id):
                 "value": ".*/analysis_file$"
             },
             {
-                "field": "project.id",
+                "field": "submissionEnvelope.id",
                 "operator": "IS",
-                "value": project_id
+                "value": sub_id
             }
         ]
         analysis_response = api.post(f"{INGEST_API_URL}/files/query?operator=AND", json=analysis_query)
@@ -151,7 +150,7 @@ def analysis_types(api, project_id):
                     analysis_descriptions.add(d["text"])
         return "||".join(sorted(analysis_descriptions))
     except Exception as e:
-        print(f"\n⚠️ File query error in project {row['project_uuid']}: {e}")
+        print(f"\n⚠️ File query error in submission {sub_id}: {e}")
         return ""
 
 def get_cellxgene_data():
@@ -203,9 +202,9 @@ def main():
 
     # Result Data Frame
     ing_dict = {
-        'subm_uuid': [],
+        'sub_uuid': [],
         'project_uuid': [],
-        'project_id': [],
+        'sub_id': [],
         'project_short_name': [],
         'cxg_link': False,
         'cxg_doi': None,
@@ -233,14 +232,14 @@ def main():
     for subm in tqdm(submissions, desc="Processing submissions", unit="submission"):
         row = {}
         sub_start = time.time()
-        sub_uuid = subm['uuid']['uuid']
-        row['subm_uuid'] = sub_uuid
+        row['sub_uuid'] = subm['uuid']['uuid']
+        row['sub_id'] = subm['_links']['self']['href'].rstrip('/').split('/')[-1]
 
         # --- Project Info ---
         t0 = time.time()
-        print("🔸 Get project...", flush=True)
+        print("🔸 Get project...", flush=True, end="")
         row.update(get_project_metadata(api, subm))
-        print(f"🔹 Project fetched in {time.time() - t0:.2f}s", end="", flush=True)
+        print(f"🔹 Project fetched in {time.time() - t0:.2f}s", flush=True)
 
         # --- Azul validation ---
         t0 = time.time()
@@ -251,35 +250,35 @@ def main():
 
         # --- Protocols (library methods) ---
         t0 = time.time()
-        print("🔸 Get library methods...", flush=True)
-        lib_methods = library_methods(api, row['project_id'])
+        print("🔸 Get library methods...", flush=True, end="")
+        lib_methods = library_methods(api, row['sub_id'])
         row.update({'lib_prots': "||".join(sorted(lib_methods))})
-        print(f"🔹 Library methods fetched in {time.time() - t0:.2f}s", end="", flush=True)
+        print(f"🔹 Library methods fetched in {time.time() - t0:.2f}s", flush=True)
 
         # --- Biomaterials (organisms) ---
         t0 = time.time()
-        print("🔸 Get taxa...", flush=True)
-        found_taxa = taxa_ids(api, row['project_id'], taxon_ids)
+        print("🔸 Get taxa...", flush=True, end="")
+        found_taxa = taxa_ids(api, row['sub_id'], taxon_ids)
         row.update({'organisms': "||".join(sorted(found_taxa))})
-        print(f"🔹 Taxa fetched in {time.time() - t0:.2f}s", end="", flush=True)
+        print(f"🔹 Taxa fetched in {time.time() - t0:.2f}s", flush=True)
 
         # --- Sequence files ---
         t0 = time.time()
-        print("🔸 Get files...", flush=True)
-        row.update({'insdc_fastqs': fastq_counter(api, row['project_id'])})
-        print(f"🔹 Files fetched in {time.time() - t0:.2f}s", end="", flush=True)
+        print("🔸 Get files...", flush=True, end="")
+        row.update({'insdc_fastqs': fastq_counter(api, row['sub_id'])})
+        print(f"🔹 Files fetched in {time.time() - t0:.2f}s", flush=True)
 
         # --- Analysis files ---
         t0 = time.time()
-        print("🔸 Get analysis files...", flush=True)
-        row.update({'analysis_types': analysis_types(api, row['project_id'])})
-        print(f"🔹 Analysis files fetched in {time.time() - t0:.2f}s", end="", flush=True)
+        print("🔸 Get analysis files...", flush=True, end="")
+        row.update({'analysis_types': analysis_types(api, row['sub_id'])})
+        print(f"🔹 Analysis files fetched in {time.time() - t0:.2f}s", flush=True)
 
         # --- Append results ---
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
 
         sub_elapsed = time.time() - sub_start
-        tqdm.write(f"⏱️ {sub_uuid} processed in {sub_elapsed:.1f}s")
+        tqdm.write(f"⏱️ {row['sub_uuid']} processed in {sub_elapsed:.1f}s")
 
     # --- Cellxgene data ---
     t0 = time.time()
