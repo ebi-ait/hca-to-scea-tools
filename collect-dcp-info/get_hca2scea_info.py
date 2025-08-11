@@ -101,7 +101,7 @@ def fastq_counter(api, sub_id):
                 "value": ".*"
             },
             {
-                "field": "describedBy",
+                "field": "content.describedBy",
                 "operator": "REGEX",
                 "value": ".*/sequence_file$"
             },
@@ -126,7 +126,7 @@ def analysis_types(api, sub_id):
                 "value": ['EDAM:3917','data:3917','EDAM:1270','data:1270','EFO:0010198','EDAM:3112','data:3112']
             },
             {
-                "field": "describedBy",
+                "field": "content.describedBy",
                 "operator": "REGEX",
                 "value": ".*/analysis_file$"
             },
