@@ -183,6 +183,15 @@ def append_args_to_csv(scea_args: dict, submission_uuid: str, csv_path: str):
     df_csv.to_csv(csv_path, index=False)
     print(f"✅ Appended submission {submission_uuid} to {csv_path}")
 
+def filter_scea_submission(df):
+    print("Filtering submissions for SCEA...")
+    df = df[df['azul_valid']]
+    df = df[~df['cxg_geo'] & ~df['cxg_link'] & ~(df['cxg_doi'] != "FALSE")]
+    df = df[~df['lib_prots'].str.contains('\\|\\|', na=True)]
+    df = df[~df['organisms'].str.contains('\\|\\|', na=True)]
+    df = df[df['analysis_types'].str.contains('type|annotation|sample', na=False)]
+    return df
+
 def main():
     parser = argparse.ArgumentParser(description="Process HCA submissions for SCEA.")
     parser.add_argument("-u", "--uuid", type=str, help="Single submission UUID to process.")
@@ -205,7 +214,12 @@ def main():
                 args.csv = os.path.join("collect-dcp-info", args.csv)
         print(f"Processing multiple submissions from CSV file: {args.csv}")
         submission_df = pd.read_csv(args.csv)
-        submission_uuids = submission_df['sub_uuid'].dropna().unique()
+        submission_df['organisms'] = submission_df['organisms'].astype(str)
+        submission_df_filtered = filter_scea_submission(submission_df)
+        submission_uuids = submission_df_filtered['sub_uuid'].dropna().unique()
+        print(f"Found {submission_df_filtered.shape[0]}/{submission_df.shape[0]} submissions eligible for scea in the {args.csv}.")
+        if submission_uuids.size == 0:
+            return
 
     for sub_uuid in tqdm(submission_uuids, desc="Processing submissions", unit="submission"):
         print(f"Getting submission {sub_uuid}")
