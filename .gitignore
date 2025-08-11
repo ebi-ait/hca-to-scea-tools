@@ -40,3 +40,4 @@ collect-dcp-info/hca_spreadsheets/*
 *http_cache.sqlite
 collect-dcp-info/all_cellxgene_collections.csv
 
+collect-dcp-info/http_cache.sqlite
