@@ -21,12 +21,13 @@ def get_valid_api(token=None):
         print("Invalid token.")
     return api
 
-def get_all(post_response, query):
+def get_all(api, post_response, query):
     """Paginate through POST results using 'next' link."""
-    all_files = post_response['_embedded']['files']
+    entity = list(post_response['_embedded'])[0]
+    all_files = post_response['_embedded'][entity]
     while 'next' in post_response['_links']:
         post_response = api.post(post_response['_links']['next']['href'], json=query).json()
-        all_files.extend(post_response['_embedded']['files'])
+        all_files.extend(post_response['_embedded'][entity])
     return all_files
 
 def get_project_metadata(api, subm):
@@ -141,7 +142,7 @@ def analysis_types(api, sub_id):
         files = []
         analysis_descriptions = set()
         if analysis_response.ok and analysis_response.json()['page']['totalElements'] > 0:
-            files = get_all(analysis_response.json(), analysis_query)
+            files = get_all(api, analysis_response.json(), analysis_query)
             print(f"analysis: {analysis_response.json()['page']['totalElements']}", flush=True, end=' ')
         for f in files:
             descriptions = f.get("content", {}).get("file_core", {}).get("content_description", [])
@@ -203,7 +204,7 @@ def main():
     args = parser.parse_args()
 
     # NCBI Taxon IDs of interest
-    taxon_ids = [9606, 10900, 9607, 9060, 9615]
+    taxon_ids = [9606, 10090, 9607, 9060, 9615]
 
     # Result Data Frame
     ing_dict = {
