@@ -70,8 +70,12 @@ def download_workbook(api: IngestApi, sub_uuid: str):
             print(f"Workbook for {project_title} already exists. Skipping download.", flush=True)
             return load_workbook(f"hca_spreadsheets/{project_title}.xlsx")
     print("Downloading workbook...", flush=True, end=' ')
-    wd = WorkbookDownloader(api)
-    return wd.get_workbook_from_submission(sub_uuid)
+    try:
+        wd = WorkbookDownloader(api)
+        return wd.get_workbook_from_submission(sub_uuid)
+    except Exception as e:
+        print(f"Error downloading workbook: {e}", flush=True)
+        return None
 
 def save_workbook(wb, proj_sheet='Project'):
     proj_name_cell = [col[3].column_letter + "6" for col in wb[proj_sheet].iter_cols()
@@ -186,7 +190,7 @@ def append_args_to_csv(scea_args: dict, submission_uuid: str, csv_path: str):
 def filter_scea_submission(df):
     print("Filtering submissions for SCEA...")
     df = df[df['azul_valid']]
-    df = df[~df['cxg_geo'] & ~df['cxg_link'] & ~(df['cxg_doi'] != "FALSE")]
+    df = df[~df['cxg_geo'] & ~df['cxg_link'] & (df['cxg_doi'] == "False")]
     df = df[~df['lib_prots'].str.contains('\\|\\|', na=True)]
     df = df[~df['organisms'].str.contains('\\|\\|', na=True)]
     df = df[df['analysis_types'].str.contains('type|annotation|sample', na=False)]
@@ -224,6 +228,9 @@ def main():
     for sub_uuid in tqdm(submission_uuids, desc="Processing submissions", unit="submission"):
         print(f"Getting submission {sub_uuid}")
         wb = download_workbook(api, sub_uuid)
+        if wb is None:
+            print(f"Skipping submission {sub_uuid} due to download error.", flush=True)
+            continue
         file_name, proj_name = save_workbook(wb)
         xl = pd.ExcelFile(f"hca_spreadsheets/{file_name}")
 
