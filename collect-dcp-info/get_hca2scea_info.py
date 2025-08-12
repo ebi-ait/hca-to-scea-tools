@@ -204,7 +204,7 @@ def main():
     args = parser.parse_args()
 
     # NCBI Taxon IDs of interest
-    taxon_ids = [9606, 10090, 9607, 9060, 9615]
+    taxon_ids = [9606, 10900, 9607, 9060, 9615]
 
     # Result Data Frame
     ing_dict = {
