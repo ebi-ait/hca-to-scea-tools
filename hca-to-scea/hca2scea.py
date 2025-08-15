@@ -521,7 +521,7 @@ def main():
         "-pd",
         "--public_release_date",
         type=str,
-        required=True,
+        required=False,
         help="Please enter the public release date in this format: YYYY-MM-DD"
     )
     parser.add_argument(
