@@ -149,6 +149,17 @@ def analysis_types(api, sub_id):
             for d in descriptions:
                 if d.get("text"):
                     analysis_descriptions.add(d["text"])
+
+        h5ad_query = analysis_query.copy()
+        h5ad_query[0]['field'] = "content.file_core.format"
+        h5ad_query[0]['operator'] = "IN"
+        h5ad_query[0]['value'] = ["h5ad", "h5ad.gz", "rds", "rds.gz"]
+        h5ad_response = api.post(f"{INGEST_API_URL}/files/query?operator=AND", json=h5ad_query)
+        if h5ad_response.ok and h5ad_response.json()['page']['totalElements'] > 0:
+            h5ad_files = get_all(api, h5ad_response.json(), h5ad_query)
+            print(f"h5ad: {h5ad_response.json()['page']['totalElements']}", flush=True, end=' ')
+            analysis_descriptions.add('h5ad analysis file')
+            
         return "||".join(sorted(analysis_descriptions))
     except Exception as e:
         print(f"\n⚠️ File query error in submission {sub_id}: {e}")
