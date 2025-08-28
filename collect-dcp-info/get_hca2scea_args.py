@@ -2,6 +2,7 @@ import os
 import signal
 import argparse
 import requests
+import datetime
 import pandas as pd
 from tqdm import tqdm
 import xml.etree.ElementTree as ET
@@ -110,7 +111,8 @@ def extract_project_metadata(xl: pd.ExcelFile, scea_args: dict):
 def fetch_hca_update_date(proj_uuid: str):
     print("Getting hca update date...", flush=True)
     url = f"{INGEST_API_URL}/projects/search/findByUuid?uuid={proj_uuid}"
-    return requests.get(url).json()['updateDate']
+    hd = requests.get(url).json()['updateDate']
+    return datetime.datetime.fromisoformat(hd).strftime("%Y-%m-%d")
 
 def fetch_ena_publication_date(study_accession: str):
     print("Getting ena upload date...", flush=True)
