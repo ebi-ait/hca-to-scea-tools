@@ -223,6 +223,7 @@ Comment[RelatedExperiment]\t{tab.join(related_scea_accessions)}
 Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
+Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
@@ -260,6 +261,7 @@ Comment[ExpressionAtlasAccession]\t{accession}
 Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
+Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
