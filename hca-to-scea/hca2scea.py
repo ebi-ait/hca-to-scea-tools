@@ -1,10 +1,10 @@
 import argparse
-import json
 import os
 import sys
 import requests
 import datetime
 import pandas as pd
+from numpy import nan
 from xml.etree import ElementTree
 
 from helpers import multitab_excel_to_single_txt
@@ -275,18 +275,14 @@ Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "proje
 def reformat_age(age_list):
 
     updated_age_list = []
-
     for age in age_list:
-        age = str(age)
-        if ' - ' in age:
-            age = age.replace('-', 'to')
-        elif '-' in age and ' ' not in age:
-            age = age.replace('-', ' to ')
-        else:
-            age = age
-
+        if age is nan:
+            updated_age_list.append(None)
+            continue
+        if not isinstance(age, (int, float, str)):
+            raise ValueError("Age must be an integer or float.")
+        age = ' to '.join([end.strip() for end in str(age).split("-")])
         updated_age_list.append(age)
-
     return updated_age_list
 
 
