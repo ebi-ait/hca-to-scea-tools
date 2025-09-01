@@ -114,12 +114,12 @@ def fetch_hca_update_date(proj_uuid: str):
     hd = requests.get(url).json()['updateDate']
     return datetime.datetime.fromisoformat(hd).strftime("%Y-%m-%d")
 
-def fetch_ena_publication_date(study_accession: str):
-    print("Getting ena upload date...", flush=True)
+def fetch_ena_publication_date(study_accession: str, ena_value="ENA-FIRST-PUBLIC"):
+    print(f"Getting {ena_value}...", flush=True)
     url = f"https://www.ebi.ac.uk/ena/browser/api/xml/{study_accession}"
     root = ET.fromstring(requests.get(url).text)
     for attr in root.findall('.//STUDY_ATTRIBUTE'):
-        if attr.find('TAG').text == 'ENA-FIRST-PUBLIC':
+        if attr.find('TAG').text == ena_value:
             return attr.find('VALUE').text
     return None
 
