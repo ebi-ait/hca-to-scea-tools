@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import requests
+import datetime
 import pandas as pd
 from xml.etree import ElementTree
 
@@ -93,7 +94,7 @@ def parse_args():
         "-hd",
         "--hca_update_date",
         type=str,
-        required=True,
+        required=False,
         help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
     )
     parser.add_argument(
@@ -170,6 +171,14 @@ def fetch_ena_publication_date(study_accession: str, ena_value="ENA-FIRST-PUBLIC
             return attr.find('VALUE').text
     return None
 
+def fetch_hca_update_date(project_uuid:str):
+    url = f"https://api.ingest.archive.data.humancellatlas.org/projects/search/findByUuid?uuid={project_uuid}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return datetime.datetime.fromisoformat(data.get("updateDate", None)).strftime("%Y-%m-%d")
+    return None
+
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name):
 
@@ -181,9 +190,6 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
 
     related_scea_accessions = None
     related_scea_accessions = args.related_scea_accession
-    public_release_date = args.public_release_date
-    if not public_release_date and args.study:
-        public_release_date = fetch_ena_publication_date(args.study)
 
     if related_scea_accessions:
 
@@ -192,7 +198,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
-Public Release Date\t{args.public_release_date}
+Public Release Date\t{args.public_release_date if args.public_release_date else (fetch_ena_publication_date(args.study) if args.study else '')}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: utils.get_first_letter(x.split(',')[1]))}
@@ -214,7 +220,7 @@ Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[RelatedExperiment]\t{tab.join(related_scea_accessions)}
-Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
@@ -230,7 +236,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
-Public Release Date\t{args.public_release_date}
+Public Release Date\t{args.public_release_date if args.public_release_date else (fetch_ena_publication_date(args.study) if args.study else '')}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: utils.get_first_letter(x.split(',')[1]))}
@@ -251,7 +257,7 @@ Comment[EAAdditionalAttributes]
 Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
 SDRF File\t{sdrf_file_name}
