@@ -281,7 +281,7 @@ def reformat_age(age_list):
             continue
         if not isinstance(age, (int, float, str)):
             raise ValueError("Age must be an integer or float.")
-        age = ' to '.join([end.strip() for end in str(age).split("-")])
+        age = ' to '.join(end.strip() for end in str(age).split("-"))
         updated_age_list.append(age)
     return updated_age_list
 
