@@ -2,8 +2,9 @@ import argparse
 import json
 import os
 import sys
+import requests
 import pandas as pd
-import copy
+from xml.etree import ElementTree
 
 from helpers import multitab_excel_to_single_txt
 from helpers import get_protocol_map
@@ -61,6 +62,15 @@ def get_author_list(xlsx_dict):
 
     return author_list
 
+def fetch_ena_publication_date(study_accession: str, ena_value="ENA-FIRST-PUBLIC"):
+    print(f"Getting {ena_value}...", flush=True)
+    url = f"https://www.ebi.ac.uk/ena/browser/api/xml/{study_accession}"
+    root = ElementTree.fromstring(requests.get(url).text)
+    for attr in root.findall('.//STUDY_ATTRIBUTE'):
+        if attr.find('TAG').text == ena_value:
+            return attr.find('VALUE').text
+    return None
+
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name):
 
@@ -72,6 +82,9 @@ def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession
 
     related_scea_accessions = None
     related_scea_accessions = args.related_scea_accession
+    public_release_date = args.public_release_date
+    if not public_release_date and args.study:
+        public_release_date = fetch_ena_publication_date(args.study)
 
     if related_scea_accessions:
 
