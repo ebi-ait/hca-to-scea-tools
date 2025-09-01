@@ -11,6 +11,9 @@ from helpers import get_protocol_map
 from helpers import fetch_fastq_path
 from helpers import utils
 from helpers import check_experimental_design
+from json_files.library_dicts import library_dict, technology_dict
+from json_files.sdrf_map import sdrf_map_all
+from json_files.columns import expected_columns_dict, optional_columns_dict
 
 pd.options.mode.chained_assignment = None
 
@@ -307,27 +310,18 @@ def add_protocol_columns(df, dataset_protocol_map):
 def add_scea_specimen_columns(args, df, experimental_design):
 
     if experimental_design == "standard":
-
-        '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-        with open(f"json_files/sdrf_map.json") as sdrf_map_file:
-            sdrf_map = json.load(sdrf_map_file)
+        sdrf_map = sdrf_map_all["standard"]
 
     else:
 
         if experimental_design == "cell_line_only":
-            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-            with open(f"json_files/sdrf_map_cell_line.json") as sdrf_map_file:
-                sdrf_map = json.load(sdrf_map_file)
+            sdrf_map = sdrf_map_all["cell_line"]
 
         elif experimental_design == "organoid":
-            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-            with open(f"json_files/sdrf_map_cell_line_organoid.json") as sdrf_map_file:
-                sdrf_map = json.load(sdrf_map_file)
+            sdrf_map = sdrf_map_all["organoid"]
 
         else:
-            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-            with open(f"json_files/sdrf_map_organoid.json") as sdrf_map_file:
-                sdrf_map = json.load(sdrf_map_file)
+            sdrf_map = sdrf_map_all["cell_line_organoid"]
 
     '''Get user-specified HCA sample names key.'''
     sample_name_key = get_sample_name_key(args, df)
@@ -367,12 +361,7 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
     '''Get technology-specific SCEA metadata and add to sdrf_1 dataframe.'''
     technology_type = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"])[0]
     technology_type = rename_technology_type(technology_type,technology_dict)
-    try:
-        with open(f"json_files/{technology_type}.json") as technology_json_file:
-            technology_type_dict = json.load(technology_json_file)
-    except:
-        print("Technology type {} is not yet supported. Please ask Ami to add it to the technology type map.".format(technology_type))
-        sys.exit()
+    technology_type_dict = library_dict[technology_type]
     for key in technology_type_dict.keys():
         sdrf_1[key] = technology_type_dict[key]
 
@@ -391,9 +380,6 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
     sdrf_2 = add_sequence_paths(sdrf_1, args)
 
     '''Check all required column names are present and reorder columns by SCEA defined order.'''
-
-    with open(f"json_files/expected_columns.json", "r") as expected_columns_file:
-        expected_columns_dict = json.load(expected_columns_file)
 
     if experimental_design == 'standard':
         expected_columns_ordered = expected_columns_dict['standard']
@@ -436,9 +422,6 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
             sdrf_3 = sdrf_3.rename(columns={col_name: "Material Type"})
 
     '''Remove empty columns if columns are optional.'''
-    with open(f"json_files/optional_columns.json", "r") as optional_columns_file:
-        optional_columns_dict = json.load(optional_columns_file)
-
     if experimental_design == 'standard':
         optional_columns = optional_columns_dict['standard']
     else:
@@ -570,35 +553,6 @@ def main():
 
     xlsx_dict = multitab_excel_to_single_txt.rename_protocol_columns(xlsx_dict)
 
-    technology_dict = {
-        "Fluidigm C1-based library preparation": "smart-like",
-        "10X 3' v1": "10Xv1_3",
-        "10X 5' v1": "10Xv1_5",
-        "10X 3' v2": "10Xv2_3",
-        "10X 5' v2": "10Xv2_5",
-        "10X 3' v3": "10Xv3_3",
-        "10X 3' v1 sequencing": "10Xv1_3",
-        "10X 5' v1 sequencing": "10Xv1_5",
-        "10X 3' v2 sequencing": "10Xv2_3",
-        "10X 5' v2 sequencing": "10Xv2_5",
-        "10X 3' v3 sequencing": "10Xv3_3",
-        "10x 3' v1": "10Xv1_3",
-        "10x 5' v1": "10Xv1_5",
-        "10x 3' v2": "10Xv2_3",
-        "10x 5' v2": "10Xv2_5",
-        "10x 3' v3": "10Xv3_3",
-        "10x 3' v1 sequencing": "10Xv1_3",
-        "10x 5' v1 sequencing": "10Xv1_5",
-        "10x 3' v2 sequencing": "10Xv2_3",
-        "10x 5' v2 sequencing": "10Xv2_5",
-        "10x 3' v3 sequencing": "10Xv3_3",
-        "Drop-seq": "drop-seq",
-        "inDrop": "drop-seq",
-        "Smart-like": "smart-like",
-        "Smart-seq2": "smart-seq",
-        "Smart-seq": "smart-seq"
-    }
-    
     check_experimental_design.check_biomaterial_linkings(xlsx_dict)
     check_experimental_design.check_protocol_linkings(xlsx_dict)
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)
