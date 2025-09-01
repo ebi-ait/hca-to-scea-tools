@@ -17,6 +17,102 @@ from json_files.columns import expected_columns_dict, optional_columns_dict
 
 pd.options.mode.chained_assignment = None
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="run hca -> scea tool")
+    parser.add_argument(
+        "-s",
+        "--spreadsheet",
+        type=str,
+        required=True,
+        help="Please provide a path to the HCA project spreadsheet."
+    )
+    parser.add_argument(
+        "-id",
+        "--project_uuid",
+        type=str,
+        required=True,
+        help="Please provide an HCA ingest project submission id."
+    )
+    parser.add_argument(
+        "-study",
+        type=str,
+        required=False,
+        help="Please provide the SRA or ENA study accession."
+    )
+    parser.add_argument(
+        "-name",
+        type=str,
+        required=False,
+        default = 'cs_id',
+        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
+        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
+    )
+    parser.add_argument(
+        "-ac",
+        "--accession_number",
+        type=int,
+        required=True,
+        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
+    )
+    parser.add_argument(
+        "-c",
+        "--curators",
+        nargs='+',
+        required=True,
+        help="space separated names of curators"
+    )
+    parser.add_argument(
+        "-et",
+        "--experiment_type",
+        type=str,
+        required=True,
+        choices=['baseline','differential'],
+        help="Please indicate whether this is a baseline or differential experimental design"
+    )
+    parser.add_argument(
+        "--facs",
+        action="store_true",
+        default=None,
+        help="Please specify this argument if FACS was used to isolate single cells"
+    )
+    parser.add_argument(
+        "-f",
+        "--experimental_factors",
+        nargs='+',
+        required=True,
+        help="space separated list of experimental factors"
+    )
+    parser.add_argument(
+        "-pd",
+        "--public_release_date",
+        type=str,
+        required=False,
+        help="Please enter the public release date in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-hd",
+        "--hca_update_date",
+        type=str,
+        required=True,
+        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-r",
+        "--related_scea_accession",
+        nargs='+',
+        required=False,
+        help="space separated list of related scea accession(s)"
+    )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        required=False,
+        help="Provide full path to preferred output dir"
+    )
+
+    return parser.parse_args()
+
+
 def rename_technology_type(technology_type, technology_dict):
 
     json_file = technology_dict[technology_type]
@@ -449,99 +545,7 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experime
 
 
 def main():
-    parser = argparse.ArgumentParser(description="run hca -> scea tool")
-    parser.add_argument(
-        "-s",
-        "--spreadsheet",
-        type=str,
-        required=True,
-        help="Please provide a path to the HCA project spreadsheet."
-    )
-    parser.add_argument(
-        "-id",
-        "--project_uuid",
-        type=str,
-        required=True,
-        help="Please provide an HCA ingest project submission id."
-    )
-    parser.add_argument(
-        "-study",
-        type=str,
-        required=False,
-        help="Please provide the SRA or ENA study accession."
-    )
-    parser.add_argument(
-        "-name",
-        type=str,
-        required=False,
-        default = 'cs_id',
-        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
-        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
-    )
-    parser.add_argument(
-        "-ac",
-        "--accession_number",
-        type=int,
-        required=True,
-        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
-    )
-    parser.add_argument(
-        "-c",
-        "--curators",
-        nargs='+',
-        required=True,
-        help="space separated names of curators"
-    )
-    parser.add_argument(
-        "-et",
-        "--experiment_type",
-        type=str,
-        required=True,
-        choices=['baseline','differential'],
-        help="Please indicate whether this is a baseline or differential experimental design"
-    )
-    parser.add_argument(
-        "--facs",
-        action="store_true",
-        default=None,
-        help="Please specify this argument if FACS was used to isolate single cells"
-    )
-    parser.add_argument(
-        "-f",
-        "--experimental_factors",
-        nargs='+',
-        required=True,
-        help="space separated list of experimental factors"
-    )
-    parser.add_argument(
-        "-pd",
-        "--public_release_date",
-        type=str,
-        required=False,
-        help="Please enter the public release date in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-hd",
-        "--hca_update_date",
-        type=str,
-        required=True,
-        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-r",
-        "--related_scea_accession",
-        nargs='+',
-        required=False,
-        help="space separated list of related scea accession(s)"
-    )
-    parser.add_argument(
-        "-o",
-        "--output_dir",
-        required=False,
-        help="Provide full path to preferred output dir"
-    )
-
-    args = parser.parse_args()
+    args = parse_args()
     if not args.output_dir:
         work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
     else:
