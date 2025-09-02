@@ -9,32 +9,34 @@ import pandas as pd
 
 HcaToSceaOutput = namedtuple('HcaToSceaOutput', ['output_dir', 'stdout', 'stderr'])
 
+BASE_DIR = os.path.dirname(__file__)
+TEST_DIR = os.path.join(BASE_DIR, "test")
 
 class CharacteristicTest(unittest.TestCase):
 
     def setUp(self):
         self.verificationErrors = {}
-        self.output_base = 'output/'
+        self.output_base = os.path.join(BASE_DIR, 'output/')
         if not sys.warnoptions:
             import warnings
             warnings.simplefilter("ignore")
 
     def test_positive(self):
-        arguments_df = pd.read_csv("test/golden/arguments.csv", comment='#')
+        arguments_df = pd.read_csv(os.path.join(TEST_DIR, "golden/arguments.csv"), comment='#')
         for i in range(0,arguments_df.shape[0]):
-            spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
-            with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
-                arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("test/golden/")[1]]
+            spreadsheet = os.path.join(TEST_DIR, "golden/" + list(arguments_df['spreadsheet'])[i])
+            with self.subTest(spreadsheet=spreadsheet):
+                arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("golden/")[1]]
                 tool_output = self.run_tool(spreadsheet, arguments)
                 self.check_output(tool_output, spreadsheet)
 
 
     def test_negative(self):
-        arguments_df = pd.read_csv("test/negative.examples.csv", comment='#')
+        arguments_df = pd.read_csv(os.path.join(TEST_DIR, "negative.examples.csv"), comment='#')
         for i in range(0,arguments_df.shape[0]):
-            spreadsheet = "test/golden/" + list(arguments_df['spreadsheet'])[i]
-            with self.subTest(spreadsheet="test/golden/" + list(arguments_df['spreadsheet'])[i]):
-                arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("test/golden/")[1]]
+            spreadsheet = os.path.join(TEST_DIR, "golden/" + list(arguments_df['spreadsheet'])[i])
+            with self.subTest(spreadsheet=spreadsheet):
+                arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("golden/")[1]]
                 tool_output = self.run_tool(spreadsheet, arguments)
                 arguments = arguments.reset_index()
                 self.assertIn(b'AssertionError', tool_output.stderr)
@@ -88,7 +90,7 @@ class CharacteristicTest(unittest.TestCase):
         self.assertMultiLineEqual(golden_contents,output_contents, msg)
 
     def check_output(self, tool_otuput, spreadsheet):
-        golden_output_dir = 'test/golden/expected/' + os.path.basename(spreadsheet).split(".xlsx")[0]
+        golden_output_dir = os.path.join(TEST_DIR, 'golden/expected/', os.path.basename(spreadsheet).split(".xlsx")[0])
         for golden_file in os.listdir(golden_output_dir):
             golden_file_basename = os.path.basename(golden_file)
             output_file = os.path.join(tool_otuput.output_dir, golden_file_basename)
@@ -106,7 +108,7 @@ class CharacteristicTest(unittest.TestCase):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
         output_dir = self.output_base + output_name
         arguments = arguments.reset_index()
-        p = Popen(["python3", 'hca2scea.py',
+        p = Popen(["python3", os.path.join(BASE_DIR, 'hca2scea.py'),
                    '-s', f'{spreadsheet}',
                    '-o', f'{output_dir}',
                    '-id', f'{arguments["HCA project uuid"][0]}',
