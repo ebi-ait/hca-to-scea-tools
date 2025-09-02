@@ -110,6 +110,11 @@ def merge_sample_types(xlsx_dict: {},experimental_design) -> pd.DataFrame():
     else:
         cell_suspension_column["cell_suspension.insdc_experiment.insdc_experiment_accession"] = ['']*len(list(cell_suspension_column["cell_suspension.biomaterial_core.biomaterial_id"]))
 
+    '''Since insdc experiment accessions of cell suspensions are stored in another value, we can drop the rest to avoid errors in merging'''
+    for tab in xlsx_dict.keys():
+        process_cols = [key for key in xlsx_dict[tab].columns if key.startswith('process') and xlsx_dict[tab][key].isna().all()]
+        if process_cols:
+            xlsx_dict[tab] = xlsx_dict[tab].drop(columns=process_cols, axis=1)
 
     merged_df = cell_suspension_column.merge(
         xlsx_dict['sequence_file'],
