@@ -70,7 +70,23 @@ class CharacteristicTest(unittest.TestCase):
     def load_sdrf_file(self, file):
         return pd.read_csv(file, sep='\t')
 
-    def assert_dataframes_equal(self, golden_contents, output_contents, tag=None):
+    def get_dfs_even(self, df1, df2, extra_cols):
+        for extra_col in extra_cols:
+            if extra_col in df1.columns:
+                df2[extra_col] = pd.NA
+            else:
+                df1[extra_col] = pd.NA
+        df1 = df1.reindex(df2.columns, axis=1)
+        return df1, df2
+
+    def assert_dataframes_shape_equal(self, golden_contents, output_contents, tag=None):
+        extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
+        assert extra_cols == set(), f'number of columns mismatch {tag}\n{extra_cols}'
+
+    def assert_dataframes_contents_equal(self, golden_contents, output_contents, tag=None):
+        extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
+        golden_contents, output_contents = self.get_dfs_even(golden_contents, output_contents, extra_cols)
+
         difference_locations = golden_contents != output_contents
         changed_from = golden_contents[difference_locations].dropna(how='all')
         changed_to = output_contents[difference_locations].dropna(how='all')
@@ -84,7 +100,7 @@ class CharacteristicTest(unittest.TestCase):
             if tag:
                 diff_file = f'{self.output_base}/diff-{tag}.html'
             diff.to_html(diff_file)
-        assert len(diff) == 0, f'diffs found comparing {tag}\n{diff.to_string()}'
+        assert len(diff) == 0, f'output content differences found comparing {tag}\n{diff.to_string()}'
 
     def check_equal_lines(self, golden_contents, output_contents, msg=None):
         self.assertMultiLineEqual(golden_contents,output_contents, msg)
@@ -98,7 +114,7 @@ class CharacteristicTest(unittest.TestCase):
             output_contents = self.get_file_content(output_file)
             try:
                 if isinstance(golden_contents, pd.DataFrame):
-                    self.assert_dataframes_equal(golden_contents, output_contents, tag=golden_file_basename)
+                    self.assert_dataframes_contents_equal(golden_contents, output_contents, tag=golden_file_basename)
                 else:
                     self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
             except Exception as e:
