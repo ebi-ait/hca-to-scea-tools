@@ -1,5 +1,6 @@
-import pandas as pd
 import sys
+import pandas as pd
+import numpy as np
 
 def get_specimen(xlsx_dict, type):
 
@@ -16,7 +17,7 @@ def fix_overlap(df):
         if col_x.endswith("_x"):
             fixed_col = col_x[:-2]
             col_y = fixed_col + "_y"
-            df[fixed_col] = df[col_x].combine_first(df[col_y])
+            df[fixed_col] = df[[col_x, col_y]].apply(lambda row: '||'.join(set([str(v) for v in row if pd.notna(v)])), axis=1)
             df = df.drop(columns=[col_x, col_y], axis=1)
     return df
 
