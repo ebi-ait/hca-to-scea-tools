@@ -195,7 +195,7 @@ def add_sequence_paths(sdrf, args):
     run_accessions = list(sdrf['Comment[ENA_RUN]'])
 
     try:
-        sra_paths = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
+        sra_paths = fetch_fastq_path.get_fastq_path_from_ena(args.study, run_accessions)
     except:
         sra_paths = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
         if not sra_paths:
