@@ -88,17 +88,16 @@ class CharacteristicTest(unittest.TestCase):
         golden_contents, output_contents = self.get_dfs_even(golden_contents, output_contents, extra_cols)
 
         difference_locations = golden_contents != output_contents
-        changed_from = golden_contents[difference_locations].dropna(how='all')
-        changed_to = output_contents[difference_locations].dropna(how='all')
-        diff:pd.DataFrame = changed_from.join(changed_to,
-                                              lsuffix='_expected', rsuffix='_actual',
-                                              sort=False)
+        changed_from = golden_contents[difference_locations]
+        changed_to = output_contents[difference_locations]
+        diff = changed_from.compare(changed_to, result_names=('expected', 'actual'))
+        # diff:pd.DataFrame = changed_from.join(changed_to,
+        #                                       lsuffix='_expected', rsuffix='_actual',
+        #                                       sort=False)
 
         diff = diff.melt()
         if len(diff) != 0:
-            diff_file = f'{self.output_base}/diff.html'
-            if tag:
-                diff_file = f'{self.output_base}/diff-{tag}.html'
+            diff_file = f'{self.output_dir}/diff{tag if tag else ""}.html'
             diff.to_html(diff_file)
         assert len(diff) == 0, f'output content differences found comparing {tag}\n{diff.to_string()}'
 
@@ -115,6 +114,7 @@ class CharacteristicTest(unittest.TestCase):
             try:
                 if isinstance(golden_contents, pd.DataFrame):
                     self.assert_dataframes_contents_equal(golden_contents, output_contents, tag=golden_file_basename)
+                    self.assert_dataframes_shape_equal(golden_contents, output_contents, tag=golden_file_basename)
                 else:
                     self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
             except Exception as e:
@@ -122,11 +122,11 @@ class CharacteristicTest(unittest.TestCase):
 
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
-        output_dir = self.output_base + output_name
+        self.output_dir = self.output_base + output_name
         arguments = arguments.reset_index()
         p = Popen(["python3", os.path.join(BASE_DIR, 'hca2scea.py'),
                    '-s', f'{spreadsheet}',
-                   '-o', f'{output_dir}',
+                   '-o', f'{self.output_dir}',
                    '-id', f'{arguments["HCA project uuid"][0]}',
                    '-ac', f'{arguments["E-HCAD accession"][0]}',
                    '-c', f'{arguments["curator initials"][0]}',
@@ -137,7 +137,7 @@ class CharacteristicTest(unittest.TestCase):
                    '-study', f'{arguments["study accession"][0]}'],
                   stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
-        return HcaToSceaOutput(output_dir, stdout, stderr)
+        return HcaToSceaOutput(self.output_dir, stdout, stderr)
 
 
 if __name__ == '__main__':
