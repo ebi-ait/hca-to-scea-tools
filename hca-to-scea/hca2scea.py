@@ -150,8 +150,8 @@ PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.pub
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi", "str")[0]}
 """
 
-    print(f"saving {work_dir}/{idf_file_name}")
-    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+    print(f"saving {os.path.join(work_dir, idf_file_name)}")
+    with open(os.path.join(work_dir, idf_file_name), "w") as idf_file:
         idf_file.write(idf_file_contents)
 
 
@@ -418,8 +418,8 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Write the new sdrf file to a file.'''
     if not sdrf_3.empty:
-        print(f"saving {work_dir}/{sdrf_file_name}")
-        sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+        print(f"saving {os.path.join(work_dir, sdrf_file_name)}")
+        sdrf_3.to_csv(os.path.join(work_dir, sdrf_file_name), sep="\t", index=False)
 
 def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict):
 
@@ -528,7 +528,7 @@ def main():
 
     args = parser.parse_args()
     if not args.output_dir:
-        work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
+        work_dir = os.path.join("script_spreadsheets", os.path.splitext(os.path.basename(args.spreadsheet))[0])
     else:
         work_dir = args.output_dir
 

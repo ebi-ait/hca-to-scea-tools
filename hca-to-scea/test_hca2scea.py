@@ -25,7 +25,7 @@ class CharacteristicTest(unittest.TestCase):
     def test_positive(self):
         arguments_df = pd.read_csv(os.path.join(TEST_DIR, "golden/arguments.csv"), comment='#')
         for i in range(0,arguments_df.shape[0]):
-            spreadsheet = os.path.join(TEST_DIR, "golden/" + list(arguments_df['spreadsheet'])[i])
+            spreadsheet = os.path.join(TEST_DIR, "golden/", list(arguments_df['spreadsheet'])[i])
             with self.subTest(spreadsheet=spreadsheet):
                 arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("golden/")[1]]
                 tool_output = self.run_tool(spreadsheet, arguments)
@@ -35,7 +35,7 @@ class CharacteristicTest(unittest.TestCase):
     def test_negative(self):
         arguments_df = pd.read_csv(os.path.join(TEST_DIR, "negative.examples.csv"), comment='#')
         for i in range(0,arguments_df.shape[0]):
-            spreadsheet = os.path.join(TEST_DIR, "golden/" + list(arguments_df['spreadsheet'])[i])
+            spreadsheet = os.path.join(TEST_DIR, "golden/" , list(arguments_df['spreadsheet'])[i])
             with self.subTest(spreadsheet=spreadsheet):
                 arguments = arguments_df.loc[arguments_df['spreadsheet'] == spreadsheet.split("golden/")[1]]
                 tool_output = self.run_tool(spreadsheet, arguments)
@@ -119,7 +119,7 @@ class CharacteristicTest(unittest.TestCase):
 
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
-        self.output_dir = self.output_base + output_name
+        self.output_dir = os.path.join(self.output_base, output_name)
         arguments = arguments.reset_index()
         p = Popen(["python3", os.path.join(BASE_DIR, 'hca2scea.py'),
                    '-s', f'{spreadsheet}',
