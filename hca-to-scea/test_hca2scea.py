@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import unittest
+from numpy import nan
 from collections import namedtuple
 from subprocess import Popen, PIPE
 
@@ -73,15 +74,17 @@ class CharacteristicTest(unittest.TestCase):
     def get_dfs_even(self, df1, df2, extra_cols):
         for extra_col in extra_cols:
             if extra_col in df1.columns:
-                df2[extra_col] = pd.NA
+                df2[extra_col] = nan
             else:
-                df1[extra_col] = pd.NA
+                df1[extra_col] = nan
         df1 = df1.reindex(df2.columns, axis=1)
         return df1, df2
 
     def assert_dataframes_shape_equal(self, golden_contents, output_contents, tag=None):
         extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
-        assert extra_cols == set(), f'number of columns mismatch {tag}\n{extra_cols}'
+        golden_extra_cols = set(golden_contents.columns) - set(output_contents.columns)
+        output_extra_cols = set(output_contents.columns) - set(golden_contents.columns)
+        assert extra_cols == set(), f'number of fields mismatch {tag}\nexpected not found:{golden_extra_cols}\nunexpected and found:{output_extra_cols}'
 
     def assert_dataframes_contents_equal(self, golden_contents, output_contents, tag=None):
         extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
@@ -113,8 +116,8 @@ class CharacteristicTest(unittest.TestCase):
             output_contents = self.get_file_content(output_file)
             try:
                 if isinstance(golden_contents, pd.DataFrame):
-                    self.assert_dataframes_contents_equal(golden_contents, output_contents, tag=golden_file_basename)
                     self.assert_dataframes_shape_equal(golden_contents, output_contents, tag=golden_file_basename)
+                    self.assert_dataframes_contents_equal(golden_contents, output_contents, tag=golden_file_basename)
                 else:
                     self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
             except Exception as e:
