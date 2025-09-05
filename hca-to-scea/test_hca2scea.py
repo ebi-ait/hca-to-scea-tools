@@ -90,14 +90,8 @@ class CharacteristicTest(unittest.TestCase):
         extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
         golden_contents, output_contents = self.get_dfs_even(golden_contents, output_contents, extra_cols)
 
-        difference_locations = golden_contents != output_contents
-        changed_from = golden_contents[difference_locations]
-        changed_to = output_contents[difference_locations]
-        diff = changed_from.compare(changed_to, result_names=('expected', 'actual'))
-        # diff:pd.DataFrame = changed_from.join(changed_to,
-        #                                       lsuffix='_expected', rsuffix='_actual',
-        #                                       sort=False)
-
+        diff = golden_contents.compare(output_contents, result_names=('expected', 'actual'))
+        
         diff = diff.melt()
         if len(diff) != 0:
             diff_file = f'{self.output_dir}/diff{tag if tag else ""}.html'
