@@ -63,7 +63,7 @@ class CharacteristicTest(unittest.TestCase):
 
     def load_idf_file(self, file):
         return pd.read_csv(file,
-                           sep='^([^\t]+)\t',
+                           sep='^([^\t]*)\t?',
                            engine='python',
                            usecols=[0, 1, 2],
                            names=['idx', 'name', 'value'])
