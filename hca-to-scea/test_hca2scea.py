@@ -90,6 +90,12 @@ class CharacteristicTest(unittest.TestCase):
         extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
         golden_contents, output_contents = self.get_dfs_even(golden_contents, output_contents, extra_cols)
 
+        if 'Source Name' in golden_contents.columns:
+            golden_contents = golden_contents.sort_values(by=['Source Name'])
+            output_contents = output_contents.sort_values(by=['Source Name'])
+        elif 'name' in golden_contents.columns:
+            golden_contents = golden_contents.sort_values(by=['name'])
+            output_contents = output_contents.sort_values(by=['name'])
         diff = golden_contents.compare(output_contents, result_names=('expected', 'actual'))
         
         diff = diff.melt(value_name='diff_value')
