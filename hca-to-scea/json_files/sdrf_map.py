@@ -16,7 +16,7 @@ sdrf_map_all = {
     },
     "organoid": {
         "Characteristics[organism]": "donor_organism.genus_species.ontology_label",
-        "Characteristics[individual]": "organoid.biomaterial_core.biomaterial_id",
+        "Characteristics[individual]": "donor_organism.biomaterial_core.biomaterial_id",
         "Characteristics[sex]": "donor_organism.sex",
         "Characteristics[age]": "donor_organism.organism_age",
         "Unit[time unit]": "donor_organism.organism_age_unit.text",
@@ -35,7 +35,7 @@ sdrf_map_all = {
     },
     "cell_line": {
         "Characteristics[organism]": "donor_organism.genus_species.ontology_label",
-        "Characteristics[individual]": "cell_line.biomaterial_core.biomaterial_id",
+        "Characteristics[individual]": "donor_organism.biomaterial_core.biomaterial_id",
         "Characteristics[sex]": "donor_organism.sex",
         "Characteristics[age]": "donor_organism.organism_age",
         "Unit[time unit]": "donor_organism.organism_age_unit.text",
@@ -54,7 +54,7 @@ sdrf_map_all = {
     },
     "cell_line_organoid": {
         "Characteristics[organism]": "donor_organism.genus_species.ontology_label",
-        "Characteristics[individual]": "organoid.biomaterial_core.biomaterial_id",
+        "Characteristics[individual]": "donor_organism.biomaterial_core.biomaterial_id",
         "Characteristics[sex]": "donor_organism.sex",
         "Characteristics[age]": "donor_organism.organism_age",
         "Unit[time unit]": "donor_organism.organism_age_unit.text",
