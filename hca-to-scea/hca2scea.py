@@ -375,11 +375,8 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     column_check = [col for col in expected_columns_ordered if col not in sdrf_2.columns]
     if column_check:
-        print("Error: one or more expected columns is missing from sdrf.")
-        print(column_check)
-        sys.exit()
-    else:
-        sdrf_3 = sdrf_2[expected_columns_ordered]
+        raise ValueError(f"Error: one or more expected columns is missing from sdrf: {column_check}")
+    sdrf_3 = sdrf_2[expected_columns_ordered]
 
     '''Add protocol columns with protocol metadata in the pre-defined SCEA column order.'''
     protocols_sdrf_before_sequencing, protocols_sdrf_from_sequencing = add_protocol_columns(df, dataset_protocol_map)
