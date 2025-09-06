@@ -92,7 +92,7 @@ class CharacteristicTest(unittest.TestCase):
 
         diff = golden_contents.compare(output_contents, result_names=('expected', 'actual'))
         
-        diff = diff.melt()
+        diff = diff.melt(value_name='diff_value')
         if len(diff) != 0:
             diff_file = f'{self.output_dir}/diff{tag if tag else ""}.html'
             diff.to_html(diff_file)
