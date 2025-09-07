@@ -195,7 +195,7 @@ def add_sequence_paths(sdrf, args):
     run_accessions = list(sdrf['Comment[ENA_RUN]'])
 
     path_checkers = {
-        'ena': lambda: fetch_fastq_path.get_fastq_path_from_ena(args.study, run_accessions),
+        'ena': lambda: fetch_fastq_path.get_fastq_path_from_ena(run_accessions),
         'sra': lambda: fetch_fastq_path.get_sra_path_from_sra(run_accessions),
         'sra_ena': lambda: fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions),
     }
