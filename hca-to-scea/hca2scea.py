@@ -232,7 +232,7 @@ def add_sequence_paths(sdrf, args):
                 index1_names.append(os.path.basename(path['index_1'][0]))
             if path['index_2']:
                 index2_names.append(os.path.basename(path['index_2'][0]))
-            sra_names.append(';'.join(path['files']))
+            sra_names.append(os.path.dirname(path['files'][0]))
 
         sdrf['Comment[read1 file]'] = read1_names
         sdrf['Comment[read2 file]'] = read2_names
