@@ -68,7 +68,7 @@ class TestSraUtils(unittest.TestCase):
         })
         mock_read_csv.return_value = fake_df
 
-        result = fetch_fastq_path.get_fastq_path_from_ena("PRJNA123", ["SRR111"])
+        result = fetch_fastq_path.get_fastq_path_from_ena(["SRR111"])
 
         self.assertIn("SRR111", result)
         self.assertEqual(len(result["SRR111"]["files"]), 2)
