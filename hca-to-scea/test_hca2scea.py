@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import sys
 import unittest
 from numpy import nan
@@ -16,6 +17,7 @@ TEST_DIR = os.path.join(BASE_DIR, "test")
 class CharacteristicTest(unittest.TestCase):
 
     def setUp(self):
+        self.output_dir = None
         self.verificationErrors = {}
         self.output_base = os.path.join(BASE_DIR, 'output/')
         if not sys.warnoptions:
@@ -126,6 +128,12 @@ class CharacteristicTest(unittest.TestCase):
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
         self.output_dir = os.path.join(self.output_base, output_name)
+
+        # Clear test folder
+        if os.path.exists(self.output_dir):
+            shutil.rmtree(self.output_dir)
+        os.makedirs(self.output_dir)
+
         arguments = arguments.reset_index()
         p = Popen(["python3", os.path.join(BASE_DIR, 'hca2scea.py'),
                    '-s', f'{spreadsheet}',
