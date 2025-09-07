@@ -18,42 +18,25 @@ def parse_xml(xml_content):
 
 def filter_paths(sdrf, paths):
     runs = list(sdrf['Comment[ENA_RUN]'])
-    read1_files = []
-    read2_files = []
-    index1_files = []
-    index2_files = []
-    read1_paths = []
-    read2_paths = []
-    index1_paths = []
-    index2_paths = []
-    sra_paths = []
-    sra_read1_files = []
-    sra_read2_files = []
-    for i in range(0, len(runs)):
-        run = runs[i]
+    read1_files, read2_files = [], []
+    index1_files, index2_files = [], []
+    read1_paths, read2_paths = [], []
+    index1_paths, index2_paths = [], []
+    sra_paths, sra_read1_files, sra_read2_files = [], [], []
+    for run in runs:
         if paths[run]['filetype'] == 'fastq file':
             read1_files.append(paths[run]['filename_read1'])
             read1_paths.append(paths[run]['filepath_read1'])
             read2_files.append(paths[run]['filename_read2'])
             read2_paths.append(paths[run]['filepath_read2'])
-            if 'filename_index1' in paths[run].keys():
-                index1_files.append(paths[run]['filename_index1'])
-                index1_paths.append(paths[run]['filepath_index1'])
-            else:
-                index1_files.append('')
-                index1_paths.append('')
-            if 'filename_index2' in paths[run].keys():
-                index2_files.append(paths[run]['filename_index2'])
-                index2_paths.append(paths[run]['filepath_index2'])
-            else:
-                index2_files.append('')
-                index2_paths.append('')
+            index1_files.append(paths[run].get('filename_index1', ''))
+            index1_paths.append(paths[run].get('filepath_index1', ''))
+            index2_files.append(paths[run].get('filename_index2', ''))
+            index2_paths.append(paths[run].get('filepath_index2', ''))
         elif paths[run]['filetype'] == 'SRA file':
             sra_paths.append(paths[run]['filepath'])
-            file1 = run + "_1.fastq.gz"
-            file2 = run + "_2.fastq.gz"
-            sra_read1_files.append(file1)
-            sra_read2_files.append(file2)
+            sra_read1_files.append(f"{run}_1.fastq.gz")
+            sra_read2_files.append(f"{run}_2.fastq.gz")
         else:
             continue
     if read1_files:
@@ -61,21 +44,17 @@ def filter_paths(sdrf, paths):
         sdrf['Comment[read1 FASTQ_URI]'] = read1_paths
         sdrf['Comment[read2 file]'] = read2_files
         sdrf['Comment[read2 FASTQ_URI]'] = read2_paths
-        if index1_files:
-            sdrf['Comment[index1 file]'] = index1_files
-            sdrf['Comment[index1 FASTQ_URI]'] = index1_paths
-        else:
-            sdrf['Comment[index1 file]'] = '' * len(read1_files)
-            sdrf['Comment[index1 FASTQ_URI]'] = '' * len(read1_files)
+        sdrf['Comment[index1 file]'] = index1_files if index1_files else ['']*len(read1_files)
+        sdrf['Comment[index1 FASTQ_URI]'] = index1_paths if index1_paths else ['']*len(read1_files)
         sdrf['Comment[SRA_URI]'] = '' * len(read1_files)
     elif sra_paths:
         sdrf['Comment[SRA_URI]'] = sra_paths
         sdrf['Comment[read1 file]'] = sra_read1_files
         sdrf['Comment[read2 file]'] = sra_read2_files
-        sdrf['Comment[index1 file]'] = ''*len(sra_read1_files)
-        sdrf['Comment[read1 FASTQ_URI]'] = ''*len(sra_read1_files)
-        sdrf['Comment[read2 FASTQ_URI]'] = ''*len(sra_read1_files)
-        sdrf['Comment[index1 FASTQ_URI]'] = ''*len(sra_read1_files)
+        sdrf['Comment[index1 file]'] = ['']*len(sra_read1_files)
+        sdrf['Comment[read1 FASTQ_URI]'] = ['']*len(sra_read1_files)
+        sdrf['Comment[read2 FASTQ_URI]'] = ['']*len(sra_read1_files)
+        sdrf['Comment[index1 FASTQ_URI]'] = ['']*len(sra_read1_files)
 
     sdrf.drop_duplicates(keep=False, inplace=True)
     return sdrf
