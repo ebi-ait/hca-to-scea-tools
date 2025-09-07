@@ -204,15 +204,36 @@ def add_sequence_paths(sdrf, args):
         sra_paths = checker()
         if sra_paths:
             break
+    index_suffix = {
+        'read_1': ['_R1_', '_1.fastq'],
+        'read_2': ['_R2_', '_2.fastq'],
+        'index_1': ['_I1_'],
+        'index_2': ['_I2_']
+    }
 
     if sra_paths:
         read1_names = []
         read2_names = []
         sra_names = []
+        index1_names = []
+        index2_names = []
         for key, path in sra_paths.items():
-            read1_names.append(key + "_1.fastq.gz")
-            read2_names.append(key + "_2.fastq.gz")
-            sra_names.append(path['files'][0])
+            for attr, suff in index_suffix.items():
+                path[attr] = [f for f in path['files'] if any(pat in f for pat in suff)]
+            for read_key in ['read_1', 'read_2']:
+                if len(path[read_key]) > 1:
+                    raise ValueError(f"Multiple {read_key} files found for {key}: {path[read_key]}")
+
+            if path['read_1']:
+                read1_names.append(os.path.basename(path['read_1'][0]))
+            if path['read_2']:
+                read2_names.append(os.path.basename(path['read_2'][0]))
+            if path['index_1']:
+                index1_names.append(os.path.basename(path['index_1'][0]))
+            if path['index_2']:
+                index2_names.append(os.path.basename(path['index_2'][0]))
+            sra_names.append(';'.join(path['files']))
+
         sdrf['Comment[read1 file]'] = read1_names
         sdrf['Comment[read2 file]'] = read2_names
         sdrf['Comment[SRA_URI]'] = sra_names
