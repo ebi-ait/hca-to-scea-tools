@@ -183,18 +183,17 @@ def get_sra_path_from_ena(study_accession, run_accessions):
     try:
         request_url = f'http://www.ebi.ac.uk/ena/portal/api/filereport?accession={study_accession}&result=read_run&fields=run_accession,sra_ftp'
         sra_results = pd.read_csv(request_url, delimiter='\t')
-        if sra_results.shape[0] > 0:
-            for i, accession in enumerate(list(sra_results['run_accession'])):
-                if accession in run_accessions:
-                    paths_sra[accession] = {'files': []}
-                    file_path = str(list(sra_results['sra_ftp'])[i])
-                    file_path = "ftp://" + file_path
-                    paths_sra[accession]['files'].append(file_path)
-        else:
-            paths_sra = {}
+        if sra_results.shape[0] == 0:
+            return {}
+        for i, accession in enumerate(list(sra_results['run_accession'])):
+            if accession in run_accessions:
+                paths_sra[accession] = {'files': []}
+                file_path = str(list(sra_results['sra_ftp'])[i])
+                file_path = "ftp://" + file_path
+                paths_sra[accession]['files'].append(file_path)
     except:
-        paths_sra = {}
-    return paths_sra
+        return {}
+    return {acc: paths_sra[acc] for acc in run_accessions if acc in paths_sra}
 
 def get_fastq_path_from_ena(study_accession, run_accessions):
     paths_fastq = {}
