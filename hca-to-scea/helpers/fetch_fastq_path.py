@@ -132,7 +132,7 @@ def pool_retrieve_xml_from_sra(run_lists):
     try:
         result_list = []
         with poolcontext(processes=1) as pool:
-            result_list.append(pool.map(retrieve_paths_from_sra, run_lists))
+            result_list.append(pool.map(get_sra_path_from_sra, run_lists))
     except KeyboardInterrupt:
         print("Process has been interrupted.")
         pool.terminate()
