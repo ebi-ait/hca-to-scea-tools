@@ -201,22 +201,21 @@ def get_fastq_path_from_ena(study_accession, run_accessions):
         request_url = f'http://www.ebi.ac.uk/ena/portal/api/filereport?accession={study_accession}&result=read_run&fields=run_accession,fastq_ftp'
         fastq_results = pd.read_csv(request_url, delimiter='\t')
         if fastq_results.shape[0] > 0:
-            for i in range(0, len(list(fastq_results['run_accession']))):
-                accession = list(fastq_results['run_accession'])[i]
-                if accession in run_accessions:
-                    paths_fastq[accession] = {'files': []}
-                    if ';' in str(list(fastq_results['fastq_ftp'])[i]):
-                        # The fastq file paths are split by ";" when retrieved using the above ENA url. If there is no ';' separater,
-                        # this means that the number of available fastq files is <= 1. 2 is the minimum number required. If only 1
-                        # fastq file is available then an empty dictionary is returned.
-                        file_list = str(list(fastq_results['fastq_ftp'])[i]).split(';')
-                        for file_path in file_list:
-                            file_path = "ftp://" + file_path
-                            paths_fastq[accession]['files'].append(file_path)
-                    else:
-                            paths_fastq = {}
+            for i, row in fastq_results.iterrows():
+                accession = row['run_accession']
+                if accession not in run_accessions:
+                    paths_fastq = {}
+                    continue
+                paths_fastq[accession] = {'files': []}
+                if ';' in row['fastq_ftp']:
+                    # The fastq file paths are split by ";" when retrieved using the above ENA url. If there is no ';' separater,
+                    # this means that the number of available fastq files is <= 1. 2 is the minimum number required. If only 1
+                    # fastq file is available then an empty dictionary is returned.
+                    file_list = row['fastq_ftp'].split(';')
+                    for file_path in file_list:
+                        paths_fastq[accession]['files'].append(f"ftp://{file_path}")
                 else:
                     continue
     except:
-        paths_fastq = paths_fastq
-    return paths_fastq
+        return {}
+    return {acc: paths_fastq[acc] for acc in run_accessions if acc in paths_fastq}
