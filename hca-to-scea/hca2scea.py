@@ -231,7 +231,11 @@ def add_sequence_paths(sdrf, args):
                 index1_names.append(os.path.basename(path['index_1'][0]))
             if path['index_2']:
                 index2_names.append(os.path.basename(path['index_2'][0]))
-            sra_names.append(os.path.dirname(path['files'][0]))
+            # keep uri even if not more than two fastq found
+            if any(path['files'][0].endswith(ext) for ext in ['fastq', 'fastq.gz', 'fq', 'fq.gz']):
+                sra_names.append(os.path.dirname(path['files'][0]))
+            else:
+                sra_names.append(path['files'][0])
 
         sdrf['Comment[read1 file]'] = read1_names if read1_names else ['PATH NOT FOUND']*len(run_accessions)
         sdrf['Comment[read2 file]'] = read2_names if read2_names else ['PATH NOT FOUND']*len(run_accessions)
