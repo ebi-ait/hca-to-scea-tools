@@ -91,35 +91,21 @@ def sort_sra(paths):
 def sort_fastq(paths):
     invalid_fastq = 'False'
     paths_new = paths
-    for accession in paths.keys():
-        fastq = paths[accession]['files']
+    sub_suffix_dict = {'_R1': 'read1', '_R2': 'read2', '_R3': 'index1', '_R4': 'index2', '_I1': 'index1', '_I2': 'index2'}
+    gen_suffix_dict = {'_1': 'read1', '_2': 'read2', '_3': 'index1', '_4': 'index2'}
+    for accession, path in paths.items():
+        fastq = path['files']
         for file in fastq:
-            if '_R1' in file or '_R2' in file or '_R3' in file or '_R4' in file or '_I1' in file or '_I2' in file:
-                if '_R1' in file:
-                    paths_new[accession]['filename_read1'] = os.path.basename(file)
-                    paths_new[accession]['filepath_read1'] = file
-                if '_R2' in file:
-                    paths_new[accession]['filename_read2'] = os.path.basename(file)
-                    paths_new[accession]['filepath_read2'] = file
-                if '_I1' in file or '_R3' in file:
-                    paths_new[accession]['filename_index1'] = os.path.basename(file)
-                    paths_new[accession]['filepath_index1'] = file
-                if '_I2' in file or '_R4' in file:
-                    paths_new[accession]['filename_index2'] = os.path.basename(file)
-                    paths_new[accession]['filepath_index2'] = file
-            elif '_1' in file or '_2' in file or '_3' in file or '_4' in file and '_R' not in file:
-                if '_1' in file:
-                    paths_new[accession]['filename_read1'] = os.path.basename(file)
-                    paths_new[accession]['filepath_read1'] = file
-                if '_2' in file:
-                    paths_new[accession]['filename_read2'] = os.path.basename(file)
-                    paths_new[accession]['filepath_read2'] = file
-                if '_3' in file:
-                    paths_new[accession]['filename_index1'] = os.path.basename(file)
-                    paths_new[accession]['filepath_index1'] = file
-                if '_4' in file:
-                    paths_new[accession]['filename_index2'] = os.path.basename(file)
-                    paths_new[accession]['filepath_index2'] = file
+            if any(suffix in file for suffix in ['_R1', '_R2', '_R3', '_R4', '_I1', '_I2']):
+                for suffix, read_type in sub_suffix_dict.items():
+                    if suffix in file:
+                        paths_new[accession][f'filename_{read_type}'] = os.path.basename(file)
+                        paths_new[accession][f'filepath_{read_type}'] = file
+            elif any(suffix in file for suffix in ['_1', '_2', '_3', '_4']) and '_R' not in file:
+                for suffix, read_type in gen_suffix_dict.items():
+                    if suffix in file:
+                        paths_new[accession][f'filename_{read_type}'] = os.path.basename(file)
+                        paths_new[accession][f'filepath_{read_type}'] = file
         paths_new[accession]['filetype'] = 'fastq file'
         if 'filename_read1' not in paths_new[accession].keys() or 'filename_read2' not in paths_new[accession].keys():
             invalid_fastq = 'True'
