@@ -156,7 +156,7 @@ def retrieve_xml_from_sra(run_accessions):
                 attributes = run.find('SRAFiles')
                 for sra_file in attributes:
                     sra_status = sra_file.attrib['sratoolkit']
-                    if sra_status == '1' or 1:
+                    if sra_status in ['1', 1]:
                         file_name = sra_file.attrib['filename']
                         if 'SRR' in file_name:
                             accession = file_name
@@ -165,7 +165,7 @@ def retrieve_xml_from_sra(run_accessions):
                         else:
                              continue
     except:
-        paths_sra = None
+        return {}
     return paths_sra
 
 def get_sra_path_from_sra(run_accessions):
