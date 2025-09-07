@@ -223,7 +223,6 @@ def add_sequence_paths(sdrf, args):
             for read_key in ['read_1', 'read_2']:
                 if len(path[read_key]) > 1:
                     raise ValueError(f"Multiple {read_key} files found for {key}: {path[read_key]}")
-
             if path['read_1']:
                 read1_names.append(os.path.basename(path['read_1'][0]))
             if path['read_2']:
@@ -234,9 +233,9 @@ def add_sequence_paths(sdrf, args):
                 index2_names.append(os.path.basename(path['index_2'][0]))
             sra_names.append(os.path.dirname(path['files'][0]))
 
-        sdrf['Comment[read1 file]'] = read1_names
-        sdrf['Comment[read2 file]'] = read2_names
-        sdrf['Comment[SRA_URI]'] = sra_names
+        sdrf['Comment[read1 file]'] = read1_names if read1_names else ['PATH NOT FOUND']*len(run_accessions)
+        sdrf['Comment[read2 file]'] = read2_names if read2_names else ['PATH NOT FOUND']*len(run_accessions)
+        sdrf['Comment[SRA_URI]'] = sra_names if sra_names else ['PATH NOT FOUND']*len(run_accessions)
     else:
         print("Could not find paths to SRA objects.")
         sdrf['Comment[SRA_URI]'] = 'PATH NOT FOUND'

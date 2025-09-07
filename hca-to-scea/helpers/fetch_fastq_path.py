@@ -171,6 +171,8 @@ def get_fastq_path_from_ena(run_accessions):
             return {}
         paths_fastq[accession] = {'files': []}
         file_list = str(fastq_results[url_col].values[0]).split(';')
+        if len(file_list) < 2:
+            return {}
         for file_path in file_list:
             paths_fastq[accession]['files'].append(f"ftp://{file_path}")
     return paths_fastq
