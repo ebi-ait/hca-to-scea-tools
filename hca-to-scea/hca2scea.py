@@ -167,18 +167,24 @@ def get_author_list(xlsx_dict):
 def fetch_ena_publication_date(study_accession: str, ena_value="ENA-FIRST-PUBLIC"):
     print(f"Getting {ena_value}...", flush=True)
     url = f"https://www.ebi.ac.uk/ena/browser/api/xml/{study_accession}"
-    root = ElementTree.fromstring(requests.get(url).text)
-    for attr in root.findall('.//STUDY_ATTRIBUTE'):
-        if attr.find('TAG').text == ena_value:
-            return attr.find('VALUE').text
+    try:
+        root = ElementTree.fromstring(requests.get(url).text)
+        for attr in root.findall('.//STUDY_ATTRIBUTE'):
+            if attr.find('TAG').text == ena_value:
+                return attr.find('VALUE').text
+    except requests.RequestException as e:
+        print(f"Error fetching ENA publication date: {e}")
     return None
 
 def fetch_hca_update_date(project_uuid:str):
     url = f"https://api.ingest.archive.data.humancellatlas.org/projects/search/findByUuid?uuid={project_uuid}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        return datetime.datetime.fromisoformat(data.get("updateDate", None)).strftime("%Y-%m-%d")
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return datetime.datetime.fromisoformat(data.get("updateDate", None)).strftime("%Y-%m-%d")
+    except requests.RequestException as e:
+        print(f"Error fetching HCA update date from ingest: {e}")
     return None
 
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
