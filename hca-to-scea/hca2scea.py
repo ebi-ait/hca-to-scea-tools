@@ -11,10 +11,13 @@ from helpers import fetch_fastq_path
 from helpers import utils
 from helpers import check_experimental_design
 from json_files.library_dicts import library_dict, technology_dict
-from json_files.sdrf_map import sdrf_map_all
+from json_files.sdrf_map import minimum_map, accessions_dict, map_exp_designs
 from json_files.columns import expected_columns_dict, optional_columns_dict
 
 pd.options.mode.chained_assignment = None
+
+minimum_map.update(accessions_dict)
+sdrf_map_all = {exp_design: {**map_exp_designs[exp_design], **minimum_map} for exp_design in map_exp_designs}
 
 def rename_technology_type(technology_type, technology_dict):
 
@@ -341,11 +344,7 @@ def add_scea_specimen_columns(args, df, experimental_design):
         'Source Name': sample_name_key,
         'Assay Name': sample_name_key,
         'Scan Name': sample_name_key,
-        'Extract Name': sample_name_key,
-        'Comment[BioSD_SAMPLE]': 'cell_suspension.biomaterial_core.biosamples_accession',
-        'Comment[ENA_EXPERIMENT]': 'cell_suspension.insdc_experiment.insdc_experiment_accession',
-        'Comment[ENA_RUN]': 'sequence_file.insdc_run_accessions',
-        'Comment[technical replicate group]': 'cell_suspension.biomaterial_core.biosamples_accession'
+        'Extract Name': sample_name_key
         })
 
     '''Extract the HCA metadata values using the HCA keys in sdrf_map.'''
