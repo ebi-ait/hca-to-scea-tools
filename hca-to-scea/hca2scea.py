@@ -222,7 +222,7 @@ Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[RelatedExperiment]\t{tab.join(related_scea_accessions)}
-Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
+Comment[HCALastUpdateDate]\t{args.hca_update_date if args.hca_update_date else fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
 Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
@@ -260,7 +260,7 @@ Comment[EAAdditionalAttributes]
 Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
+Comment[HCALastUpdateDate]\t{args.hca_update_date if args.hca_update_date else fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
 Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
