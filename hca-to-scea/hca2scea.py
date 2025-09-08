@@ -1,9 +1,11 @@
 import argparse
-import json
 import os
 import sys
+import requests
+import datetime
 import pandas as pd
-import copy
+from numpy import nan
+from xml.etree import ElementTree
 
 from helpers import multitab_excel_to_single_txt
 from helpers import get_protocol_map
@@ -18,6 +20,101 @@ pd.options.mode.chained_assignment = None
 
 minimum_map.update(accessions_dict)
 sdrf_map_all = {exp_design: {**map_exp_designs[exp_design], **minimum_map} for exp_design in map_exp_designs}
+def parse_args():
+    parser = argparse.ArgumentParser(description="run hca -> scea tool")
+    parser.add_argument(
+        "-s",
+        "--spreadsheet",
+        type=str,
+        required=True,
+        help="Please provide a path to the HCA project spreadsheet."
+    )
+    parser.add_argument(
+        "-id",
+        "--project_uuid",
+        type=str,
+        required=True,
+        help="Please provide an HCA ingest project submission id."
+    )
+    parser.add_argument(
+        "-study",
+        type=str,
+        required=False,
+        help="Please provide the SRA or ENA study accession."
+    )
+    parser.add_argument(
+        "-name",
+        type=str,
+        required=False,
+        default = 'cs_id',
+        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
+        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
+    )
+    parser.add_argument(
+        "-ac",
+        "--accession_number",
+        type=int,
+        required=True,
+        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
+    )
+    parser.add_argument(
+        "-c",
+        "--curators",
+        nargs='+',
+        required=True,
+        help="space separated names of curators"
+    )
+    parser.add_argument(
+        "-et",
+        "--experiment_type",
+        type=str,
+        required=True,
+        choices=['baseline','differential'],
+        help="Please indicate whether this is a baseline or differential experimental design"
+    )
+    parser.add_argument(
+        "--facs",
+        action="store_true",
+        default=None,
+        help="Please specify this argument if FACS was used to isolate single cells"
+    )
+    parser.add_argument(
+        "-f",
+        "--experimental_factors",
+        nargs='+',
+        required=True,
+        help="space separated list of experimental factors"
+    )
+    parser.add_argument(
+        "-pd",
+        "--public_release_date",
+        type=str,
+        required=False,
+        help="Please enter the public release date in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-hd",
+        "--hca_update_date",
+        type=str,
+        required=False,
+        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-r",
+        "--related_scea_accession",
+        nargs='+',
+        required=False,
+        help="space separated list of related scea accession(s)"
+    )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        required=False,
+        help="Provide full path to preferred output dir"
+    )
+
+    return parser.parse_args()
+
 
 def rename_technology_type(technology_type, technology_dict):
 
@@ -30,6 +127,8 @@ def get_secondary_accessions(xlsx_dict, args):
     secondary_accessions.append(args.project_uuid)
     keys = ["project.geo_series_accessions","project.insdc_project_accessions","project.insdc_study_accessions","project.biostudies_accessions"]
     for key in keys:
+        if key not in xlsx_dict["project"]:
+            continue
         items = xlsx_dict["project"][key].fillna('')
         items = [item for item in items if item != '']
         if items:
@@ -65,6 +164,23 @@ def get_author_list(xlsx_dict):
 
     return author_list
 
+def fetch_ena_publication_date(study_accession: str, ena_value="ENA-FIRST-PUBLIC"):
+    print(f"Getting {ena_value}...", flush=True)
+    url = f"https://www.ebi.ac.uk/ena/browser/api/xml/{study_accession}"
+    root = ElementTree.fromstring(requests.get(url).text)
+    for attr in root.findall('.//STUDY_ATTRIBUTE'):
+        if attr.find('TAG').text == ena_value:
+            return attr.find('VALUE').text
+    return None
+
+def fetch_hca_update_date(project_uuid:str):
+    url = f"https://api.ingest.archive.data.humancellatlas.org/projects/search/findByUuid?uuid={project_uuid}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return datetime.datetime.fromisoformat(data.get("updateDate", None)).strftime("%Y-%m-%d")
+    return None
+
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name):
 
@@ -84,7 +200,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
-Public Release Date\t{args.public_release_date}
+Public Release Date\t{args.public_release_date if args.public_release_date else (fetch_ena_publication_date(args.study) if args.study else '')}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: utils.get_first_letter(x.split(',')[1]))}
@@ -106,9 +222,10 @@ Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[RelatedExperiment]\t{tab.join(related_scea_accessions)}
-Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
+Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
@@ -122,7 +239,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
-Public Release Date\t{args.public_release_date}
+Public Release Date\t{args.public_release_date if args.public_release_date else (fetch_ena_publication_date(args.study) if args.study else '')}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: utils.get_first_letter(x.split(',')[1]))}
@@ -143,9 +260,10 @@ Comment[EAAdditionalAttributes]
 Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[HCALastUpdateDate]\t{fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
+Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
@@ -161,18 +279,14 @@ Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "proje
 def reformat_age(age_list):
 
     updated_age_list = []
-
     for age in age_list:
-        age = str(age)
-        if ' - ' in age:
-            age = age.replace('-', 'to')
-        elif '-' in age and ' ' not in age:
-            age = age.replace('-', ' to ')
-        else:
-            age = age
-
+        if age is nan:
+            updated_age_list.append(None)
+            continue
+        if not isinstance(age, (int, float, str)):
+            raise ValueError("Age must be an integer or float.")
+        age = ' to '.join(end.strip() for end in str(age).split("-"))
         updated_age_list.append(age)
-
     return updated_age_list
 
 
@@ -455,99 +569,7 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experime
 
 
 def main():
-    parser = argparse.ArgumentParser(description="run hca -> scea tool")
-    parser.add_argument(
-        "-s",
-        "--spreadsheet",
-        type=str,
-        required=True,
-        help="Please provide a path to the HCA project spreadsheet."
-    )
-    parser.add_argument(
-        "-id",
-        "--project_uuid",
-        type=str,
-        required=True,
-        help="Please provide an HCA ingest project submission id."
-    )
-    parser.add_argument(
-        "-study",
-        type=str,
-        required=True,
-        help="Please provide the SRA or ENA study accession."
-    )
-    parser.add_argument(
-        "-name",
-        type=str,
-        required=False,
-        default = 'cs_id',
-        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
-        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
-    )
-    parser.add_argument(
-        "-ac",
-        "--accession_number",
-        type=int,
-        required=True,
-        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
-    )
-    parser.add_argument(
-        "-c",
-        "--curators",
-        nargs='+',
-        required=True,
-        help="space separated names of curators"
-    )
-    parser.add_argument(
-        "-et",
-        "--experiment_type",
-        type=str,
-        required=True,
-        choices=['baseline','differential'],
-        help="Please indicate whether this is a baseline or differential experimental design"
-    )
-    parser.add_argument(
-        "--facs",
-        action="store_true",
-        default=None,
-        help="Please specify this argument if FACS was used to isolate single cells"
-    )
-    parser.add_argument(
-        "-f",
-        "--experimental_factors",
-        nargs='+',
-        required=True,
-        help="space separated list of experimental factors"
-    )
-    parser.add_argument(
-        "-pd",
-        "--public_release_date",
-        type=str,
-        required=True,
-        help="Please enter the public release date in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-hd",
-        "--hca_update_date",
-        type=str,
-        required=True,
-        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-r",
-        "--related_scea_accession",
-        nargs='+',
-        required=False,
-        help="space separated list of related scea accession(s)"
-    )
-    parser.add_argument(
-        "-o",
-        "--output_dir",
-        required=False,
-        help="Provide full path to preferred output dir"
-    )
-
-    args = parser.parse_args()
+    args = parse_args()
     if not args.output_dir:
         work_dir = os.path.join("script_spreadsheets", os.path.splitext(os.path.basename(args.spreadsheet))[0])
     else:
