@@ -73,7 +73,14 @@ class CharacteristicTest(unittest.TestCase):
     def load_sdrf_file(self, file):
         return pd.read_csv(file, sep='\t')
 
-    def get_dfs_even(self, df1, df2, extra_cols):
+    def get_mage_type(self, df):
+        if set(df.columns) == set(['idx', 'name', 'value']):
+            return 'idf'
+        if 'Source Name' in df.columns:
+            return 'sdrf'
+        raise ValueError(f'Cannot convey if file is IDF or SDRF using cols: {df.columns}')
+
+    def get_sdrfs_even(self, df1, df2, extra_cols):
         for extra_col in extra_cols:
             if extra_col in df1.columns:
                 df2[extra_col] = nan
@@ -81,33 +88,53 @@ class CharacteristicTest(unittest.TestCase):
                 df1[extra_col] = nan
         df1 = df1.reindex(df2.columns, axis=1)
         return df1, df2
-
-    def assert_dataframes_shape_equal(self, golden_contents, output_contents, tag=None):
+    
+    def assert_sdrf_shape_equal(self, golden_contents, output_contents, tag=None):
         extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
         golden_extra_cols = set(golden_contents.columns) - set(output_contents.columns)
         output_extra_cols = set(output_contents.columns) - set(golden_contents.columns)
         assert extra_cols == set(), f'number of fields mismatch {tag}\nexpected not found:{golden_extra_cols}\nunexpected and found:{output_extra_cols}'
 
-    def assert_dataframes_contents_equal(self, golden_contents, output_contents, tag=None):
+    def assert_sdrf_contents_equal(self, golden_contents, output_contents, tag=None):
         extra_cols = set(golden_contents.columns).symmetric_difference(output_contents.columns)
-        golden_contents, output_contents = self.get_dfs_even(golden_contents, output_contents, extra_cols)
+        golden_contents, output_contents = self.get_sdrfs_even(golden_contents, output_contents, extra_cols)
 
-        if 'Source Name' in golden_contents.columns:
-            golden_contents = golden_contents.sort_values(by=['Source Name']).reset_index(drop=True)
-            output_contents = output_contents.sort_values(by=['Source Name']).reset_index(drop=True)
-        elif 'name' in golden_contents.columns:
-            golden_contents = golden_contents.sort_values(by=['name']).reset_index(drop=True)
-            output_contents = output_contents.sort_values(by=['name']).reset_index(drop=True)
+        golden_contents = golden_contents.sort_values(by=['Source Name']).reset_index(drop=True)
+        output_contents = output_contents.sort_values(by=['Source Name']).reset_index(drop=True)
         diff = golden_contents.compare(output_contents, result_names=('expected', 'actual'))
-        
+
         diff = diff.melt(value_name='diff_value')
         if len(diff) != 0:
             diff_file = f'{self.output_dir}/diff{tag if tag else ""}.html'
             diff.to_html(diff_file)
         assert len(diff) == 0, f'output content differences found comparing {tag}\n{diff.to_string()}'
 
-    def check_equal_lines(self, golden_contents, output_contents, msg=None):
-        self.assertMultiLineEqual(golden_contents,output_contents, msg)
+    def get_idf_dict(self, df):
+        return {
+            row["name"]: str(row["value"]).split("\t") if pd.notna(row["value"]) else []
+            for _, row in df.iterrows()
+            }
+    
+    def get_idf_even(self, dict1, dict2):
+        extra_cols = set(dict2.keys()).symmetric_difference(set(dict1.keys()))
+        if not extra_cols:
+            return dict1, dict2
+        full_cols = set(dict1.keys()).union(set(dict2.keys()))
+        dict1 = {key: dict1.get(key, []) for key in full_cols}
+        dict2 = {key: dict2.get(key, []) for key in full_cols}
+        return dict1, dict2
+
+    def assert_idf_shape_equal(self, golden_contents, output_contents, tag=None):
+        extra_cols = set(golden_contents).symmetric_difference(set(output_contents))
+        golden_extra_cols = set(golden_contents.keys()) - set(output_contents.keys())
+        output_extra_cols = set(output_contents.keys()) - set(golden_contents.keys())
+        assert extra_cols == set(), f'shape mismatch {tag}\nexpected:{golden_extra_cols}\nfound:{output_extra_cols}'
+
+    def assert_idf_contents_equal(self, golden_contents, output_contents, tag=None):
+        golden_even, output_even = self.get_idf_even(golden_contents, output_contents)
+        for key in golden_even.keys():
+            assert key in output_even, f'key not found {tag}\n{key}'
+            assert golden_even[key] == output_even[key], f'value mismatch {tag}\n{key}\nexpected:{golden_even[key]}\nfound:{output_even[key]}'
 
     def check_output(self, tool_otuput, spreadsheet):
         golden_output_dir = os.path.join(TEST_DIR, 'golden/expected/', os.path.basename(spreadsheet).split(".xlsx")[0])
@@ -116,14 +143,15 @@ class CharacteristicTest(unittest.TestCase):
             output_file = os.path.join(tool_otuput.output_dir, golden_file_basename)
             golden_contents = self.get_file_content(os.path.join(golden_output_dir, golden_file_basename))
             output_contents = self.get_file_content(output_file)
-            try:
-                if isinstance(golden_contents, pd.DataFrame):
-                    self.assert_dataframes_shape_equal(golden_contents, output_contents, tag=golden_file_basename)
-                    self.assert_dataframes_contents_equal(golden_contents, output_contents, tag=golden_file_basename)
-                else:
-                    self.check_equal_lines(golden_contents, output_contents, f'diffs found comparing {golden_file_basename}')
-            except Exception as e:
-                raise AssertionError(f'problem with {golden_file}\nstdout:\n{tool_otuput.stdout}\nstderr\n{tool_otuput.stderr}\n') from e
+            mage_type = self.get_mage_type(golden_contents)
+            if mage_type == "sdrf":
+                self.assert_sdrf_shape_equal(golden_contents, output_contents, tag=golden_file_basename)
+                self.assert_sdrf_contents_equal(golden_contents, output_contents, tag=golden_file_basename)
+            elif mage_type == "idf":
+                golden_df = self.get_idf_dict(golden_contents)
+                output_df = self.get_idf_dict(output_contents)
+                self.assert_idf_shape_equal(golden_df, output_df, tag=golden_file_basename)
+                self.assert_idf_contents_equal(golden_df, output_df, tag=golden_file_basename)
 
     def run_tool(self, spreadsheet, arguments):
         output_name = os.path.basename(spreadsheet).split(".xlsx")[0]
