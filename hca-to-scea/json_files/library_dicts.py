@@ -231,3 +231,13 @@ technology_dict = {
     "Smart-seq": "smart-seq"
 }
 
+default_read_lengths = {
+    "smart-like": {"read1": 75, "read2": 75},  # sometimes 100bp x 2
+    "smart-seq": {"read1": 75, "read2": 75},
+    "drop-seq": {"read1": 12, "read2": 60},
+    "10Xv1_3": {"read1": 26, "read2": 98, "index1": 8},
+    "10Xv1_5": {"read1": 26, "read2": 98, "index1": 8},
+    "10Xv2_3": {"read1": 26, "read2": 98, "index1": 8},
+    "10Xv2_5": {"read1": 26, "read2": 98, "index1": 8},
+    "10Xv3_3": {"read1": 28, "read2": 91, "index1": 8}
+}

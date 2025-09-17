@@ -1,11 +1,12 @@
 import argparse
-from logging import root
 import os
 import requests as rq
 from xml.etree import ElementTree
 import multiprocessing
 from contextlib import contextmanager
 import pandas as pd
+
+from json_files.library_dicts import default_read_lengths as DEFAULT_READ_LENGTHS
 
 @contextmanager
 def poolcontext(*args, **kwargs):
@@ -26,6 +27,57 @@ def pool_retrieve_xml_from_sra(run_lists):
 def run_accessions_to_parts(run_accessions):
     for i in range(0, len(run_accessions), 100):
         yield run_accessions[i:i + 100]
+
+def get_filename_from_xml_run(xml_run):
+    return [srafile.attrib['filename'] for srafile in xml_run.findall(".//SRAFile")]
+
+def add_index_filenames(sorted_filenames, default_index_dict):
+    return {key: sorted_filenames[i] for i, key in enumerate(default_index_dict.keys()) if i < len(sorted_filenames)}
+
+def get_sra_fastq_lengths_by_default_length(run_accessions, technology, default_read_lengths=DEFAULT_READ_LENGTHS):
+    """Retrieve the FASTQ file lengths and compare with default read lengths.
+        If expected read lengths are matched, we can assume that sra files read index is as in default_read_lengths.
+        param run_accessions: list of SRA run accessions
+        param technology: library preparation technology used in experiment (should be compatible with technology_dict)
+        param default_read_lengths: dictionary of default read lengths by specific technologies
+        output: dictionary mapping SRA run accessions to their FASTQ file lengths, read_index, and boolean for successful mapping
+    """
+    if technology not in default_read_lengths:
+        raise ValueError(f"Technology {technology} not supported (add to default_read_lengths dictionary).")
+    expected_read_lengths = list(default_read_lengths[technology].values())
+
+    url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch/fcgi?db=sra&id={",".join(run_accessions)}'
+    response = rq.get(url)
+    if not response.ok:
+        raise ValueError(f"Failed to retrieve SRA data for {run_accessions}")
+    root = ElementTree.fromstring(response.content)
+
+    results = {}
+    for run in root.findall(".//RUN"):
+        run_accession = run.attrib['accession']
+        if run_accession in run_accessions:
+            print(run_accession)
+            read_lengths = []
+
+            for read in run.findall(".//Statistics/Read"):
+                avg_len = int(read.attrib["average"])
+                read_lengths.append(avg_len)
+
+            results[run_accession] = {"read_lengths": read_lengths}
+            filenames = [sra_filename for sra_filename in get_filename_from_xml_run(run) if 'fastq' in sra_filename]
+            if read_lengths == expected_read_lengths:
+                results[run_accession]["filenames"] = add_index_filenames(filenames, default_read_lengths[technology])
+                results[run_accession]["read_map"] = True
+            elif set(read_lengths) == set(expected_read_lengths):
+                reindex = [read_lengths.index(read_len) for read_len in expected_read_lengths]
+                _, reordered_filenames = zip(*sorted(zip(reindex, filenames)))
+                results[run_accession]["filenames"] = add_index_filenames(reordered_filenames, default_read_lengths[technology])
+                results[run_accession]["read_map"] = True
+            else:
+                results[run_accession]["filenames"] = add_index_filenames(filenames, default_read_lengths[technology])
+                results[run_accession]["read_map"] = False
+
+    return results
 
 def retrieve_xml_from_sra(run_accessions):
     url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch/fcgi?db=sra&id={",".join(run_accessions)}'
