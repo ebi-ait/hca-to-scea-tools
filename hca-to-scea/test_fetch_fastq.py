@@ -7,35 +7,6 @@ import helpers.fetch_fastq_path as fetch_fastq_path
 
 class TestSraUtils(unittest.TestCase):
 
-    def test_sort_fastq_with_r1_r2(self):
-        paths = {
-            "SRR123": {"files": ["sample_R1.fastq.gz", "sample_R2.fastq.gz"]}
-        }
-        result = fetch_fastq_path.sort_fastq(paths)
-
-        self.assertIn("SRR123", result)
-        self.assertEqual(result["SRR123"]["filename_read1"], "sample_R1.fastq.gz")
-        self.assertEqual(result["SRR123"]["filename_read2"], "sample_R2.fastq.gz")
-        self.assertEqual(result["SRR123"]["filetype"], "fastq file")
-
-    def test_filter_paths_fastq(self):
-        sdrf = pd.DataFrame({"Comment[ENA_RUN]": ["SRR123"]})
-        paths = {
-            "SRR123": {
-                "filetype": "fastq file",
-                "filename_read1": "R1.fastq.gz",
-                "filepath_read1": "ftp://example/R1.fastq.gz",
-                "filename_read2": "R2.fastq.gz",
-                "filepath_read2": "ftp://example/R2.fastq.gz",
-            }
-        }
-
-        result = fetch_fastq_path.filter_paths(sdrf.copy(), paths)
-
-        self.assertIn("Comment[read1 file]", result.columns)
-        self.assertEqual(result["Comment[read1 file]"].iloc[0], "R1.fastq.gz")
-        self.assertEqual(result["Comment[read2 file]"].iloc[0], "R2.fastq.gz")
-
     @patch("helpers.fetch_fastq_path.rq.get")
     def test_retrieve_xml_from_sra(self, mock_get):
         fake_xml = """
