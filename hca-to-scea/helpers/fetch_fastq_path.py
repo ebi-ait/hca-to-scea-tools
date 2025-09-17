@@ -1,4 +1,5 @@
 import argparse
+from logging import root
 import os
 import requests as rq
 from xml.etree import ElementTree
@@ -79,17 +80,18 @@ def get_sra_path_from_ena(study_accession, run_accessions):
         return {}
     return {acc: paths_sra[acc] for acc in run_accessions if acc in paths_sra}
 
-def get_fastq_path_from_ena(run_accessions):
+def get_fastq_path_from_ena(study_accession, run_accessions):
     paths_fastq = {}
+    request_url = f'http://www.ebi.ac.uk/ena/portal/api/filereport?accession={study_accession}&result=read_run&fields=run_accession,fastq_ftp,sra_ftp,submitted_ftp'
+    fastq_results = pd.read_csv(request_url, delimiter='\t')
+    fastq_results = fastq_results.dropna(axis=1, how='all')
+    url_col = [col for col in ['fastq_ftp', 'sra_ftp', 'submitted_ftp'] if col in fastq_results.columns][0]
     for accession in run_accessions:
-        request_url = f'http://www.ebi.ac.uk/ena/portal/api/filereport?accession={accession}&result=read_run&fields=run_accession,fastq_ftp,sra_ftp,submitted_ftp'
-        fastq_results = pd.read_csv(request_url, delimiter='\t')
-        fastq_results = fastq_results.dropna(axis=1, how='all')
-        url_col = [col for col in ['fastq_ftp', 'sra_ftp', 'submitted_ftp'] if col in fastq_results.columns][0]
-        if len(fastq_results) == 0:
-            return {}
         paths_fastq[accession] = {'files': []}
-        file_list = str(fastq_results[url_col].values[0]).split(';')
+        if accession not in fastq_results['run_accession'].values:
+            continue
+        fastq_result = fastq_results[fastq_results['run_accession'] == accession]
+        file_list = str(fastq_result[url_col].values[0]).split(';')
         # TODO skip per file not whole project
         if len(file_list) < 2:
             return {}
