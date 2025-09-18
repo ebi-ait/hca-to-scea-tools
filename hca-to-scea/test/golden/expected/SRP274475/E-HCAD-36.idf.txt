@@ -17,8 +17,8 @@ Protocol Hardware						Illumina NovaSeq 6000
 Term Source Name	EFO	ArrayExpress
 Term Source File	http://www.ebi.ac.uk/efo/efo.owl	http://www.ebi.ac.uk/arrayexpress/
 Comment[AEExperimentType]	RNA-seq of coding RNA from single cells
-Experimental Factor Name	organ
-Experimental Factor Type	organ
+Experimental Factor Name	disease
+Experimental Factor Type	disease
 Comment[EAAdditionalAttributes]
 Comment[EACurator]	AD
 Comment[EAExpectedClusters]	
