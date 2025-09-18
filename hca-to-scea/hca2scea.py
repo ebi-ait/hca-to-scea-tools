@@ -13,7 +13,7 @@ from helpers import fetch_fastq_path
 from helpers import utils
 from helpers import check_experimental_design
 from json_files.library_dicts import library_dict, technology_dict
-from json_files.sdrf_map import minimum_map, accessions_dict, map_exp_designs
+from json_files.sdrf_map import minimum_map, accessions_dict, map_exp_designs, factor_mapppings
 from json_files.columns import expected_columns_dict, optional_columns_dict
 
 pd.options.mode.chained_assignment = None
@@ -467,6 +467,16 @@ def add_scea_specimen_columns(args, df, experimental_design):
         'Extract Name': sample_name_key
         })
 
+    '''Add FactorValue[xxxxx(Exp_variable)]'''
+    if args.experiment_type == 'differential':
+        for exp_factor in args.experimental_factors:
+            if exp_factor not in factor_mapppings:
+                raise KeyError(f"Experimental Factor `{exp_factor}` missing from `factor_mapppings` dict.")
+            exp_factor_col = factor_mapppings[exp_factor]
+            sdrf_map.update({f"FactorValue[{exp_factor}(Exp_variable)]" : exp_factor_col})
+    else:
+        sdrf_map.update({"FactorValue[individual(Exp_variable)]": "donor_organism.biomaterial_core.biomaterial_id",})
+
     '''Extract the HCA metadata values using the HCA keys in sdrf_map.'''
     sdrf = pd.DataFrame({k: get_values_from_df(df, v) for k, v in sdrf_map.items()})
     sdrf = sdrf.fillna('')
@@ -516,6 +526,9 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
         expected_columns_ordered = expected_columns_dict['organoid_only']
     else:
         expected_columns_ordered = expected_columns_dict['cell_line']
+
+    factor_cols = [col for col in sdrf_2 if col.startswith("FactorValue")]
+    expected_columns_ordered.extend(factor_cols)
 
     column_check = [col for col in expected_columns_ordered if col not in sdrf_2.columns]
     if column_check:

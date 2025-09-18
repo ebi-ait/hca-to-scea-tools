@@ -50,3 +50,12 @@ map_exp_designs = {
         "Description": "organoid.biomaterial_core.biomaterial_description",
     }
 }
+
+factor_mapppings = {
+    "disease": "specimen_from_organism.diseases.ontology_label",
+    "development stage": "donor_organism.development_stage.text",
+    "sampling_time": "specimen_from_organism.collection_time",
+    "organ": "specimen_from_organism.organ.ontology_label",
+    "organ_part": "specimen_from_organism.organ_parts.ontology_label",
+    "cell_type": "cell_suspension.selected_cell_types.ontology_label",
+}
