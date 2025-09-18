@@ -83,9 +83,9 @@ python -m hca-to-scea-tools.hca2scea-backend.hca2scea -h
 |-ac         | accession number         | Provide an SCEA accession number (integer).                                                        | yes       |
 |-et         | Experiment type          | Must be 1 of [differential,baseline]                                                               | yes       |
 |-f          | Factor value             | A space-separated list of user-defined factor values e.g. age disease                              | yes       |
-|-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | yes       |
-|-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | yes       |
 |-study      | study accession (SRPxxx) | The study accession will be used to find the paths to the fastq files for the given runs           | yes       |
+|-pd         | Dataset publication date | provide in YYYY-MM-DD E.g. from GEO                                                                | no        |
+|-hd         | HCA last update date     | provide in YYYY-MM-DD The last time the HCA project was updated in ingest  UI (production)         | no        |
 |-name       | HCA name field           | Which HCA field to use for the biomaterial names columns. Must be 1 of                             | no        |
 |            |                          | [cs_name, cs_id, sp_name, sp_id, other] where cs indicates cell suspension and sp indicates        |           |
 |            |                          |  specimen from organism. Default is cs_name.                                                       |           |
@@ -117,15 +117,49 @@ If 1 or more factor values other than 'Individual' is identified, then the exper
 
 **Required arguments only**
 
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
+```python
+python3 hca2scea.py \
+    -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx \
+    -id 379ed69e-be05-48bc-af5e-a7fc589709bf \
+    -study SRP135922 \
+    -ac 50 \
+    -c AD \
+    -et differential \
+    -f menstrual cycle day \
+    -pd 2021-06-29 \
+    -hd 2021-02-12
+```
 
 **Specify optional name argument**
 
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -name cs_name -ac 50 -c AD -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12`
+```python
+python3 hca2scea.py \
+    -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx \
+    -id 379ed69e-be05-48bc-af5e-a7fc589709bf \ 
+    -study SRP135922 \
+    -name cs_name \
+    -ac 50 \
+    -c AD \
+    -et differential \
+    -f menstrual cycle day \
+    -pd 2021-06-29 -hd 2021-02-12
+```
 
 **Specify optional output dir**
 
-`python3 hca2scea.py -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx -id 379ed69e-be05-48bc-af5e-a7fc589709bf -study SRP135922 -ac 50 -c AD -et differential -f menstrual cycle day -pd 2021-06-29 -hd 2021-02-12 -o my_output_dir`
+```python
+python3 hca2scea.py \
+    -s /home/aday/GSE111976-endometrium_MC_SCEA.xlsx \ 
+    -id 379ed69e-be05-48bc-af5e-a7fc589709bf \
+    -study SRP135922 \
+    -ac 50 \
+    -c AD \
+    -et differential \
+    -f menstrual cycle day \
+    -pd 2021-06-29 \
+    -hd 2021-02-12 \
+    -o my_output_dir
+```
 
 ## Developer Notes
 

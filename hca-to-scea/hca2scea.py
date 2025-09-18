@@ -1,17 +1,120 @@
 import argparse
-import json
 import os
 import sys
+import requests
+import datetime
 import pandas as pd
-import copy
+from numpy import nan
+from xml.etree import ElementTree
 
 from helpers import multitab_excel_to_single_txt
 from helpers import get_protocol_map
 from helpers import fetch_fastq_path
 from helpers import utils
 from helpers import check_experimental_design
+from json_files.library_dicts import library_dict, technology_dict
+from json_files.sdrf_map import minimum_map, accessions_dict, map_exp_designs, factor_mapppings
+from json_files.columns import expected_columns_dict, optional_columns_dict
 
 pd.options.mode.chained_assignment = None
+
+minimum_map.update(accessions_dict)
+sdrf_map_all = {exp_design: {**map_exp_designs[exp_design], **minimum_map} for exp_design in map_exp_designs}
+def parse_args():
+    parser = argparse.ArgumentParser(description="run hca -> scea tool")
+    parser.add_argument(
+        "-s",
+        "--spreadsheet",
+        type=str,
+        required=True,
+        help="Please provide a path to the HCA project spreadsheet."
+    )
+    parser.add_argument(
+        "-id",
+        "--project_uuid",
+        type=str,
+        required=True,
+        help="Please provide an HCA ingest project submission id."
+    )
+    parser.add_argument(
+        "-study",
+        type=str,
+        required=False,
+        help="Please provide the SRA or ENA study accession."
+    )
+    parser.add_argument(
+        "-name",
+        type=str,
+        required=False,
+        default = 'cs_id',
+        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
+        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
+    )
+    parser.add_argument(
+        "-ac",
+        "--accession_number",
+        type=int,
+        required=True,
+        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
+    )
+    parser.add_argument(
+        "-c",
+        "--curators",
+        nargs='+',
+        required=True,
+        help="space separated names of curators"
+    )
+    parser.add_argument(
+        "-et",
+        "--experiment_type",
+        type=str,
+        required=True,
+        choices=['baseline','differential'],
+        help="Please indicate whether this is a baseline or differential experimental design"
+    )
+    parser.add_argument(
+        "--facs",
+        action="store_true",
+        default=None,
+        help="Please specify this argument if FACS was used to isolate single cells"
+    )
+    parser.add_argument(
+        "-f",
+        "--experimental_factors",
+        nargs='+',
+        required=True,
+        help="space separated list of experimental factors"
+    )
+    parser.add_argument(
+        "-pd",
+        "--public_release_date",
+        type=str,
+        required=False,
+        help="Please enter the public release date in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-hd",
+        "--hca_update_date",
+        type=str,
+        required=False,
+        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "-r",
+        "--related_scea_accession",
+        nargs='+',
+        required=False,
+        help="space separated list of related scea accession(s)"
+    )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        required=False,
+        help="Provide full path to preferred output dir"
+    )
+
+    return parser.parse_args()
+
 
 def rename_technology_type(technology_type, technology_dict):
 
@@ -24,6 +127,8 @@ def get_secondary_accessions(xlsx_dict, args):
     secondary_accessions.append(args.project_uuid)
     keys = ["project.geo_series_accessions","project.insdc_project_accessions","project.insdc_study_accessions","project.biostudies_accessions"]
     for key in keys:
+        if key not in xlsx_dict["project"]:
+            continue
         items = xlsx_dict["project"][key].fillna('')
         items = [item for item in items if item != '']
         if items:
@@ -59,6 +164,29 @@ def get_author_list(xlsx_dict):
 
     return author_list
 
+def fetch_ena_publication_date(study_accession: str, ena_value="ENA-FIRST-PUBLIC"):
+    print(f"Getting {ena_value}...", flush=True)
+    url = f"https://www.ebi.ac.uk/ena/browser/api/xml/{study_accession}"
+    try:
+        root = ElementTree.fromstring(requests.get(url).text)
+        for attr in root.findall('.//STUDY_ATTRIBUTE'):
+            if attr.find('TAG').text == ena_value:
+                return attr.find('VALUE').text
+    except requests.RequestException as e:
+        print(f"Error fetching ENA publication date: {e}")
+    return None
+
+def fetch_hca_update_date(project_uuid:str):
+    url = f"https://api.ingest.archive.data.humancellatlas.org/projects/search/findByUuid?uuid={project_uuid}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return datetime.datetime.fromisoformat(data.get("updateDate", None)).strftime("%Y-%m-%d")
+    except requests.RequestException as e:
+        print(f"Error fetching HCA update date from ingest: {e}")
+    return None
+
 def generate_idf_file(work_dir, args, dataset_protocol_map, xlsx_dict, accession, idf_file_name,
                       sdrf_file_name):
 
@@ -78,7 +206,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
-Public Release Date\t{args.public_release_date}
+Public Release Date\t{args.public_release_date if args.public_release_date else (fetch_ena_publication_date(args.study) if args.study else '')}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: utils.get_first_letter(x.split(',')[1]))}
@@ -100,9 +228,10 @@ Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
 Comment[RelatedExperiment]\t{tab.join(related_scea_accessions)}
-Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[HCALastUpdateDate]\t{args.hca_update_date if args.hca_update_date else fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
+Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
@@ -116,7 +245,7 @@ MAGE-TAB Version\t1.1
 Investigation Title\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_title", "str")[0].strip('.')}
 Comment[Submitted Name]\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_short_name", "str")[0]}
 Experiment Description\t{utils.reformat_value(xlsx_dict, "project", "project.project_core.project_description", "str")[0]}
-Public Release Date\t{args.public_release_date}
+Public Release Date\t{args.public_release_date if args.public_release_date else (fetch_ena_publication_date(args.study) if args.study else '')}
 Person First Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[0])}
 Person Last Name\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: x.split(',')[2])}
 Person Mid Initials\t{utils.get_tab_separated_list(xlsx_dict, "project_contributors", "project.contributors.name", lambda x: utils.get_first_letter(x.split(',')[1]))}
@@ -137,9 +266,10 @@ Comment[EAAdditionalAttributes]
 Comment[EACurator]\t{tab.join(args.curators)}
 Comment[EAExpectedClusters]\t
 Comment[ExpressionAtlasAccession]\t{accession}
-Comment[HCALastUpdateDate]\t{args.hca_update_date}
+Comment[HCALastUpdateDate]\t{args.hca_update_date if args.hca_update_date else fetch_hca_update_date(args.project_uuid)}
 Comment[SecondaryAccession]\t{tab.join(secondary_accessions)}
 Comment[EAExperimentType]\t{args.experiment_type}
+Comment[SequenceDataURI]\thttp://www.ebi.ac.uk/ena/data/view/{'-'.join(xlsx_dict['sequence_file']['sequence_file.insdc_run_accessions'].sort_values().iloc[[0,-1]].values)}
 SDRF File\t{sdrf_file_name}
 Publication Title\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.title", "str")[0].strip('.')}
 Publication Author List\t{author_list}
@@ -147,26 +277,22 @@ PubMed ID\t{utils.reformat_value(xlsx_dict, "project_publications", "project.pub
 Publication DOI\t{utils.reformat_value(xlsx_dict, "project_publications", "project.publications.doi", "str")[0]}
 """
 
-    print(f"saving {work_dir}/{idf_file_name}")
-    with open(f"{work_dir}/{idf_file_name}", "w") as idf_file:
+    print(f"saving {os.path.join(work_dir, idf_file_name)}")
+    with open(os.path.join(work_dir, idf_file_name), "w") as idf_file:
         idf_file.write(idf_file_contents)
 
 
 def reformat_age(age_list):
 
     updated_age_list = []
-
     for age in age_list:
-        age = str(age)
-        if ' - ' in age:
-            age = age.replace('-', 'to')
-        elif '-' in age and ' ' not in age:
-            age = age.replace('-', ' to ')
-        else:
-            age = age
-
+        if age is nan:
+            updated_age_list.append(None)
+            continue
+        if not isinstance(age, (int, float, str)):
+            raise ValueError("Age must be an integer or float.")
+        age = ' to '.join(end.strip() for end in str(age).split("-"))
         updated_age_list.append(age)
-
     return updated_age_list
 
 
@@ -191,27 +317,52 @@ def add_sequence_paths(sdrf, args):
 
     run_accessions = list(sdrf['Comment[ENA_RUN]'])
 
-    try:
-        sra_paths = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
-    except:
-        sra_paths = fetch_fastq_path.get_sra_path_from_sra(args.study, run_accessions)
-        if not sra_paths:
-            try:
-                sra_paths = fetch_fastq_path.get_sra_path_from_sra(run_accessions)
-            except:
-                sra_paths = fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions)
+    path_checkers = {
+        'ena': lambda: fetch_fastq_path.get_fastq_path_from_ena(args.study, run_accessions),
+        'sra': lambda: fetch_fastq_path.get_sra_path_from_sra(run_accessions),
+        'sra_ena': lambda: fetch_fastq_path.get_sra_path_from_ena(args.study, run_accessions),
+    }
+
+    for type, checker in path_checkers.items():
+        sra_paths = checker()
+        if sra_paths:
+            break
+    index_suffix = {
+        'read_1': ['_R1_', '_1.fastq'],
+        'read_2': ['_R2_', '_2.fastq'],
+        'index_1': ['_I1_'],
+        'index_2': ['_I2_']
+    }
 
     if sra_paths:
         read1_names = []
         read2_names = []
         sra_names = []
-        for key in sra_paths.keys():
-            read1_names.append(key + "_1.fastq.gz")
-            read2_names.append(key + "_2.fastq.gz")
-            sra_names.append(sra_paths[key]['files'][0])
-        sdrf['Comment[read1 file]'] = read1_names
-        sdrf['Comment[read2 file]'] = read2_names
-        sdrf['Comment[SRA_URI]'] = sra_names
+        index1_names = []
+        index2_names = []
+        for key, path in sra_paths.items():
+            for attr, suff in index_suffix.items():
+                path[attr] = [f for f in path['files'] if any(pat in f for pat in suff)]
+            for read_key in ['read_1', 'read_2']:
+                if len(path[read_key]) > 1:
+                    raise ValueError(f"Multiple {read_key} files found for {key}: {path[read_key]}")
+            if path['read_1']:
+                read1_names.append(os.path.basename(path['read_1'][0]))
+            if path['read_2']:
+                read2_names.append(os.path.basename(path['read_2'][0]))
+            if path['index_1']:
+                index1_names.append(os.path.basename(path['index_1'][0]))
+            if path['index_2']:
+                index2_names.append(os.path.basename(path['index_2'][0]))
+            # keep uri even if not more than two fastq found
+            if any(path['files'][0].endswith(ext) for ext in ['fastq', 'fastq.gz', 'fq', 'fq.gz']):
+                sra_names.append(os.path.dirname(path['files'][0]))
+            else:
+                sra_names.append(path['files'][0])
+
+        sdrf['Comment[read1 file]'] = read1_names if read1_names else ['PATH NOT FOUND']*len(run_accessions)
+        sdrf['Comment[read2 file]'] = read2_names if read2_names else ['PATH NOT FOUND']*len(run_accessions)
+        sdrf['Comment[SRA_URI]'] = sra_names if sra_names else ['PATH NOT FOUND']*len(run_accessions)
     else:
         print("Could not find paths to SRA objects.")
         sdrf['Comment[SRA_URI]'] = 'PATH NOT FOUND'
@@ -292,27 +443,18 @@ def add_protocol_columns(df, dataset_protocol_map):
 def add_scea_specimen_columns(args, df, experimental_design):
 
     if experimental_design == "standard":
-
-        '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-        with open(f"json_files/sdrf_map.json") as sdrf_map_file:
-            sdrf_map = json.load(sdrf_map_file)
+        sdrf_map = sdrf_map_all["standard"]
 
     else:
 
         if experimental_design == "cell_line_only":
-            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-            with open(f"json_files/sdrf_map_cell_line.json") as sdrf_map_file:
-                sdrf_map = json.load(sdrf_map_file)
+            sdrf_map = sdrf_map_all["cell_line"]
 
         elif experimental_design == "organoid":
-            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-            with open(f"json_files/sdrf_map_cell_line_organoid.json") as sdrf_map_file:
-                sdrf_map = json.load(sdrf_map_file)
+            sdrf_map = sdrf_map_all["organoid"]
 
         else:
-            '''Open dictionary of mapped hca2scea key:pairs for specimen metadata.'''
-            with open(f"json_files/sdrf_map_organoid.json") as sdrf_map_file:
-                sdrf_map = json.load(sdrf_map_file)
+            sdrf_map = sdrf_map_all["cell_line_organoid"]
 
     '''Get user-specified HCA sample names key.'''
     sample_name_key = get_sample_name_key(args, df)
@@ -322,12 +464,18 @@ def add_scea_specimen_columns(args, df, experimental_design):
         'Source Name': sample_name_key,
         'Assay Name': sample_name_key,
         'Scan Name': sample_name_key,
-        'Extract Name': sample_name_key,
-        'Comment[BioSD_SAMPLE]': 'cell_suspension.biomaterial_core.biosamples_accession',
-        'Comment[ENA_EXPERIMENT]': 'cell_suspension.insdc_experiment.insdc_experiment_accession',
-        'Comment[ENA_RUN]': 'sequence_file.insdc_run_accessions',
-        'Comment[technical replicate group]': 'cell_suspension.biomaterial_core.biosamples_accession'
+        'Extract Name': sample_name_key
         })
+
+    '''Add FactorValue[xxxxx(Exp_variable)]'''
+    if args.experiment_type == 'differential':
+        for exp_factor in args.experimental_factors:
+            if exp_factor not in factor_mapppings:
+                raise KeyError(f"Experimental Factor `{exp_factor}` missing from `factor_mapppings` dict.")
+            exp_factor_col = factor_mapppings[exp_factor]
+            sdrf_map.update({f"FactorValue[{exp_factor}(Exp_variable)]" : exp_factor_col})
+    else:
+        sdrf_map.update({"FactorValue[individual(Exp_variable)]": "donor_organism.biomaterial_core.biomaterial_id",})
 
     '''Extract the HCA metadata values using the HCA keys in sdrf_map.'''
     sdrf = pd.DataFrame({k: get_values_from_df(df, v) for k, v in sdrf_map.items()})
@@ -352,12 +500,7 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
     '''Get technology-specific SCEA metadata and add to sdrf_1 dataframe.'''
     technology_type = list(xlsx_dict["library_preparation_protocol"]["library_preparation_protocol.library_construction_method.ontology_label"])[0]
     technology_type = rename_technology_type(technology_type,technology_dict)
-    try:
-        with open(f"json_files/{technology_type}.json") as technology_json_file:
-            technology_type_dict = json.load(technology_json_file)
-    except:
-        print("Technology type {} is not yet supported. Please ask Ami to add it to the technology type map.".format(technology_type))
-        sys.exit()
+    technology_type_dict = library_dict[technology_type]
     for key in technology_type_dict.keys():
         sdrf_1[key] = technology_type_dict[key]
 
@@ -377,9 +520,6 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Check all required column names are present and reorder columns by SCEA defined order.'''
 
-    with open(f"json_files/expected_columns.json", "r") as expected_columns_file:
-        expected_columns_dict = json.load(expected_columns_file)
-
     if experimental_design == 'standard':
         expected_columns_ordered = expected_columns_dict['standard']
     elif experimental_design == 'organoid_only':
@@ -387,13 +527,13 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
     else:
         expected_columns_ordered = expected_columns_dict['cell_line']
 
+    factor_cols = [col for col in sdrf_2 if col.startswith("FactorValue")]
+    expected_columns_ordered.extend(factor_cols)
+
     column_check = [col for col in expected_columns_ordered if col not in sdrf_2.columns]
     if column_check:
-        print("Error: one or more expected columns is missing from sdrf.")
-        print(column_check)
-        sys.exit()
-    else:
-        sdrf_3 = sdrf_2[expected_columns_ordered]
+        raise ValueError(f"Error: one or more expected columns is missing from sdrf: {column_check}")
+    sdrf_3 = sdrf_2[expected_columns_ordered]
 
     '''Add protocol columns with protocol metadata in the pre-defined SCEA column order.'''
     protocols_sdrf_before_sequencing, protocols_sdrf_from_sequencing = add_protocol_columns(df, dataset_protocol_map)
@@ -421,9 +561,6 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
             sdrf_3 = sdrf_3.rename(columns={col_name: "Material Type"})
 
     '''Remove empty columns if columns are optional.'''
-    with open(f"json_files/optional_columns.json", "r") as optional_columns_file:
-        optional_columns_dict = json.load(optional_columns_file)
-
     if experimental_design == 'standard':
         optional_columns = optional_columns_dict['standard']
     else:
@@ -435,8 +572,8 @@ def generate_sdrf_file(work_dir, args, df, xlsx_dict, dataset_protocol_map, sdrf
 
     '''Write the new sdrf file to a file.'''
     if not sdrf_3.empty:
-        print(f"saving {work_dir}/{sdrf_file_name}")
-        sdrf_3.to_csv(f"{work_dir}/{sdrf_file_name}", sep="\t", index=False)
+        print(f"saving {os.path.join(work_dir, sdrf_file_name)}")
+        sdrf_3.to_csv(os.path.join(work_dir, sdrf_file_name), sep="\t", index=False)
 
 def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experimental_design, accession_number, technology_dict):
 
@@ -451,101 +588,9 @@ def create_magetab(work_dir, xlsx_dict, dataset_protocol_map, df, args, experime
 
 
 def main():
-    parser = argparse.ArgumentParser(description="run hca -> scea tool")
-    parser.add_argument(
-        "-s",
-        "--spreadsheet",
-        type=str,
-        required=True,
-        help="Please provide a path to the HCA project spreadsheet."
-    )
-    parser.add_argument(
-        "-id",
-        "--project_uuid",
-        type=str,
-        required=True,
-        help="Please provide an HCA ingest project submission id."
-    )
-    parser.add_argument(
-        "-study",
-        type=str,
-        required=True,
-        help="Please provide the SRA or ENA study accession."
-    )
-    parser.add_argument(
-        "-name",
-        type=str,
-        required=False,
-        default = 'cs_id',
-        choices = ['cs_name','cs_id','sp_name','sp_id','other'],
-        help="Please indicate which field to use as the sample name. cs=cell suspension, sp = specimen."
-    )
-    parser.add_argument(
-        "-ac",
-        "--accession_number",
-        type=int,
-        required=True,
-        help="Provide an E-HCAD accession number. Please find the next suitable accession number by checking the google tracker sheet."
-    )
-    parser.add_argument(
-        "-c",
-        "--curators",
-        nargs='+',
-        required=True,
-        help="space separated names of curators"
-    )
-    parser.add_argument(
-        "-et",
-        "--experiment_type",
-        type=str,
-        required=True,
-        choices=['baseline','differential'],
-        help="Please indicate whether this is a baseline or differential experimental design"
-    )
-    parser.add_argument(
-        "--facs",
-        action="store_true",
-        default=None,
-        help="Please specify this argument if FACS was used to isolate single cells"
-    )
-    parser.add_argument(
-        "-f",
-        "--experimental_factors",
-        nargs='+',
-        required=True,
-        help="space separated list of experimental factors"
-    )
-    parser.add_argument(
-        "-pd",
-        "--public_release_date",
-        type=str,
-        required=True,
-        help="Please enter the public release date in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-hd",
-        "--hca_update_date",
-        type=str,
-        required=True,
-        help="Please enter the last time the HCA prohect submission was updated in this format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-r",
-        "--related_scea_accession",
-        nargs='+',
-        required=False,
-        help="space separated list of related scea accession(s)"
-    )
-    parser.add_argument(
-        "-o",
-        "--output_dir",
-        required=False,
-        help="Provide full path to preferred output dir"
-    )
-
-    args = parser.parse_args()
+    args = parse_args()
     if not args.output_dir:
-        work_dir = f"script_spreadsheets/{os.path.splitext(os.path.basename(args.spreadsheet))[0]}"
+        work_dir = os.path.join("script_spreadsheets", os.path.splitext(os.path.basename(args.spreadsheet))[0])
     else:
         work_dir = args.output_dir
 
@@ -555,35 +600,6 @@ def main():
 
     xlsx_dict = multitab_excel_to_single_txt.rename_protocol_columns(xlsx_dict)
 
-    technology_dict = {
-        "Fluidigm C1-based library preparation": "smart-like",
-        "10X 3' v1": "10Xv1_3",
-        "10X 5' v1": "10Xv1_5",
-        "10X 3' v2": "10Xv2_3",
-        "10X 5' v2": "10Xv2_5",
-        "10X 3' v3": "10Xv3_3",
-        "10X 3' v1 sequencing": "10Xv1_3",
-        "10X 5' v1 sequencing": "10Xv1_5",
-        "10X 3' v2 sequencing": "10Xv2_3",
-        "10X 5' v2 sequencing": "10Xv2_5",
-        "10X 3' v3 sequencing": "10Xv3_3",
-        "10x 3' v1": "10Xv1_3",
-        "10x 5' v1": "10Xv1_5",
-        "10x 3' v2": "10Xv2_3",
-        "10x 5' v2": "10Xv2_5",
-        "10x 3' v3": "10Xv3_3",
-        "10x 3' v1 sequencing": "10Xv1_3",
-        "10x 5' v1 sequencing": "10Xv1_5",
-        "10x 3' v2 sequencing": "10Xv2_3",
-        "10x 5' v2 sequencing": "10Xv2_5",
-        "10x 3' v3 sequencing": "10Xv3_3",
-        "Drop-seq": "drop-seq",
-        "inDrop": "drop-seq",
-        "Smart-like": "smart-like",
-        "Smart-seq2": "smart-seq",
-        "Smart-seq": "smart-seq"
-    }
-    
     check_experimental_design.check_biomaterial_linkings(xlsx_dict)
     check_experimental_design.check_protocol_linkings(xlsx_dict)
     experimental_design = check_experimental_design.get_experimental_design(xlsx_dict)

@@ -1,4 +1,5 @@
-{"standard": [
+expected_columns_dict = {
+    "standard": [
         "Source Name",
         "Comment[BioSD_SAMPLE]",
         "Characteristics[organism]",
@@ -48,7 +49,8 @@
         "Comment[ENA_RUN]",
         "Comment[read1 file]",
         "Comment[read2 file]",
-        "Comment[SRA_URI]"],
+        "Comment[SRA_URI]",
+    ],
     "cell_line": [
         "Source Name",
         "Comment[BioSD_SAMPLE]",
@@ -103,8 +105,9 @@
         "Comment[ENA_RUN]",
         "Comment[read1 file]",
         "Comment[read2 file]",
-        "Comment[SRA_URI]"],
-  "organoid_only": [
+        "Comment[SRA_URI]",
+    ],
+    "organoid_only": [
         "Source Name",
         "Comment[BioSD_SAMPLE]",
         "Characteristics[organism]",
@@ -156,5 +159,58 @@
         "Comment[ENA_RUN]",
         "Comment[read1 file]",
         "Comment[read2 file]",
-        "Comment[SRA_URI]"]
+        "Comment[SRA_URI]",
+    ],
+}
+
+optional_columns_dict = {
+    "standard": [
+        "Characteristics[developmental stage]",
+        "Characteristics[sampling site]",
+        "Characteristics[cell type]",
+        "Characteristics[immunophenotype]",
+        "Characteristics[stimulus]",
+        "Characteristics[disease]",
+        "Characteristics[organism status]",
+        "Characteristics[cause of death]",
+        "Comment[umi barcode read]",
+        "Comment[umi barcode offset]",
+        "Comment[umi barcode size]",
+        "Comment[cell barcode read]",
+        "Comment[cell barcode offset]",
+        "Comment[cell barcode size]",
+        "Comment[sample barcode read]",
+        "Comment[sample barcode offset]",
+        "Comment[sample barcode size]",
+        "Comment[cDNA read]",
+        "Comment[cDNA read offset]",
+        "Comment[read1 file]",
+        "Comment[read2 file]",
+        "Comment[SRA_URI]",
+    ],
+    "cell_line": [
+        "Characteristics[treatment]",
+        "Characteristics[developmental stage]",
+        "Characteristics[sampling site]",
+        "Characteristics[cell type]",
+        "Characteristics[immunophenotype]",
+        "Characteristics[stimulus]",
+        "Characteristics[disease]",
+        "Characteristics[organism status]",
+        "Characteristics[cause of death]",
+        "Comment[umi barcode read]",
+        "Comment[umi barcode offset]",
+        "Comment[umi barcode size]",
+        "Comment[cell barcode read]",
+        "Comment[cell barcode offset]",
+        "Comment[cell barcode size]",
+        "Comment[sample barcode read]",
+        "Comment[sample barcode offset]",
+        "Comment[sample barcode size]",
+        "Comment[cDNA read]",
+        "Comment[cDNA read offset]",
+        "Comment[read1 file]",
+        "Comment[read2 file]",
+        "Comment[SRA_URI]",
+    ],
 }
